@@ -1,0 +1,39 @@
+name: Restaurant Backend CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Deploy to Server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /var/www/restaurant/backend
+          git pull origin main
+          npm ci
+          npm run build
+          # Check if the PM2 process named 'restaurant-backend' exists
+          pm2 describe backend > /dev/null
+          PROCESS_EXISTS=$?
+          if [ $PROCESS_EXISTS -ne 0 ]; then
+            # Process does not exist, start it
+            pm2 start dist/src/index.js --name restaurant-backend
+          else
+            # Process exists, reload it
+            pm2 reload backend
+          fi
+          pm2 save
