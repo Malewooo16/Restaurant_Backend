@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "local": "nodemon",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/src/index.js",
     "dev": "ts-node ./src/index.ts",
     "prisma:generate": "prisma generate",
@@ -17,7 +17,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/node": "^25.0.8",
