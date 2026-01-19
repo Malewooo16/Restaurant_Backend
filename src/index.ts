@@ -1,10 +1,37 @@
 import express from 'express';
 import routes from './modules/routes';
+import swaggerRoutes from './swagger';
+import cors from 'cors';
 
 const app = express();
 const port = process.env.PORT || 3000;
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:8080",
+  "https://yourdomain.com",
+];
+
 
 app.use(express.json());
+
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // allow server-to-server / curl / Postman
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+app.use('/api-docs', swaggerRoutes);
 app.use('/api', routes);
 
 app.listen(port, () => {
