@@ -13,11 +13,12 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
+          username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e  # Exit on any error
