@@ -1,0 +1,303 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+//  url      = env("DATABASE_URL")
+}
+
+
+// =======================
+// ENUMS
+// =======================
+
+enum PrepArea {
+  KITCHEN
+  BAR
+}
+
+enum Departments {
+  KITCHEN
+  BAR
+  SERVICE
+  OPERATIONS
+  MANAGEMENT
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SERVED
+  PAID
+  CANCELLED
+}
+
+enum OrderItemStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+enum KitchenOrderStatus {
+  PENDING
+  PREPARING
+  READY
+}
+
+enum BarOrderStatus {
+  PENDING
+  READY
+}
+
+// =======================
+// INVENTORY ENUMS (kept for status and location)
+// =======================
+
+enum InventoryStatus {
+  NORMAL
+  LOW
+  CRITICAL
+}
+
+enum InventoryLocation {
+  KITCHEN
+  BAR
+  STORAGE
+  WALKIN_COOLER
+  FREEZER
+  DRY_STORAGE
+}
+
+// =======================
+// INVENTORY REFERENCE MODELS (CRUDable)
+// =======================
+
+model InventoryCategory {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  
+}
+
+model InventoryUnit {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  type        String
+  symbol      String?
+  description String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+ 
+}
+
+// =======================
+// MENU
+// =======================
+
+model MenuItem {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  isAvailable Boolean   @default(true)
+
+  prepArea    PrepArea
+
+  // Category and metadata
+  category       String?
+  rating         Float?        @default(0)
+  cost           Float?
+  prepTime       Int?          // in minutes
+  calories       Int?
+  servingSize    String?
+
+  // Ingredients and dietary information
+  ingredients    String[]      @default([])
+  allergens      String[]      @default([])
+  dietaryOptions String[]      @default([])
+
+  // Feature flags
+  featured       Boolean?      @default(false)
+  seasonal       Boolean?      @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orderItems  OrderItem[]
+}
+
+// =======================
+// ORDERS
+// =======================
+model Order {
+  id           Int           @id @default(autoincrement())
+  orderNumber  Int
+
+  tableNumber  Int?
+  status       OrderStatus   @default(PENDING)
+  customerName String?
+  waiter       String?
+  guestCount   Int?
+
+  // Calculated total amount
+  total        Float?        @default(0)
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  orderItems   OrderItem[]
+  kitchenOrder KitchenOrder?
+  barOrder     BarOrder?
+}
+
+// =======================
+// ORDER ITEMS
+// =======================
+
+model OrderItem {
+  id          Int           @id @default(autoincrement())
+  orderId     Int
+  menuItemId  Int
+  quantity    Int
+  price       Float
+  notes       String?
+
+  prepArea    PrepArea
+  status      OrderItemStatus @default(PENDING)
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  order       Order           @relation(fields: [orderId], references: [id])
+  menuItem   MenuItem        @relation(fields: [menuItemId], references: [id])
+
+  kitchenOrderId Int?
+  barOrderId     Int?
+
+  kitchenOrder   KitchenOrder? @relation(fields: [kitchenOrderId], references: [id])
+  barOrder       BarOrder?     @relation(fields: [barOrderId], references: [id])
+}
+
+// =======================
+// KITCHEN ORDERS
+// =======================
+
+model KitchenOrder {
+  id        Int                 @id @default(autoincrement())
+  orderId  Int                 @unique
+  status   KitchenOrderStatus  @default(PENDING)
+
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  order     Order              @relation(fields: [orderId], references: [id])
+  items     OrderItem[]
+}
+
+// =======================
+// BAR ORDERS
+// =======================
+
+model BarOrder {
+  id        Int              @id @default(autoincrement())
+  orderId  Int              @unique
+  status   BarOrderStatus   @default(PENDING)
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  order     Order           @relation(fields: [orderId], references: [id])
+  items     OrderItem[]
+}
+
+// =======================
+// INVENTORY MODELS
+// =======================
+
+model InventoryItem {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String?
+  sku         String? @unique
+  category    String
+  unit        String
+
+  // Quantity and stock management
+  quantity    Float   @default(0)
+  minStock    Float?  @default(0)
+  maxStock    Float?
+
+  // Pricing and supplier info
+  price       Float   @default(0)
+  supplier    String?
+
+  // Location and tracking
+  location    InventoryLocation?
+  storageLocation String? // Specific location details
+
+  // Status and timestamps
+  status      InventoryStatus @default(NORMAL)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  transactions InventoryTransaction[]
+  stockRequests StockRequestItem[]
+}
+
+// Inventory transaction model for tracking movements
+model InventoryTransaction {
+  id          Int    @id @default(autoincrement())
+  itemId      Int
+  quantity    Float
+  transactionType String // "IN", "OUT", "ADJUSTMENT", "TRANSFER"
+  reference   String? // Purchase order, usage reference, etc.
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+}
+
+// Stock request model for inventory requests
+model StockRequest {
+  id          Int    @id @default(autoincrement())
+  requestId   String @unique
+  status      String @default("pending") // pending, approved, rejected, fulfilled
+  requestedBy String?
+  requestedFrom PrepArea? // KITCHEN or BAR - who is requesting
+  requestedAt DateTime @default(now())
+  approvedAt  DateTime?
+  fulfilledAt DateTime?
+
+  // Relationship to inventory items (many-to-many)
+  requestItems StockRequestItem[]
+}
+
+// Stock request items (junction table)
+model StockRequestItem {
+  id          Int    @id @default(autoincrement())
+  requestId   Int
+  itemId      Int
+  quantity    Float
+  status      String @default("pending")
+
+  request     StockRequest @relation(fields: [requestId], references: [id])
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+}

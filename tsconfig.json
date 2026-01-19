@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "outDir": "/dist",
+    "target": "ES2023",
+    "strict": true,
+    "allowSyntheticDefaultImports": true
+  }
+}
