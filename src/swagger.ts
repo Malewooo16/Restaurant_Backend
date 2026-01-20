@@ -267,6 +267,10 @@ const swaggerDefinition = {
           notes: {
             type: 'string',
           },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'PREPARING', 'READY', 'SERVED', 'CANCELLED'],
+          },
         },
       },
       CreateOrder: {
@@ -395,6 +399,465 @@ const swaggerDefinition = {
           status: {
             type: 'string',
             enum: ['PENDING', 'READY'],
+          },
+        },
+      },
+      UpdateOrderItemStatus: {
+        type: 'object',
+        properties: {
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'PREPARING', 'READY', 'SERVED', 'CANCELLED'],
+          },
+        },
+      },
+      UpdateInventoryItem: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          sku: {
+            type: 'string',
+          },
+          category: {
+            type: 'string',
+          },
+          unit: {
+            type: 'string',
+          },
+          quantity: {
+            type: 'number',
+          },
+          minStock: {
+            type: 'number',
+          },
+          maxStock: {
+            type: 'number',
+          },
+          price: {
+            type: 'number',
+          },
+          supplier: {
+            type: 'string',
+          },
+          location: {
+            type: 'string',
+            enum: [
+              'KITCHEN',
+              'BAR',
+              'STORAGE',
+              'WALKIN_COOLER',
+              'FREEZER',
+              'DRY_STORAGE',
+            ],
+          },
+          storageLocation: {
+            type: 'string',
+          },
+          status: {
+            type: 'string',
+            enum: ['NORMAL', 'LOW', 'CRITICAL'],
+          },
+        },
+      },
+      MenuCategory: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            format: 'int64',
+          },
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          isActive: {
+            type: 'boolean',
+          },
+        },
+      },
+      CreateMenuCategory: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          isActive: {
+            type: 'boolean',
+          },
+        },
+      },
+      UpdateMenuCategory: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          isActive: {
+            type: 'boolean',
+          },
+        },
+      },
+      MenuAddon: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            format: 'int64',
+          },
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+        },
+      },
+      CreateMenuAddon: {
+        type: 'object',
+        required: ['name', 'price'],
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+        },
+      },
+      UpdateMenuAddon: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+        },
+      },
+      MenuSideDish: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            format: 'int64',
+          },
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+        },
+      },
+      CreateMenuSideDish: {
+        type: 'object',
+        required: ['name', 'price'],
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+        },
+      },
+      UpdateMenuSideDish: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+        },
+      },
+      // Updated MenuItem schemas
+      MenuItem: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            format: 'int64',
+          },
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+          prepArea: {
+            type: 'string',
+            enum: ['KITCHEN', 'BAR'],
+          },
+          categoryId: { // Added categoryId
+            type: 'integer',
+          },
+          menuCategory: { // Added menuCategory relation
+            $ref: '#/components/schemas/MenuCategory',
+          },
+          rating: {
+            type: 'number',
+          },
+          cost: {
+            type: 'number',
+          },
+          prepTime: {
+            type: 'number',
+          },
+          calories: {
+            type: 'number',
+          },
+          servingSize: {
+            type: 'string',
+          },
+          ingredients: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          allergens: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          dietaryOptions: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          featured: {
+            type: 'boolean',
+          },
+          seasonal: {
+            type: 'boolean',
+          },
+          addons: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/MenuAddon',
+            },
+          },
+          sideDishes: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/MenuSideDish',
+            },
+          },
+        },
+      },
+      CreateMenuItem: {
+        type: 'object',
+        required: ['name', 'price', 'prepArea', 'categoryId'], // Added categoryId to required
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+          prepArea: {
+            type: 'string',
+            enum: ['KITCHEN', 'BAR'],
+          },
+          categoryId: { // Added categoryId
+            type: 'integer',
+          },
+          rating: {
+            type: 'number',
+          },
+          cost: {
+            type: 'number',
+          },
+          prepTime: {
+            type: 'number',
+          },
+          calories: {
+            type: 'number',
+          },
+          servingSize: {
+            type: 'string',
+          },
+          ingredients: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          allergens: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          dietaryOptions: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          featured: {
+            type: 'boolean',
+          },
+          seasonal: {
+            type: 'boolean',
+          },
+          addonIds: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+            description: 'Array of MenuAddon IDs to associate with this menu item.',
+          },
+          sideDishIds: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+            description: 'Array of MenuSideDish IDs to associate with this menu item.',
+          },
+        },
+      },
+      UpdateMenuItem: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          description: {
+            type: 'string',
+          },
+          price: {
+            type: 'number',
+          },
+          isAvailable: {
+            type: 'boolean',
+          },
+          prepArea: {
+            type: 'string',
+            enum: ['KITCHEN', 'BAR'],
+          },
+          categoryId: { // Added categoryId
+            type: 'integer',
+          },
+          rating: {
+            type: 'number',
+          },
+          cost: {
+            type: 'number',
+          },
+          prepTime: {
+            type: 'number',
+          },
+          calories: {
+            type: 'number',
+          },
+          servingSize: {
+            type: 'string',
+          },
+          ingredients: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          allergens: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          dietaryOptions: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          featured: {
+            type: 'boolean',
+          },
+          seasonal: {
+            type: 'boolean',
+          },
+          addonIds: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+            description: 'Array of MenuAddon IDs to associate with this menu item.',
+          },
+          sideDishIds: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+            description: 'Array of MenuSideDish IDs to associate with this menu item.',
           },
         },
       },

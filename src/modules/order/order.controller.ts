@@ -127,3 +127,25 @@ export const updateBarOrderStatus = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateOrderItemStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const orderItem = await orderService.updateOrderItemStatus(
+      parseInt(id as string),
+      req.body
+    );
+    res.status(200).json(orderItem);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getRecentOrders = async (req: Request, res: Response) => {
+  try {
+    const recentOrders = await orderService.getRecentOrders();
+    res.status(200).json(recentOrders);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

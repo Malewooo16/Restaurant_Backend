@@ -29,3 +29,7 @@ export const updateKitchenOrderStatusSchema = z.object({
 export const updateBarOrderStatusSchema = z.object({
   status: z.enum(['PENDING', 'READY']).optional(),
 });
+
+export const updateOrderItemStatusSchema = z.object({
+  status: z.enum(['PENDING', 'PREPARING', 'READY', 'SERVED', 'CANCELLED']).optional(),
+});

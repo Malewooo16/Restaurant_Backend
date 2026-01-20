@@ -1,5 +1,10 @@
-import { Prisma } from '../../../generated/prisma/client';
-import { prisma } from '../../../lib/prisma';
+import {
+  Prisma,
+  OrderStatus,
+  KitchenOrderStatus,
+  BarOrderStatus,
+} from "../../../generated/prisma/client";
+import { prisma } from "../../../lib/prisma";
 
 export const createOrder = async (
   data: Prisma.OrderCreateInput,
@@ -30,16 +35,16 @@ export const createOrder = async (
         },
       };
 
-      if (menuItem.prepArea === 'KITCHEN') {
+      if (menuItem.prepArea === "KITCHEN") {
         kitchenOrderItems.push(orderItem);
-      } else if (menuItem.prepArea === 'BAR') {
+      } else if (menuItem.prepArea === "BAR") {
         barOrderItems.push(orderItem);
       }
       return orderItem;
     })
   );
 
-  const orderNumber = await prisma.order.count() + 1000;
+  const orderNumber = (await prisma.order.count()) + 1000;
 
   return prisma.order.create({
     data: {
@@ -106,16 +111,28 @@ export const deleteOrder = (id: number) => {
 
 export const getAllKitchenOrders = () => {
   return prisma.kitchenOrder.findMany({
+    where: {
+      status: {
+        notIn: [KitchenOrderStatus.READY, KitchenOrderStatus.CANCELLED],
+      },
+    },
     include: {
       items: true,
+      order: true, // Include the parent order to verify the status filtering
     },
   });
 };
 
 export const getAllBarOrders = () => {
   return prisma.barOrder.findMany({
+    where: {
+      status: {
+        notIn: [BarOrderStatus.READY, BarOrderStatus.CANCELLED],
+      },
+    },
     include: {
       items: true,
+      order: true, // Include the parent order to verify the status filtering
     },
   });
 };
@@ -160,6 +177,31 @@ export const updateBarOrderStatus = (
     data,
     include: {
       items: true,
+    },
+  });
+};
+
+export const updateOrderItemStatus = (
+  id: number,
+  data: Prisma.OrderItemUpdateInput
+) => {
+  return prisma.orderItem.update({
+    where: { id },
+    data,
+  });
+};
+
+export const getRecentOrders = () => {
+  return prisma.order.findMany({
+    where: {
+      status: {
+        notIn: [OrderStatus.PAID, OrderStatus.CANCELLED],
+      },
+    },
+    include: {
+      orderItems: true,
+      kitchenOrder: true,
+      barOrder: true,
     },
   });
 };

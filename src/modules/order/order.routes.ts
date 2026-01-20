@@ -51,13 +51,31 @@ router.get('/', orderController.getAllOrders);
 
 /**
  * @swagger
- * /api/order/kitchen-orders:
+ * /api/order/recent:
  *   get:
- *     summary: Retrieve a list of kitchen orders
+ *     summary: Retrieve a list of recent orders (not paid or cancelled)
  *     tags: [Order]
  *     responses:
  *       200:
- *         description: A list of kitchen orders.
+ *         description: A list of recent orders.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ */
+router.get('/recent', orderController.getRecentOrders);
+
+/**
+ * @swagger
+ * /api/order/kitchen-orders:
+ *   get:
+ *     summary: Retrieve a list of current kitchen orders (parent order not paid or cancelled)
+ *     tags: [Order]
+ *     responses:
+ *       200:
+ *         description: A list of current kitchen orders.
  *         content:
  *           application/json:
  *             schema:
@@ -71,11 +89,11 @@ router.get('/kitchen-orders', orderController.getAllKitchenOrders);
  * @swagger
  * /api/order/bar-orders:
  *   get:
- *     summary: Retrieve a list of bar orders
+ *     summary: Retrieve a list of current bar orders (parent order not paid or cancelled)
  *     tags: [Order]
  *     responses:
  *       200:
- *         description: A list of bar orders.
+ *         description: A list of current bar orders.
  *         content:
  *           application/json:
  *             schema:
@@ -191,6 +209,38 @@ router.patch(
   '/bar-orders/:id',
   validate(orderValidation.updateBarOrderStatusSchema),
   orderController.updateBarOrderStatus
+);
+
+/**
+ * @swagger
+ * /api/order/order-items/{id}:
+ *   patch:
+ *     summary: Update an order item status
+ *     tags: [Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateOrderItemStatus'
+ *     responses:
+ *       200:
+ *         description: The updated order item.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrderItem'
+ */
+router.patch(
+  '/order-items/:id',
+  validate(orderValidation.updateOrderItemStatusSchema),
+  orderController.updateOrderItemStatus
 );
 
 /**
