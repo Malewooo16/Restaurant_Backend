@@ -24,7 +24,7 @@ export const getMenuItemById = async (id: number) => {
 };
 
 export const createMenuItem = async (
-  data: Prisma.MenuItemCreateInput & { addonIds?: number[]; sideDishIds?: number[] }
+  data: Prisma.MenuItemCreateInput & { addonIds?: number[]; sideDishIds?: number[]; categoryId: number }
 ) => {
   const { addonIds, sideDishIds, categoryId, ...menuItemData } = data;
 
@@ -58,7 +58,7 @@ export const createMenuItem = async (
 
 export const updateMenuItem = async (
   id: number,
-  data: Prisma.MenuItemUpdateInput & { addonIds?: number[]; sideDishIds?: number[] }
+  data: Prisma.MenuItemUpdateInput & { addonIds?: number[]; sideDishIds?: number[]; categoryId?: number }
 ) => {
   const { addonIds, sideDishIds, categoryId, ...menuItemData } = data;
 
