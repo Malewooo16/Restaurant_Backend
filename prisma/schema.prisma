@@ -198,7 +198,7 @@ model MenuItem {
 
   orderItems  OrderItem[]
 
-  menuCategory MenuCategory @relation(fields: [categoryId], references: [id])
+  menuCategory MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
 
 // =======================
@@ -243,14 +243,14 @@ model OrderItem {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  order       Order           @relation(fields: [orderId], references: [id])
-  menuItem   MenuItem        @relation(fields: [menuItemId], references: [id])
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem        @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 
   kitchenOrderId Int?
   barOrderId     Int?
 
-  kitchenOrder   KitchenOrder? @relation(fields: [kitchenOrderId], references: [id])
-  barOrder       BarOrder?     @relation(fields: [barOrderId], references: [id])
+  kitchenOrder   KitchenOrder? @relation(fields: [kitchenOrderId], references: [id], onDelete: SetNull)
+  barOrder       BarOrder?     @relation(fields: [barOrderId], references: [id], onDelete: SetNull)
 }
 
 // =======================
@@ -265,7 +265,7 @@ model KitchenOrder {
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  order     Order              @relation(fields: [orderId], references: [id])
+  order     Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
   items     OrderItem[]
 }
 
@@ -281,7 +281,7 @@ model BarOrder {
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
-  order     Order           @relation(fields: [orderId], references: [id])
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   items     OrderItem[]
 }
 
@@ -330,7 +330,7 @@ model InventoryTransaction {
   notes       String?
   createdAt   DateTime @default(now())
 
-  item        InventoryItem @relation(fields: [itemId], references: [id])
+  item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
 
 // Stock request model for inventory requests
@@ -356,6 +356,6 @@ model StockRequestItem {
   quantity    Float
   status      String @default("pending")
 
-  request     StockRequest @relation(fields: [requestId], references: [id])
-  item        InventoryItem @relation(fields: [itemId], references: [id])
+  request     StockRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
