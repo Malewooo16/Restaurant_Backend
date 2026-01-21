@@ -210,30 +210,95 @@ curl -X GET http://localhost:3000/api/menu/menu-items/9999
 - **Example Response**: (Same structure as above but for a single order)
 
 ### 3. Create Order
+
 - **Endpoint**: `POST /api/order`
-- **Description**: Creates a new order
+- **Description**: Creates a new order with support for side dishes and addons
 - **Request Body**: Order object with order items
 - **Example Request**:
 ```json
 {
   "tableNumber": 1,
   "customerName": "Test Customer",
+  "waiter": "John D.",
+  "guestCount": 4,
   "orderItems": [
     {
       "menuItemId": 1,
       "quantity": 2,
-      "notes": "Well done"
+      "notes": "Well done",
+      "selectedSideDishes": [1, 2],  // Array of side dish IDs
+      "selectedAddons": [3, 4]       // Array of addon IDs
     },
     {
       "menuItemId": 3,
       "quantity": 1,
-      "notes": "Extra mint"
+      "notes": "Extra mint",
+      "selectedAddons": [5]          // Array of addon IDs
+    }
+  ]
+}
+```
+
+**Pizza with Addons Example**:
+```json
+{
+  "tableNumber": 5,
+  "waiter": "Test Waiter",
+  "customerName": "Pizza Lover",
+  "guestCount": 2,
+  "orderItems": [
+    {
+      "menuItemId": 101,  // Pizza menu item ID
+      "quantity": 1,
+      "notes": "Extra crispy crust",
+      "selectedAddons": [1, 2]  // Extra Cheese and Pepperoni addon IDs
+    }
+  ]
+}
+```
+
+**Steak with Side Dish Example**:
+```json
+{
+  "tableNumber": 5,
+  "waiter": "Test Waiter",
+  "customerName": "Steak Lover",
+  "guestCount": 2,
+  "orderItems": [
+    {
+      "menuItemId": 201,  // Ribeye Steak menu item ID
+      "quantity": 1,
+      "notes": "Medium rare",
+      "selectedSideDishes": [1]  // French Fries side dish ID
+    }
+  ]
+}
+```
+
+**Combined Pizza and Steak Order Example**:
+```json
+{
+  "tableNumber": 5,
+  "waiter": "Test Waiter",
+  "customerName": "Pizza & Steak Lover",
+  "guestCount": 2,
+  "orderItems": [
+    {
+      "menuItemId": 101,  // Pizza menu item ID
+      "quantity": 1,
+      "notes": "Extra crispy crust",
+      "selectedAddons": [1, 2]  // Extra Cheese and Pepperoni addon IDs
+    },
+    {
+      "menuItemId": 201,  // Ribeye Steak menu item ID
+      "quantity": 1,
+      "notes": "Medium rare",
+      "selectedSideDishes": [1]  // French Fries side dish ID
     }
   ]
 }
 ```
 - **Response**: Created order object
-
 ### 4. Update Order
 - **Endpoint**: `PATCH /api/order/:id`
 - **Description**: Updates an existing order
@@ -299,6 +364,127 @@ curl -X GET http://localhost:3000/api/menu/menu-items/9999
     "createdAt": "2026-01-19T09:17:58.061Z",
     "updatedAt": "2026-01-19T09:22:14.979Z",
     "items": []
+  }
+]
+```
+
+### 5.5. Get All Kitchen Orders with Details (Enhanced)
+- **Endpoint**: `GET /api/order/kitchen-orders-with-details`
+- **Description**: Retrieves all kitchen orders with detailed menu item information including available sides and addons, highlighting selected extras
+- **Response**: Array of enhanced kitchen order objects with full menu item details
+- **Example Response**:
+```json
+[
+  {
+    "id": 11000,
+    "orderId": 11000,
+    "status": "PENDING",
+    "createdAt": "2026-01-14T12:22:42.766Z",
+    "updatedAt": "2026-01-14T12:22:42.766Z",
+    "items": [
+      {
+        "id": 1,
+        "orderId": 11000,
+        "menuItemId": 101,
+        "quantity": 1,
+        "price": 15.49,
+        "notes": "Extra crispy crust",
+        "prepArea": "KITCHEN",
+        "status": "PENDING",
+        "selectedSideDishes": [],
+        "selectedAddons": [1, 2],
+        "menuItem": {
+          "id": 101,
+          "name": "Margherita Pizza",
+          "hasAddons": true,
+          "requiresSideDish": false,
+          "addons": [
+            {
+              "id": 1,
+              "name": "Extra Cheese",
+              "price": 1.50,
+              "isAvailable": true
+            },
+            {
+              "id": 2,
+              "name": "Pepperoni",
+              "price": 2.00,
+              "isAvailable": true
+            },
+            {
+              "id": 3,
+              "name": "Mushrooms",
+              "price": 1.75,
+              "isAvailable": true
+            }
+          ],
+          "sideDishes": []
+        }
+      },
+      {
+        "id": 2,
+        "orderId": 11000,
+        "menuItemId": 201,
+        "quantity": 1,
+        "price": 28.49,
+        "notes": "Medium rare",
+        "prepArea": "KITCHEN",
+        "status": "PENDING",
+        "selectedSideDishes": [1],
+        "selectedAddons": [],
+        "menuItem": {
+          "id": 201,
+          "name": "Ribeye Steak",
+          "hasAddons": false,
+          "requiresSideDish": true,
+          "addons": [],
+          "sideDishes": [
+            {
+              "id": 1,
+              "name": "French Fries",
+              "price": 3.50,
+              "isAvailable": true
+            },
+            {
+              "id": 2,
+              "name": "House Salad",
+              "price": 4.00,
+              "isAvailable": true
+            },
+            {
+              "id": 3,
+              "name": "Mashed Potatoes",
+              "price": 3.75,
+              "isAvailable": true
+            }
+          ]
+        }
+      }
+    ],
+    "order": {
+      "id": 11000,
+      "orderNumber": 1024,
+      "tableNumber": 5,
+      "status": "IN_PROGRESS",
+      "customerName": "Pizza & Steak Lover",
+      "waiter": "Test Waiter",
+      "guestCount": 2,
+      "total": 43.98,
+      "orderItems": [
+        {
+          "id": 1,
+          "menuItem": {
+            "name": "Margherita Pizza"
+          }
+        },
+        {
+          "id": 2,
+          "menuItem": {
+            "name": "Ribeye Steak"
+          }
+        }
+      ]
+    }
   }
 ]
 ```
@@ -455,6 +641,9 @@ curl -X PATCH http://localhost:3000/api/order/bar-orders/11001 \
 # Get all kitchen orders
 curl -X GET http://localhost:3000/api/order/kitchen-orders
 
+# Get all kitchen orders with details (enhanced)
+curl -X GET http://localhost:3000/api/order/kitchen-orders-with-details
+
 # Get all bar orders
 curl -X GET http://localhost:3000/api/order/bar-orders
 ```
@@ -473,6 +662,79 @@ curl -X GET http://localhost:3000/api/order/bar-orders
    curl -X POST http://localhost:3000/api/order \
      -H "Content-Type: application/json" \
      -d '{"tableNumber": 1, "customerName": "Test Customer", "orderItems": [{"menuItemId": 1, "quantity": 2, "notes": "Well done"}, {"menuItemId": 3, "quantity": 1, "notes": "Extra mint"}]}'
+   ```
+
+   **New Format with Sides and Addons**:
+   ```bash
+   curl -X POST http://localhost:3000/api/order \
+     -H "Content-Type: application/json" \
+     -d '{"tableNumber": 3, "waiter": "John D.", "orderItems": [{"menuItemId": 1, "quantity": 1, "selectedSideDishes": [1]}, {"menuItemId": 2, "quantity": 2, "selectedAddons": [1]}]}'
+   ```
+
+   **Pizza with Addons cURL Example**:
+   ```bash
+   curl -X POST http://localhost:3000/api/order \
+     -H "Content-Type: application/json" \
+     -d '{
+       "tableNumber": 5,
+       "waiter": "Test Waiter",
+       "customerName": "Pizza Lover",
+       "guestCount": 2,
+       "orderItems": [
+         {
+           "menuItemId": 101,
+           "quantity": 1,
+           "notes": "Extra crispy crust",
+           "selectedAddons": [1, 2]
+         }
+       ]
+     }'
+   ```
+
+   **Steak with Side Dish cURL Example**:
+   ```bash
+   curl -X POST http://localhost:3000/api/order \
+     -H "Content-Type: application/json" \
+     -d '{
+       "tableNumber": 5,
+       "waiter": "Test Waiter",
+       "customerName": "Steak Lover",
+       "guestCount": 2,
+       "orderItems": [
+         {
+           "menuItemId": 201,
+           "quantity": 1,
+           "notes": "Medium rare",
+           "selectedSideDishes": [1]
+         }
+       ]
+     }'
+   ```
+
+   **Combined Pizza and Steak Order cURL Example**:
+   ```bash
+   curl -X POST http://localhost:3000/api/order \
+     -H "Content-Type: application/json" \
+     -d '{
+       "tableNumber": 5,
+       "waiter": "Test Waiter",
+       "customerName": "Pizza & Steak Lover",
+       "guestCount": 2,
+       "orderItems": [
+         {
+           "menuItemId": 101,
+           "quantity": 1,
+           "notes": "Extra crispy crust",
+           "selectedAddons": [1, 2]
+         },
+         {
+           "menuItemId": 201,
+           "quantity": 1,
+           "notes": "Medium rare",
+           "selectedSideDishes": [1]
+         }
+       ]
+     }'
    ```
 
 3. **GET /api/order/:id** - ✅ Working

@@ -8,10 +8,12 @@ export const createOrderSchema = z.object({
   orderItems: z.array(
     z.object({
       menuItemId: z.number(),
-      quantity: z.number(),
-      notes: z.string().optional(),
+      quantity: z.number().min(1, "Quantity must be at least 1"),
+      notes: z.string().nullish(),
+      selectedSideDishes: z.array(z.number().positive("Side dish ID must be positive")).optional(),
+      selectedAddons: z.array(z.number().positive("Addon ID must be positive")).optional(),
     })
-  ),
+  ).min(1, "Order must contain at least one item"),
 });
 
 export const updateOrderSchema = z.object({

@@ -124,6 +124,9 @@ model MenuAddon {
   menuItems   MenuItem[] @relation("MenuItemAddons")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  /// Additional items that can be added to menu items (e.g., extra cheese, bacon, etc.)
+  /// Stored as reference data to avoid duplication in order items
 }
 
 model MenuSideDish {
@@ -137,6 +140,9 @@ model MenuSideDish {
   menuItems   MenuItem[] @relation("MenuItemSideDishes")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  /// Side dishes that can be selected with menu items (e.g., fries, salad, etc.)
+  /// Stored as reference data to avoid duplication in order items
 }
 
 
@@ -236,6 +242,21 @@ model OrderItem {
   quantity    Int
   price       Float
   notes       String?
+  selectedSideDishes Int[] @default([])
+  selectedAddons     Int[] @default([])
+
+  /// References to selected side dishes (IDs from MenuSideDish)
+  /// This approach stores only references to avoid data duplication
+  /// while maintaining the ability to query full details when needed
+  ///
+  /// Example: If a customer orders a steak with fries and salad,
+  /// this array would contain [fries_id, salad_id]
+
+  /// References to selected addons (IDs from MenuAddon)
+  /// Similar to side dishes, stores only references for efficiency
+  ///
+  /// Example: If a customer adds extra cheese and bacon to a burger,
+  /// this array would contain [cheese_id, bacon_id]
 
   prepArea    PrepArea
   status      OrderItemStatus @default(PENDING)
@@ -251,6 +272,10 @@ model OrderItem {
 
   kitchenOrder   KitchenOrder? @relation(fields: [kitchenOrderId], references: [id], onDelete: SetNull)
   barOrder       BarOrder?     @relation(fields: [barOrderId], references: [id], onDelete: SetNull)
+
+  /// Indexes for better query performance on side dishes and addons
+  @@index([selectedSideDishes])
+  @@index([selectedAddons])
 }
 
 // =======================

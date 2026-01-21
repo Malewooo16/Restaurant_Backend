@@ -87,6 +87,24 @@ router.get('/kitchen-orders', orderController.getAllKitchenOrders);
 
 /**
  * @swagger
+ * /api/order/kitchen-orders-with-details:
+ *   get:
+ *     summary: Retrieve a list of current kitchen orders with detailed menu item information including sides and addons
+ *     tags: [Order]
+ *     responses:
+ *       200:
+ *         description: A list of current kitchen orders with detailed menu item information.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/KitchenOrderWithDetails'
+ */
+router.get('/kitchen-orders-with-details', orderController.getAllKitchenOrdersWithDetails);
+
+/**
+ * @swagger
  * /api/order/bar-orders:
  *   get:
  *     summary: Retrieve a list of current bar orders (parent order not paid or cancelled)

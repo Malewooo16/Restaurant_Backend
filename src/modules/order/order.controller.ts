@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import * as orderService from './order.service';
+import { validateOrderItems } from './order.validation.util';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
     const { orderItems, ...orderData } = req.body;
+    await validateOrderItems(orderItems);
     const order = await orderService.createOrder(orderData, orderItems);
     res.status(201).json(order);
   } catch (error: any) {
@@ -59,6 +61,15 @@ export const deleteOrder = async (req: Request, res: Response) => {
 export const getAllKitchenOrders = async (req: Request, res: Response) => {
   try {
     const kitchenOrders = await orderService.getAllKitchenOrders();
+    res.status(200).json(kitchenOrders);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAllKitchenOrdersWithDetails = async (req: Request, res: Response) => {
+  try {
+    const kitchenOrders = await orderService.getAllKitchenOrdersWithDetails();
     res.status(200).json(kitchenOrders);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

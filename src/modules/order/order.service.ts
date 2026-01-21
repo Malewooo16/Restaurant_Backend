@@ -1,3 +1,4 @@
+
 import {
   Prisma,
   OrderStatus,
@@ -26,77 +27,161 @@ const getTodayOrders = async () => {
 
 export const createOrder = async (
   data: Prisma.OrderCreateInput,
-  orderItems: { menuItemId: number; quantity: number; notes?: string }[]
+  orderItems: {
+    menuItemId: number;
+    quantity: number;
+    notes?: string;
+    selectedSideDishes?: number[];
+    selectedAddons?: number[];
+  }[]
 ) => {
   let total = 0;
-  const kitchenOrderItems: any[] = [];
-  const barOrderItems: any[] = [];
 
-  const orderItemData = await Promise.all(
+  const orderItemCreateInputs = await Promise.all(
     orderItems.map(async (item) => {
       const menuItem = await prisma.menuItem.findUnique({
         where: { id: item.menuItemId },
+        include: { sideDishes: true, addons: true },
       });
       if (!menuItem) {
         throw new Error(`Menu item with id ${item.menuItemId} not found`);
       }
-      total += menuItem.price * item.quantity;
-      const orderItem = {
+
+      if (item.selectedSideDishes && item.selectedSideDishes.length > 0) {
+        if (!menuItem.requiresSideDish) {
+          throw new Error(`Menu item ${menuItem.name} does not support side dishes`);
+        }
+        const availableSideDishIds = menuItem.sideDishes.map((sd) => sd.id);
+        const invalidSideDishes = item.selectedSideDishes.filter(
+          (id) => !availableSideDishIds.includes(id)
+        );
+        if (invalidSideDishes.length > 0) {
+          throw new Error(`Side dish(es) ${invalidSideDishes.join(", ")} are not available for ${menuItem.name}`);
+        }
+      }
+
+      if (item.selectedAddons && item.selectedAddons.length > 0) {
+        if (!menuItem.hasAddons) {
+          throw new Error(`Menu item ${menuItem.name} does not support addons`);
+        }
+        const availableAddonIds = menuItem.addons.map((addon) => addon.id);
+        const invalidAddons = item.selectedAddons.filter(
+          (id) => !availableAddonIds.includes(id)
+        );
+        if (invalidAddons.length > 0) {
+          throw new Error(`Addon(s) ${invalidAddons.join(", ")} are not available for ${menuItem.name}`);
+        }
+      }
+
+      let itemTotal = menuItem.price;
+
+      if (item.selectedSideDishes && item.selectedSideDishes.length > 0) {
+        const sideDishes = await prisma.menuSideDish.findMany({
+          where: { id: { in: item.selectedSideDishes } },
+        });
+        itemTotal += sideDishes.reduce((sum, sd) => sum + sd.price, 0);
+      }
+
+      if (item.selectedAddons && item.selectedAddons.length > 0) {
+        const addons = await prisma.menuAddon.findMany({
+          where: { id: { in: item.selectedAddons } },
+        });
+        itemTotal += addons.reduce((sum, addon) => sum + addon.price, 0);
+      }
+
+      total += itemTotal * item.quantity;
+
+      return {
         quantity: item.quantity,
-        price: menuItem.price,
+        price: itemTotal,
         notes: item.notes,
         prepArea: menuItem.prepArea,
-        menuItem: {
-          connect: {
-            id: menuItem.id,
-          },
-        },
+        menuItem: { connect: { id: menuItem.id } },
+        selectedSideDishes: item.selectedSideDishes,
+        selectedAddons: item.selectedAddons,
       };
-
-      if (menuItem.prepArea === "KITCHEN") {
-        kitchenOrderItems.push(orderItem);
-      } else if (menuItem.prepArea === "BAR") {
-        barOrderItems.push(orderItem);
-      }
-      return orderItem;
     })
   );
 
   const todaysOrders = await getTodayOrders();
   const orderNumber = todaysOrders + 1;
-  return prisma.order.create({
-    data: {
-      ...data,
-      total,
-      orderNumber,
-      orderItems: {
-        create: orderItemData,
+
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.create({
+      data: {
+        ...data,
+        total,
+        orderNumber,
+        orderItems: {
+          create: orderItemCreateInputs,
+        },
       },
-      kitchenOrder:
-        kitchenOrderItems.length > 0
-          ? {
-              create: {},
-            }
-          : undefined,
-      barOrder:
-        barOrderItems.length > 0
-          ? {
-              create: {},
-            }
-          : undefined,
-    },
-    include: {
-      orderItems: true,
-      kitchenOrder: true,
-      barOrder: true,
-    },
+      include: {
+        orderItems: true,
+      },
+    });
+
+    const kitchenItemIds = order.orderItems
+      .filter((item) => item.prepArea === "KITCHEN")
+      .map((item) => ({ id: item.id }));
+
+    const barItemIds = order.orderItems
+      .filter((item) => item.prepArea === "BAR")
+      .map((item) => ({ id: item.id }));
+
+    if (kitchenItemIds.length > 0) {
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          kitchenOrder: {
+            create: {
+              items: {
+                connect: kitchenItemIds,
+              },
+            },
+          },
+        },
+      });
+    }
+
+    if (barItemIds.length > 0) {
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          barOrder: {
+            create: {
+              items: {
+                connect: barItemIds,
+              },
+            },
+          },
+        },
+      });
+    }
+
+    return tx.order.findUnique({
+      where: { id: order.id },
+      include: {
+        orderItems: true,
+        kitchenOrder: { include: { items: true } },
+        barOrder: { include: { items: true } },
+      },
+    });
   });
 };
 
 export const getAllOrders = () => {
   return prisma.order.findMany({
     include: {
-      orderItems: true,
+      orderItems:{
+         include: {
+          menuItem: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
       kitchenOrder: true,
       barOrder: true,
     },
@@ -107,7 +192,16 @@ export const getOrderById = (id: number) => {
   return prisma.order.findUnique({
     where: { id },
     include: {
-      orderItems: true,
+      orderItems: {
+        include: {
+          menuItem: {
+            select: {
+              name: true,
+            },
+          },
+          
+        },
+      },
       kitchenOrder: true,
       barOrder: true,
     },
@@ -135,8 +229,74 @@ export const getAllKitchenOrders = () => {
       },
     },
     include: {
-      items: true,
-      order: true, // Include the parent order to verify the status filtering
+      items: {
+        include: {
+          menuItem: {
+            select: {
+              name: true,
+              id: true,
+              hasAddons: true,
+              requiresSideDish: true,
+              addons: true,
+              sideDishes: true,
+            },
+          },
+        },
+      },
+      order: {
+        include: {
+          orderItems: {
+            include: {
+              menuItem: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+export const getAllKitchenOrdersWithDetails = async () => {
+  return prisma.kitchenOrder.findMany({
+    where: {
+      status: {
+        notIn: [KitchenOrderStatus.READY, KitchenOrderStatus.CANCELLED],
+      },
+    },
+    include: {
+      items: {
+        include: {
+          menuItem: {
+            select: {
+              name: true,
+              id: true,
+              hasAddons: true,
+              requiresSideDish: true,
+              addons: true,
+              sideDishes: true,
+            },
+          },
+        },
+      },
+      order: {
+        include: {
+          orderItems: {
+            include: {
+              menuItem: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 };
@@ -217,9 +377,18 @@ export const getRecentOrders = () => {
       },
     },
     include: {
-      orderItems: true,
+      orderItems: {
+         include: {
+          menuItem: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
       kitchenOrder: true,
       barOrder: true,
     },
   });
 };
+
