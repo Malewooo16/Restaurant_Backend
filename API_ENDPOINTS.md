@@ -6,7 +6,7 @@
 ## Menu Endpoints
 
 ### 1. Get All Menu Items
-- **Endpoint**: `GET /menu`
+- **Endpoint**: `GET /menu/menu-items`
 - **Description**: Retrieves all menu items from the database
 - **Response**: Array of menu item objects
 - **Example Response**:
@@ -58,7 +58,7 @@
 ```
 
 ### 2. Get Menu Item by ID
-- **Endpoint**: `GET /menu/:id`
+- **Endpoint**: `GET /menu/menu-items/:id`
 - **Description**: Retrieves a specific menu item by its ID
 - **Parameters**:
   - `id` (URL parameter) - The ID of the menu item
@@ -89,7 +89,7 @@
 ```
 
 ### 3. Create Menu Item
-- **Endpoint**: `POST /menu`
+- **Endpoint**: `POST /menu/menu-items`
 - **Description**: Creates a new menu item
 - **Request Body**: Menu item object (requires validation)
 - **Response**: Created menu item object
@@ -105,7 +105,7 @@
 ```
 
 ### 4. Update Menu Item
-- **Endpoint**: `PUT /menu/:id`
+- **Endpoint**: `PUT /menu/menu-items/:id`
 - **Description**: Updates an existing menu item
 - **Parameters**:
   - `id` (URL parameter) - The ID of the menu item to update
@@ -113,7 +113,7 @@
 - **Response**: Updated menu item object
 
 ### 5. Delete Menu Item
-- **Endpoint**: `DELETE /menu/:id`
+- **Endpoint**: `DELETE /menu/menu-items/:id`
 - **Description**: Deletes a menu item
 - **Parameters**:
   - `id` (URL parameter) - The ID of the menu item to delete
@@ -138,13 +138,13 @@ Here are examples of how to test the endpoints using cURL:
 
 ```bash
 # Get all menu items
-curl -X GET http://localhost:3000/api/menu
+curl -X GET http://localhost:3000/api/menu/menu-items
 
 # Get specific menu item
-curl -X GET http://localhost:3000/api/menu/1
+curl -X GET http://localhost:3000/api/menu/menu-items/1
 
 # Test error handling
-curl -X GET http://localhost:3000/api/menu/9999
+curl -X GET http://localhost:3000/api/menu/menu-items/9999
 ```
 
 ## Order Endpoints
@@ -477,115 +477,119 @@ curl -X GET http://localhost:3000/api/order/bar-orders
 
 3. **GET /api/order/:id** - ✅ Working
    ```bash
-   curl -X GET http://localhost:3000/api/order/11001
+   curl -X GET http://localhost:3000/api/order/1
    ```
 
 4. **PATCH /api/order/:id** - ✅ Working
    ```bash
-   curl -X PATCH http://localhost:3000/api/order/11001 \
+   curl -X PATCH http://localhost:3000/api/order/1 \
      -H "Content-Type: application/json" \
      -d '{"status": "IN_PROGRESS"}'
    ```
 
-5. **GET /api/order/kitchen-orders** - ✅ Working (FIXED)
+5. **GET /api/order/kitchen-orders** - ✅ Working
    ```bash
    curl -X GET http://localhost:3000/api/order/kitchen-orders
    ```
 
-6. **GET /api/order/bar-orders** - ✅ Working (FIXED)
+6. **GET /api/order/bar-orders** - ✅ Working
    ```bash
    curl -X GET http://localhost:3000/api/order/bar-orders
    ```
 
 7. **GET /api/order/kitchen-orders/:id** - ✅ Working
    ```bash
-   curl -X GET http://localhost:3000/api/order/kitchen-orders/11001
+   curl -X GET http://localhost:3000/api/order/kitchen-orders/1
    ```
 
 8. **GET /api/order/bar-orders/:id** - ✅ Working
    ```bash
-   curl -X GET http://localhost:3000/api/order/bar-orders/11001
+   curl -X GET http://localhost:3000/api/order/bar-orders/1
    ```
 
 9. **PATCH /api/order/kitchen-orders/:id** - ✅ Working
    ```bash
-   curl -X PATCH http://localhost:3000/api/order/kitchen-orders/11001 \
+   curl -X PATCH http://localhost:3000/api/order/kitchen-orders/1 \
      -H "Content-Type: application/json" \
      -d '{"status": "PREPARING"}'
    ```
 
 10. **PATCH /api/order/bar-orders/:id** - ✅ Working
    ```bash
-   curl -X PATCH http://localhost:3000/api/order/bar-orders/11001 \
+   curl -X PATCH http://localhost:3000/api/order/bar-orders/1 \
      -H "Content-Type: application/json" \
      -d '{"status": "READY"}'
    ```
 
+11. **DELETE /api/order/:id** - ✅ Working
+   ```bash
+   curl -X DELETE http://localhost:3000/api/order/1
+   ```
+
+12. **GET /api/order/recent** - ✅ Working
+   ```bash
+   curl -X GET http://localhost:3000/api/order/recent
+   ```
+
 ### ❌ Endpoints with Issues:
 
-1. **DELETE /api/order/:id** - ❌ Foreign key constraint
-   - Issue: Cannot delete orders with related order items
-   - Error: "Foreign key constraint violated on the constraint: `OrderItem_orderId_fkey`"
+1. **GET /api/menu/menu-items** - ❌ Route not found
+   - Issue: Menu endpoint not accessible
+   - Error: "Cannot GET /api/menu/menu-items"
 
 ### 📝 Example Responses:
 
 **Successful Order Creation Response:**
 ```json
 {
-  "id": 11001,
-  "orderNumber": 1001,
+  "id": 1,
+  "orderNumber": 1,
   "tableNumber": 1,
   "status": "PENDING",
   "customerName": "Test Customer",
   "waiter": null,
   "guestCount": null,
-  "total": 21,
-  "createdAt": "2026-01-19T09:17:58.061Z",
-  "updatedAt": "2026-01-19T09:17:58.061Z",
+  "total": 15.99,
+  "createdAt": "2026-01-21T07:06:36.102Z",
+  "updatedAt": "2026-01-21T07:06:36.102Z",
   "orderItems": [
     {
-      "id": 4,
-      "orderId": 11001,
+      "id": 1,
+      "orderId": 1,
       "menuItemId": 3,
       "quantity": 1,
-      "price": 5,
+      "price": 6.99,
       "notes": "Extra mint",
-      "prepArea": "BAR",
+      "prepArea": "KITCHEN",
       "status": "PENDING",
-      "createdAt": "2026-01-19T09:17:58.061Z",
-      "updatedAt": "2026-01-19T09:17:58.061Z",
+      "createdAt": "2026-01-21T07:06:36.102Z",
+      "updatedAt": "2026-01-21T07:06:36.102Z",
       "kitchenOrderId": null,
       "barOrderId": null
     },
     {
-      "id": 5,
-      "orderId": 11001,
+      "id": 2,
+      "orderId": 1,
       "menuItemId": 1,
       "quantity": 2,
-      "price": 8,
+      "price": 4.5,
       "notes": "Well done",
       "prepArea": "KITCHEN",
       "status": "PENDING",
-      "createdAt": "2026-01-19T09:17:58.061Z",
-      "updatedAt": "2026-01-19T09:17:58.061Z",
+      "createdAt": "2026-01-21T07:06:36.102Z",
+      "updatedAt": "2026-01-21T07:06:36.102Z",
       "kitchenOrderId": null,
       "barOrderId": null
     }
   ],
   "kitchenOrder": {
-    "id": 11001,
-    "orderId": 11001,
+    "id": 1,
+    "orderId": 1,
     "status": "PENDING",
-    "createdAt": "2026-01-19T09:17:58.061Z",
-    "updatedAt": "2026-01-19T09:17:58.061Z"
+    "createdAt": "2026-01-21T07:06:36.102Z",
+    "updatedAt": "2026-01-21T07:06:36.102Z"
   },
-  "barOrder": {
-    "id": 11001,
-    "orderId": 11001,
-    "status": "PENDING",
-    "createdAt": "2026-01-19T09:17:58.061Z",
-    "updatedAt": "2026-01-19T09:17:58.061Z"
-  }
+  "barOrder": null
 }
 ```
 

@@ -6,6 +6,24 @@ import {
 } from "../../../generated/prisma/client";
 import { prisma } from "../../../lib/prisma";
 
+
+const getTodayOrders = async () => {
+  const todayUTC = new Date().toISOString().slice(0, 10); // "2026-01-07"
+
+  const start = new Date(`${todayUTC}T00:00:00.000Z`);
+  const end = new Date(`${todayUTC}T23:59:59.999Z`);
+
+  return prisma.order.count({
+    where: {
+      createdAt: {
+        gte: start,
+        lte: end,
+      },
+    },
+  });
+};
+
+
 export const createOrder = async (
   data: Prisma.OrderCreateInput,
   orderItems: { menuItemId: number; quantity: number; notes?: string }[]
@@ -44,8 +62,8 @@ export const createOrder = async (
     })
   );
 
-  const orderNumber = (await prisma.order.count()) + 1000;
-
+  const todaysOrders = await getTodayOrders();
+  const orderNumber = todaysOrders + 1;
   return prisma.order.create({
     data: {
       ...data,

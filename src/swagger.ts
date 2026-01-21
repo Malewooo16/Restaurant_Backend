@@ -12,14 +12,15 @@ const swaggerDefinition = {
     description: 'API documentation for the APOTEk Restaurant backend.',
   },
   servers: [
+      {
+      url: 'http://212.115.110.115:8080',
+      description: 'Live server',
+    },
     {
       url: 'http://localhost:3000',
       description: 'Development server',
     },
-    {
-      url: 'http://212.115.110.115:8080',
-      description: 'Live server',
-    }
+  
   ],
   components: {
     schemas: {

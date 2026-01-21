@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { PrepArea } from "../generated/prisma/client";
 
 async function main() {
   console.log('Seeding inventory categories, units, menu addons, side dishes, and categories...');
@@ -58,6 +59,7 @@ async function main() {
       { name: 'Side Salad', price: 3.50, isAvailable: true },
       { name: 'Onion Rings', price: 4.00, isAvailable: true },
       { name: 'Sweet Potato Fries', price: 4.50, isAvailable: true },
+      { name: 'Mashed Potatoes', price: 3.75, isAvailable: true },
       { name: 'Coleslaw', price: 2.50, isAvailable: true },
     ],
     skipDuplicates: true,
@@ -74,6 +76,134 @@ async function main() {
     skipDuplicates: true,
   });
 
+
+  // Get the created categories to use for menu items
+  const appetizers = await prisma.menuCategory.findFirst({
+    where: { name: 'Appetizers' },
+  });
+
+  const mainCourses = await prisma.menuCategory.findFirst({
+    where: { name: 'Main Courses' },
+  });
+
+  const desserts = await prisma.menuCategory.findFirst({
+    where: { name: 'Desserts' },
+  });
+
+  const beverages = await prisma.menuCategory.findFirst({
+    where: { name: 'Beverages' },
+  });
+
+  // Create menu items
+  await prisma.menuItem.createMany({
+    data: [
+      {
+        name: 'Garlic Bread',
+        description: 'Crispy bread with garlic butter',
+        price: 4.50,
+        prepArea: PrepArea.KITCHEN,
+        categoryId: appetizers?.id || 1,
+        isAvailable: true,
+      },
+      {
+        name: 'Grilled Chicken',
+        description: 'Juicy grilled chicken breast',
+        price: 12.99,
+        prepArea: PrepArea.KITCHEN,
+        categoryId: mainCourses?.id || 2,
+        isAvailable: true,
+      },
+      {
+        name: 'Chocolate Cake',
+        description: 'Rich chocolate cake with vanilla ice cream',
+        price: 6.99,
+        prepArea: PrepArea.KITCHEN,
+        categoryId: desserts?.id || 3,
+        isAvailable: true,
+      },
+      {
+        name: 'Iced Coffee',
+        description: 'Cold brew coffee with milk',
+        price: 3.50,
+        prepArea: PrepArea.BAR,
+        categoryId: beverages?.id || 4,
+        isAvailable: true,
+      },
+      {
+        name: 'Chef Special Pasta',
+        description: 'Daily pasta special with seasonal ingredients',
+        price: 14.99,
+        prepArea: PrepArea.KITCHEN,
+        categoryId: mainCourses?.id || 2,
+        isAvailable: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  // Get existing addons and side dishes for relationships
+  const extraCheese = await prisma.menuAddon.findFirst({
+    where: { name: 'Extra Cheese' },
+  });
+
+  const baconStrips = await prisma.menuAddon.findFirst({
+    where: { name: 'Bacon Strips' },
+  });
+
+  const mushrooms = await prisma.menuAddon.findFirst({
+    where: { name: 'Mushrooms' },
+  });
+
+  const frenchFries = await prisma.menuSideDish.findFirst({
+    where: { name: 'French Fries' },
+  });
+
+  const sideSalad = await prisma.menuSideDish.findFirst({
+    where: { name: 'Side Salad' },
+  });
+
+  // Add Ribeye Steak with side dishes
+  const ribeyeSteak = await prisma.menuItem.create({
+    data: {
+      name: 'Ribeye Steak',
+      description: 'Premium 12oz ribeye steak with your choice of side',
+      price: 24.99,
+      prepArea: PrepArea.KITCHEN,
+      categoryId: mainCourses?.id || 2,
+      isAvailable: true,
+      hasAddons: false,
+      requiresSideDish: true,
+      sideDishes: {
+        connect: [
+          { id: frenchFries?.id || 1 },
+          { id: sideSalad?.id || 2 },
+        ],
+      },
+    },
+  });
+
+  // Add Pizza with addons
+  const pizza = await prisma.menuItem.create({
+    data: {
+      name: 'Margherita Pizza',
+      description: 'Classic pizza with tomato sauce, mozzarella, and basil',
+      price: 11.99,
+      prepArea: PrepArea.KITCHEN,
+      categoryId: mainCourses?.id || 2,
+      isAvailable: true,
+      hasAddons: true,
+      requiresSideDish: false,
+      addons: {
+        connect: [
+          { id: extraCheese?.id || 1 },
+          { id: baconStrips?.id || 2 },
+          { id: mushrooms?.id || 5 },
+        ],
+      },
+    },
+  });
+  
+
   console.log('Seeding completed.');
 }
 
@@ -85,3 +215,6 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+
+  
