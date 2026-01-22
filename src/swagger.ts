@@ -24,9 +24,6 @@ const swaggerDefinition = {
   ],
   components: {
     schemas: {
-     
-     
-     
       Order: {
         type: 'object',
         properties: {
@@ -34,17 +31,28 @@ const swaggerDefinition = {
             type: 'integer',
             format: 'int64',
           },
+          orderNumber: {
+            type: 'integer',
+          },
           tableNumber: {
             type: 'integer',
+            nullable: true,
           },
           customerName: {
             type: 'string',
+            nullable: true,
           },
           waiter: {
             type: 'string',
+            nullable: true,
           },
           guestCount: {
             type: 'integer',
+            nullable: true,
+          },
+          total: {
+            type: 'number',
+            nullable: true,
           },
           status: {
             type: 'string',
@@ -63,6 +71,14 @@ const swaggerDefinition = {
               $ref: '#/components/schemas/OrderItem',
             },
           },
+          kitchenOrder: {
+            $ref: '#/components/schemas/KitchenOrder',
+            nullable: true,
+          },
+          barOrder: {
+            $ref: '#/components/schemas/BarOrder',
+            nullable: true,
+          },
         },
       },
       OrderItem: {
@@ -72,18 +88,49 @@ const swaggerDefinition = {
             type: 'integer',
             format: 'int64',
           },
+          orderId: {
+            type: 'integer',
+          },
           menuItemId: {
             type: 'integer',
           },
           quantity: {
             type: 'integer',
           },
+          price: {
+            type: 'number',
+          },
           notes: {
             type: 'string',
+            nullable: true,
+          },
+          selectedSideDishes: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+          },
+          selectedAddons: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+          },
+          prepArea: {
+            type: 'string',
+            enum: ['KITCHEN', 'BAR'],
           },
           status: {
             type: 'string',
             enum: ['PENDING', 'PREPARING', 'READY', 'SERVED', 'CANCELLED'],
+          },
+          kitchenOrderId: {
+            type: 'integer',
+            nullable: true,
+          },
+          barOrderId: {
+            type: 'integer',
+            nullable: true,
           },
         },
       },
@@ -124,6 +171,20 @@ const swaggerDefinition = {
           notes: {
             type: 'string',
           },
+          selectedSideDishes: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+            description: 'Array of MenuSideDish IDs',
+          },
+          selectedAddons: {
+            type: 'array',
+            items: {
+              type: 'integer',
+            },
+            description: 'Array of MenuAddon IDs',
+          },
         },
       },
       UpdateOrder: {
@@ -152,6 +213,13 @@ const swaggerDefinition = {
               'CANCELLED',
             ],
           },
+          orderItems: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/CreateOrderItem',
+            },
+            description: 'Optional array of order items to update or replace. Existing items will be removed and new ones created.',
+          },
         },
       },
       KitchenOrder: {
@@ -164,15 +232,15 @@ const swaggerDefinition = {
           orderId: {
             type: 'integer',
           },
-          menuItem: {
-            $ref: '#/components/schemas/MenuItem',
-          },
-          quantity: {
-            type: 'integer',
-          },
           status: {
             type: 'string',
-            enum: ['PENDING', 'PREPARING', 'READY'],
+            enum: ['PENDING', 'PREPARING', 'READY', 'CANCELLED'],
+          },
+          items: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/OrderItem',
+            },
           },
         },
       },
@@ -186,15 +254,55 @@ const swaggerDefinition = {
           orderId: {
             type: 'integer',
           },
-          menuItem: {
-            $ref: '#/components/schemas/MenuItem',
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'READY', 'CANCELLED'],
           },
-          quantity: {
+          items: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/OrderItem',
+            },
+          },
+        },
+      },
+      OrderItemWithDetails: {
+        allOf: [
+          {
+            $ref: '#/components/schemas/OrderItem',
+          },
+          {
+            type: 'object',
+            properties: {
+              menuItem: {
+                $ref: '#/components/schemas/MenuItem',
+              },
+            },
+          },
+        ],
+      },
+      KitchenOrderWithDetails: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+            format: 'int64',
+          },
+          orderId: {
             type: 'integer',
           },
           status: {
             type: 'string',
-            enum: ['PENDING', 'READY'],
+            enum: ['PENDING', 'PREPARING', 'READY', 'CANCELLED'],
+          },
+          items: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/OrderItemWithDetails',
+            },
+          },
+          order: {
+            $ref: '#/components/schemas/Order',
           },
         },
       },

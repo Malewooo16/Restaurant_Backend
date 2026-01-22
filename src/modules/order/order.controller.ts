@@ -38,12 +38,16 @@ export const getOrderById = async (req: Request, res: Response) => {
 export const updateOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const { orderItems, ...orderData } = req.body;
+    await validateOrderItems(orderItems);
     const order = await orderService.updateOrder(
       parseInt(id as string),
-      req.body
+      orderData,
+      orderItems
     );
     res.status(200).json(order);
-  } catch (error: any) {
+  }
+  catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };

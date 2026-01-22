@@ -10,6 +10,7 @@ const router = Router();
  * /api/order:
  *   post:
  *     summary: Create a new order
+ *     description: Creates a new customer order, including order items with optional side dishes and addons. This operation also automatically generates associated kitchen and bar orders based on the order items' prep areas.
  *     tags: [Order]
  *     requestBody:
  *       required: true
@@ -19,7 +20,7 @@ const router = Router();
  *             $ref: '#/components/schemas/CreateOrder'
  *     responses:
  *       201:
- *         description: The created order.
+ *         description: The created order, including its associated order items, kitchen order (if applicable), and bar order (if applicable).
  *         content:
  *           application/json:
  *             schema:
@@ -288,6 +289,7 @@ router.get('/:id', orderController.getOrderById);
  * /api/order/{id}:
  *   patch:
  *     summary: Update an order
+ *     description: Updates an existing customer order. This operation allows for modifying basic order details (e.g., tableNumber, customerName, waiter) and replacing all associated order items. When 'orderItems' are provided, existing items for the order are removed and new ones are created, along with updating or recreating associated kitchen and bar orders based on the new items' prep areas.
  *     tags: [Order]
  *     parameters:
  *       - in: path
@@ -303,7 +305,7 @@ router.get('/:id', orderController.getOrderById);
  *             $ref: '#/components/schemas/UpdateOrder'
  *     responses:
  *       200:
- *         description: The updated order.
+ *         description: The fully updated order, including its new order items, kitchen order (if applicable), and bar order (if applicable).
  *         content:
  *           application/json:
  *             schema:
