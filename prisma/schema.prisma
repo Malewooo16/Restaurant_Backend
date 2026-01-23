@@ -93,6 +93,8 @@ model InventoryCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  supplierId  Int? // New foreign key
+  supplier    Supplier? @relation(fields: [supplierId], references: [id]) // New relation
   
 }
 
@@ -154,6 +156,7 @@ model MenuCategory {
   id          Int    @id @default(autoincrement())
   name        String @unique
   description String?
+  prepArea    PrepArea @default(KITCHEN)
   isActive    Boolean @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -341,8 +344,11 @@ model InventoryItem {
   updatedAt   DateTime @updatedAt
 
   // Relationships
-  transactions InventoryTransaction[]
-  stockRequests StockRequestItem[]
+  transactions       InventoryTransaction[]
+  stockRequests      StockRequestItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  goodsReceivingItems GoodsReceivingItem[]
+  batches            Batch[]
 }
 
 // Inventory transaction model for tracking movements
@@ -384,3 +390,115 @@ model StockRequestItem {
   request     StockRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
+
+// =======================
+// NEW ENUMS
+// =======================
+
+enum PurchaseOrderStatus {
+  PENDING
+  APPROVED
+  ORDERED
+  PARTIALLY_RECEIVED
+  COMPLETED
+  CANCELLED
+}
+
+// =======================
+// SUPPLIER MODELS
+// =======================
+model Supplier {
+  id               Int              @id @default(autoincrement())
+  name             String           @unique
+  contactPerson    String?
+  email            String?          @unique
+  phone            String?
+  address          String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  purchaseOrders     PurchaseOrder[]
+  goodsReceivings    GoodsReceiving[]
+  inventoryCategories InventoryCategory[] // New relation
+}
+
+// =======================
+// PURCHASE ORDER MODELS
+// =======================
+model PurchaseOrder {
+  id                 Int                  @id @default(autoincrement())
+  poNumber           String               @unique // Purchase Order Number
+  supplierId         Int
+  supplier           Supplier             @relation(fields: [supplierId], references: [id])
+  status             PurchaseOrderStatus  @default(PENDING)
+  notes              String?
+  orderedAt          DateTime             @default(now())
+  expectedDeliveryAt DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  items              PurchaseOrderItem[]
+  goodsReceivings    GoodsReceiving[]
+}
+
+model PurchaseOrderItem {
+  id                 Int          @id @default(autoincrement())
+  purchaseOrderId    Int
+  purchaseOrder      PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  inventoryItemId    Int
+  inventoryItem      InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  quantityOrdered    Float
+  quantityReceived   Float        @default(0)
+  unitPrice          Float
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+// =======================
+// GOODS RECEIVING MODELS
+// =======================
+model GoodsReceiving {
+  id              Int                @id @default(autoincrement())
+  grnNumber       String             @unique // Goods Received Note Number
+  purchaseOrderId Int?
+  purchaseOrder   PurchaseOrder?     @relation(fields: [purchaseOrderId], references: [id])
+  supplierId      Int
+  supplier        Supplier           @relation(fields: [supplierId], references: [id])
+  receivedAt      DateTime           @default(now())
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  receivedItems   GoodsReceivingItem[]
+}
+
+model GoodsReceivingItem {
+  id                 Int          @id @default(autoincrement())
+  goodsReceivingId   Int
+  goodsReceiving     GoodsReceiving @relation(fields: [goodsReceivingId], references: [id], onDelete: Cascade)
+  inventoryItemId    Int
+  inventoryItem      InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  quantityReceived   Float
+  batchId            Int?
+  batch              Batch?       @relation(fields: [batchId], references: [id]) // Connects to a specific batch
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+// =======================
+// BATCH MODELS
+// =======================
+model Batch {
+  id                   Int                @id @default(autoincrement())
+  batchNumber          String             @unique
+  inventoryItemId      Int
+  inventoryItem        InventoryItem      @relation(fields: [inventoryItemId], references: [id])
+  quantity             Float
+  receivedAt           DateTime           @default(now())
+  expiryDate           DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  goodsReceivingItem   GoodsReceivingItem[] // Batches can be linked to multiple GRN items (e.g. partial receipts)
+}
+

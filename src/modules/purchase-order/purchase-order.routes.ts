@@ -1,0 +1,130 @@
+import { Router } from 'express';
+import * as purchaseOrderController from './purchase-order.controller';
+import { validate } from '../../middleware/validate';
+import * as purchaseOrderValidation from './purchase-order.validation';
+
+const router = Router();
+
+/**
+ * @swagger
+ * /api/purchase-orders:
+ *   post:
+ *     summary: Create a new purchase order
+ *     tags: [Purchase Order]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreatePurchaseOrder'
+ *     responses:
+ *       201:
+ *         description: The created purchase order.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PurchaseOrder'
+ */
+router.post(
+  '/',
+  validate(purchaseOrderValidation.createPurchaseOrderSchema),
+  purchaseOrderController.createPurchaseOrder
+);
+
+/**
+ * @swagger
+ * /api/purchase-orders:
+ *   get:
+ *     summary: Get all purchase orders
+ *     tags: [Purchase Order]
+ *     responses:
+ *       200:
+ *         description: A list of purchase orders.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/PurchaseOrder'
+ */
+router.get('/', purchaseOrderController.getAllPurchaseOrders);
+
+/**
+ * @swagger
+ * /api/purchase-orders/{id}:
+ *   get:
+ *     summary: Get a purchase order by ID
+ *     tags: [Purchase Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: The purchase order with the specified ID.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PurchaseOrder'
+ *       404:
+ *         description: Purchase order not found.
+ */
+router.get('/:id', purchaseOrderController.getPurchaseOrderById);
+
+/**
+ * @swagger
+ * /api/purchase-orders/{id}:
+ *   patch:
+ *     summary: Update a purchase order by ID
+ *     tags: [Purchase Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdatePurchaseOrder'
+ *     responses:
+ *       200:
+ *         description: The updated purchase order.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PurchaseOrder'
+ *       404:
+ *         description: Purchase order not found.
+ */
+router.patch(
+  '/:id',
+  validate(purchaseOrderValidation.updatePurchaseOrderSchema),
+  purchaseOrderController.updatePurchaseOrder
+);
+
+/**
+ * @swagger
+ * /api/purchase-orders/{id}:
+ *   delete:
+ *     summary: Delete a purchase order by ID
+ *     tags: [Purchase Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Purchase order deleted successfully.
+ *       404:
+ *         description: Purchase order not found.
+ */
+router.delete('/:id', purchaseOrderController.deletePurchaseOrder);
+
+export default router;
