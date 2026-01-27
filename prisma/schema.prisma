@@ -95,7 +95,8 @@ model InventoryCategory {
 
   supplierId  Int? // New foreign key
   supplier    Supplier? @relation(fields: [supplierId], references: [id]) // New relation
-  
+
+  inventoryItems InventoryItem[]
 }
 
 model InventoryUnit {
@@ -322,8 +323,12 @@ model InventoryItem {
   name        String
   description String?
   sku         String? @unique
-  category    String
+  categoryId  Int  @default(1)
+  category    InventoryCategory @relation(fields: [categoryId], references: [id])
   unit        String
+
+  //Departments
+  department  String[] @default(["KITCHEN"])
 
   // Quantity and stock management
   quantity    Float   @default(0)

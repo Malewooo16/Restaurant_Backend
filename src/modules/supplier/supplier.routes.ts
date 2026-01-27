@@ -16,7 +16,31 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CreateSupplier'
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the supplier
+ *               contactPerson:
+ *                 type: string
+ *                 description: Contact person at the supplier
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address of the supplier
+ *               phone:
+ *                 type: string
+ *                 description: Phone number of the supplier
+ *               address:
+ *                 type: string
+ *                 description: Physical address of the supplier
+ *               categories:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of inventory category IDs associated with this supplier
  *     responses:
  *       201:
  *         description: The created supplier.
@@ -45,7 +69,37 @@ router.post(
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Supplier'
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   contactPerson:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   phone:
+ *                     type: string
+ *                   address:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *                   inventoryCategories:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         name:
+ *                           type: string
+ *                         description:
+ *                           type: string
  */
 router.get('/', supplierController.getAllSuppliers);
 
@@ -90,7 +144,29 @@ router.get('/:id', supplierController.getSupplierById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UpdateSupplier'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the supplier
+ *               contactPerson:
+ *                 type: string
+ *                 description: Contact person at the supplier
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address of the supplier
+ *               phone:
+ *                 type: string
+ *                 description: Phone number of the supplier
+ *               address:
+ *                 type: string
+ *                 description: Physical address of the supplier
+ *               categories:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of inventory category IDs to associate with this supplier
  *     responses:
  *       200:
  *         description: The updated supplier.

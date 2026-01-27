@@ -16,12 +16,19 @@ export const createInventoryItem = async (
 };
 
 export const getAllInventoryItems = () => {
-  return prisma.inventoryItem.findMany();
+  return prisma.inventoryItem.findMany({
+    include: {
+      category: true,
+    },
+  });
 };
 
 export const getInventoryItemById = (id: number) => {
   return prisma.inventoryItem.findUnique({
     where: { id },
+    include: {
+      category: true,
+    },
   });
 };
 

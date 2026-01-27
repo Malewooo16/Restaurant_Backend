@@ -15,8 +15,55 @@ const router = Router();
  *       required: true
  *       content:
  *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CreateInventoryItem'
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - name
+ *                 - categoryId
+ *                 - unit
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                   description: Name of the inventory item
+ *                 description:
+ *                   type: string
+ *                   description: Description of the inventory item
+ *                 sku:
+ *                   type: string
+ *                   description: Stock Keeping Unit for the item
+ *                 categoryId:
+ *                   type: integer
+ *                   description: ID of the inventory category
+ *                 unit:
+ *                   type: string
+ *                   description: Unit of measurement for the item
+ *                 quantity:
+ *                   type: number
+ *                   format: float
+ *                   description: Current quantity in stock
+ *                 minStock:
+ *                   type: number
+ *                   format: float
+ *                   description: Minimum stock level before reorder
+ *                 maxStock:
+ *                   type: number
+ *                   format: float
+ *                   description: Maximum stock level
+ *                 price:
+ *                   type: number
+ *                   format: float
+ *                   description: Purchase price of the item
+ *                 supplier:
+ *                   type: string
+ *                   description: Supplier of the item
+ *                 location:
+ *                   type: string
+ *                   enum: [KITCHEN, BAR, STORAGE, WALKIN_COOLER, FREEZER, DRY_STORAGE]
+ *                   description: Storage location of the item
+ *                 storageLocation:
+ *                   type: string
+ *                   description: Specific storage location details
+ *
  *     responses:
  *       201:
  *         description: The created inventory item.
@@ -42,10 +89,55 @@ router.post(
  *         description: A list of inventory items.
  *         content:
  *           application/json:
- *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/InventoryItem'
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   sku:
+ *                     type: string
+ *                   categoryId:
+ *                     type: integer
+ *                   category:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       isActive:
+ *                         type: boolean
+ *                   unit:
+ *                     type: string
+ *                   quantity:
+ *                     type: number
+ *                   minStock:
+ *                     type: number
+ *                   maxStock:
+ *                     type: number
+ *                   price:
+ *                     type: number
+ *                   supplier:
+ *                     type: string
+ *                   location:
+ *                     type: string
+ *                   storageLocation:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
  */
 router.get('/', inventoryItemController.getAllInventoryItems);
 
@@ -67,7 +159,53 @@ router.get('/', inventoryItemController.getAllInventoryItems);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/InventoryItem'
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 sku:
+ *                   type: string
+ *                 categoryId:
+ *                   type: integer
+ *                 category:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     isActive:
+ *                       type: boolean
+ *                 unit:
+ *                   type: string
+ *                 quantity:
+ *                   type: number
+ *                 minStock:
+ *                   type: number
+ *                 maxStock:
+ *                   type: number
+ *                 price:
+ *                   type: number
+ *                 supplier:
+ *                   type: string
+ *                 location:
+ *                   type: string
+ *                 storageLocation:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
  */
 router.get('/:id', inventoryItemController.getInventoryItemById);
 
@@ -87,8 +225,55 @@ router.get('/:id', inventoryItemController.getInventoryItemById);
  *       required: true
  *       content:
  *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UpdateInventoryItem'
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                   description: Name of the inventory item
+ *                 description:
+ *                   type: string
+ *                   description: Description of the inventory item
+ *                 sku:
+ *                   type: string
+ *                   description: Stock Keeping Unit for the item
+ *                 categoryId:
+ *                   type: integer
+ *                   description: ID of the inventory category
+ *                 unit:
+ *                   type: string
+ *                   description: Unit of measurement for the item
+ *                 quantity:
+ *                   type: number
+ *                   format: float
+ *                   description: Current quantity in stock
+ *                 minStock:
+ *                   type: number
+ *                   format: float
+ *                   description: Minimum stock level before reorder
+ *                 maxStock:
+ *                   type: number
+ *                   format: float
+ *                   description: Maximum stock level
+ *                 price:
+ *                   type: number
+ *                   format: float
+ *                   description: Purchase price of the item
+ *                 supplier:
+ *                   type: string
+ *                   description: Supplier of the item
+ *                 location:
+ *                   type: string
+ *                   enum: [KITCHEN, BAR, STORAGE, WALKIN_COOLER, FREEZER, DRY_STORAGE]
+ *                   description: Storage location of the item
+ *                 storageLocation:
+ *                   type: string
+ *                   description: Specific storage location details
+ *                 status:
+ *                   type: string
+ *                   enum: [NORMAL, LOW, CRITICAL]
+ *                   description: Current stock status
+ *
  *     responses:
  *       200:
  *         description: The updated inventory item.

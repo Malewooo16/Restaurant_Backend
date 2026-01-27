@@ -1,9 +1,21 @@
 import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
-export const createSupplier = async (data: Prisma.SupplierCreateInput) => {
+export const createSupplier = async (data: { name: string; contactPerson?: string; email?: string; phone?: string; address?: string; categories?: number[] }) => {
+  const { categories, ...supplierData } = data;
+  
   return prisma.supplier.create({
-    data,
+    data: {
+      ...supplierData,
+      ...(categories && categories.length > 0 && {
+        inventoryCategories: {
+          connect: categories.map((id) => ({ id })),
+        },
+      }),
+    },
+    include: {
+      inventoryCategories: true,
+    },
   });
 };
 
@@ -24,10 +36,22 @@ export const getSupplierById = async (id: number) => {
   });
 };
 
-export const updateSupplier = async (id: number, data: Prisma.SupplierUpdateInput) => {
+export const updateSupplier = async (id: number, data: { name?: string; contactPerson?: string; email?: string; phone?: string; address?: string; categories?: number[] }) => {
+  const { categories, ...supplierData } = data;
+  
   return prisma.supplier.update({
     where: { id },
-    data,
+    data: {
+      ...supplierData,
+      ...(categories && {
+        inventoryCategories: {
+          set: categories.map((catId) => ({ id: catId })),
+        },
+      }),
+    },
+    include: {
+      inventoryCategories: true,
+    },
   });
 };
 
