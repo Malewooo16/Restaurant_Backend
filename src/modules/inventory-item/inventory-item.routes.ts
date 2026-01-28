@@ -149,7 +149,11 @@ router.post(
  *                     items:
  *                       type: string
  */
-router.get('/', inventoryItemController.getAllInventoryItems);
+router.get(
+  '/',
+  validate(inventoryItemValidation.getInventoryItemSchema),
+  inventoryItemController.getAllInventoryItems
+);
 
 /**
  * @swagger
@@ -217,7 +221,11 @@ router.get('/', inventoryItemController.getAllInventoryItems);
  *                   type: string
  *                   format: date-time
  */
-router.get('/:id', inventoryItemController.getInventoryItemById);
+router.get(
+  '/:id',
+  validate(inventoryItemValidation.updateInventoryItemSchema.pick({ params: true })),
+  inventoryItemController.getInventoryItemById
+);
 
 /**
  * @swagger

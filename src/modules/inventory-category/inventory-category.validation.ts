@@ -1,12 +1,16 @@
 import { z } from 'zod';
 
 export const createInventoryCategorySchema = z.object({
-    name: z.string(),
-    description: z.string().optional(),
+    body: z.object({
+        name: z.string(),
+        description: z.string().optional(),
+    }),
 });
 
 export const updateInventoryCategorySchema = z.object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    isActive: z.boolean().optional(),
+    body: z.object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+        isActive: z.boolean().optional(),
+    }).partial(),
 });

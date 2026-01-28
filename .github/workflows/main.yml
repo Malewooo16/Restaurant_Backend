@@ -7,47 +7,52 @@ on:
     branches: [ main ]
 
 jobs:
-
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # Only run on pushes to main, not every PR sync
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-
-      - name: Deploy to Server
+      - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Increase timeout just in case npm ci takes a while
+          command_timeout: 20m
           script: |
-            set -e  # Exit on any error
+            set -e
 
-            # Go to backend directory
+            # 1. Navigate to the project directory
             cd /var/www/restaurant/backend
 
-            # Pull latest changes
+            # 2. Clean up the git state and pull latest
+            # This ensures no local file changes block the pull
+            git fetch origin main
             git reset --hard origin/main
             git clean -fd
-            git pull origin main
 
-            # Install dependencies
+            # 3. Clean Install Dependencies
+            # 'npm ci' is faster and more reliable than 'npm install' for CI/CD
             npm ci
 
-            # Build app
+            # 4. Clean Build
+            # We delete 'dist' first to ensure old routes/files are fully removed
+            rm -rf dist
             npm run build
 
-            # Check if PM2 process exists
-            if pm2 list | grep -q "restaurant-backend"; then
-              # Reload if exists
-              pm2 reload restaurant-backend
+            # 5. PM2 Management
+            # We use 'pm2 show' to check existence. 
+            # '--update-env' ensures any changes to your VPS .env file are loaded.
+            if pm2 show restaurant-backend > /dev/null 2>&1; then
+              echo "Process exists. Reloading..."
+              pm2 reload restaurant-backend --update-env
             else
-              # Start if not exists
+              echo "Process does not exist. Starting..."
+              # Ensure the path below exactly matches your build output structure
               pm2 start dist/src/index.js --name restaurant-backend
             fi
 
-            # Save PM2 process list for startup
+            # 6. Save the state so it survives a VPS reboot
             pm2 save
-
-
-
