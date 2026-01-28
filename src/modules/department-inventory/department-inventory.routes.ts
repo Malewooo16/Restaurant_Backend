@@ -14,7 +14,7 @@ const router = Router();
 
 /**
  * @swagger
- * /department-inventory:
+ * /api/department-inventory:
  *   get:
  *     summary: Get inventory items by department with their departmental stock
  *     tags: [Department Inventory]
@@ -48,7 +48,7 @@ router.get(
 
 /**
  * @swagger
- * /department-inventory/{departmentInventoryId}:
+ * /api/department-inventory/{departmentInventoryId}:
  *   patch:
  *     summary: Update the stock quantity of a specific department inventory item
  *     tags: [Department Inventory]
