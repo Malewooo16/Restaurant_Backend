@@ -2,7 +2,8 @@ name: Restaurant Backend CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -11,7 +12,7 @@ jobs:
 
     steps:
       - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
@@ -22,24 +23,17 @@ jobs:
             # 1. Enter the project directory
             cd /var/www/restaurant/backend
 
-            # 2. Hard Reset Git
+            # 2. Pull the latest code
             git fetch origin main
             git reset --hard origin/main
             git clean -fd
 
-            # 3. Stop and Delete existing PM2 process to clear memory
-            # We use || true so the script doesn't crash if the process isn't running
-            pm2 delete restaurant-backend || true
-
-            # 4. Fresh installation and Build
-          
-            
+            # 3. Fresh install & build
             npm ci
             rm -rf dist
             npm run build
 
-            # 5. Start a completely fresh process
+            # 4. Restart with PM2
+            pm2 delete restaurant-backend || true
             pm2 start ecosystem.config.js --env production
-
-            # 6. Persist state
             pm2 save
