@@ -9,7 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-
     steps:
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -19,21 +18,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-
-            # 1. Enter the project directory
             cd /var/www/restaurant/backend
-
-            # 2. Pull the latest code
             git fetch origin main
             git reset --hard origin/main
             git clean -fd
-
-            # 3. Fresh install & build
             npm ci
             rm -rf dist
             npm run build
-
-            # 4. Restart with PM2
-            pm2 delete restaurant-backend || true
-            pm2 start ecosystem.config.js --env production
+            pm2 restart restaurant-backend || pm2 start ecosystem.config.js --env production
             pm2 save
