@@ -35,7 +35,7 @@ app.use('/api-docs', swaggerRoutes);
 app.use('/api', routes);
 
 app.use('/health', (req, res) => {
-  res.status(200).send('OK Server is healthy v2');
+  res.status(200).send('OK Server is healthy v3');
 });
 
 app.listen(port, () => {
