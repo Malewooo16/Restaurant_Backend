@@ -2,7 +2,8 @@ name: Restaurant Backend CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -11,12 +12,12 @@ jobs:
 
     steps:
       - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-         script: |
+          script: |
             set -e
 
             # 1. Enter the project directory
@@ -27,19 +28,12 @@ jobs:
             git reset --hard origin/main
             git clean -fd
 
-            # 3. Fresh installation and build
-            # Note: npm ci is great, but ensure you have a package-lock.json
+            # 3. Fresh install & build
             npm ci
-            
-            # Remove old build and recreate
             rm -rf dist
             npm run build
 
-            # 4. Deploy using Ecosystem file
-            # --update-env: Refreshes env vars
-            # --wait-ready: If your app sends a 'ready' signal, this ensures zero downtime
-            # Hard restart to ensure new code is loaded
-              pm2 delete restaurant-backend || true
-              pm2 start ecosystem.config.js --env production
-
-              pm2 save
+            # 4. Restart with PM2
+            pm2 delete restaurant-backend || true
+            pm2 start ecosystem.config.js --env production
+            pm2 save
