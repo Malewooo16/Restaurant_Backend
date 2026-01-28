@@ -607,6 +607,72 @@ const swaggerDefinition = {
           expiryDate: { type: 'string', format: 'date-time', nullable: true },
         },
       },
+
+      // ==== STOCK REQUEST MODELS ====
+      StockRequest: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          requestId: { type: 'string' },
+          status: { type: 'string', enum: ['pending', 'approved', 'rejected', 'fulfilled'] },
+          requestedBy: { type: 'string', nullable: true },
+          requestedFrom: { type: 'string', enum: ['KITCHEN', 'BAR'], nullable: true },
+          requestedAt: { type: 'string', format: 'date-time' },
+          approvedAt: { type: 'string', format: 'date-time', nullable: true },
+          fulfilledAt: { type: 'string', format: 'date-time', nullable: true },
+          requestItems: { type: 'array', items: { $ref: '#/components/schemas/StockRequestItem' } },
+        },
+      },
+      StockRequestItem: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          requestId: { type: 'integer' },
+          itemId: { type: 'integer' },
+          inventoryItem: { $ref: '#/components/schemas/InventoryItem' },
+          quantity: { type: 'number' },
+          status: { type: 'string', enum: ['pending', 'approved'] },
+        },
+      },
+      CreateStockRequestInput: {
+        type: 'object',
+        required: ['requestItems'],
+        properties: {
+          requestedBy: { type: 'string' },
+          requestedFrom: { type: 'string', enum: ['KITCHEN', 'BAR'] },
+          requestItems: { type: 'array', items: { $ref: '#/components/schemas/CreateStockRequestItemInput' } },
+        },
+      },
+      CreateStockRequestItemInput: {
+        type: 'object',
+        required: ['itemId', 'quantity'],
+        properties: {
+          itemId: { type: 'integer' },
+          quantity: { type: 'number' },
+        },
+      },
+
+
+      // ==== DEPARTMENT INVENTORY MODELS ====
+      DepartmentInventoryItemResponse: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64', description: 'Inventory Item ID' },
+          name: { type: 'string', description: 'Inventory Item Name' },
+          categoryName: { type: 'string', description: 'Category Name of the Inventory Item' },
+          currentStock: { type: 'number', description: 'Current stock in the specified department' },
+          departmentInventoryId: { type: 'integer', format: 'int64', nullable: true, description: 'ID of the DepartmentInventory record, null if no stock in department' },
+          unit: { type: 'string', description: 'Unit of measure for the inventory item' },
+          department: { type: 'string', enum: ['KITCHEN', 'BAR', 'SERVICE', 'OPERATIONS', 'MANAGEMENT'], description: 'Department name' },
+        },
+      },
+      UpdateDepartmentInventoryRequest: {
+        type: 'object',
+        required: ['quantity'],
+        properties: {
+          quantity: { type: 'number', description: 'The new quantity for the inventory item in the department' },
+        },
+      },
     },
   },
 };

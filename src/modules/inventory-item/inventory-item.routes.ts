@@ -63,6 +63,12 @@ const router = Router();
  *                 storageLocation:
  *                   type: string
  *                   description: Specific storage location details
+ *                 department:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     enum: [KITCHEN, BAR, SERVICE, OPERATIONS, MANAGEMENT]
+ *                   description: Array of departments this item belongs to
  *
  *     responses:
  *       201:
@@ -134,10 +140,14 @@ router.post(
  *                     type: string
  *                   createdAt:
  *                     type: string
- *                     format: date-time
+ *                   format: date-time
  *                   updatedAt:
  *                     type: string
  *                     format: date-time
+ *                   department:
+ *                     type: array
+ *                     items:
+ *                       type: string
  */
 router.get('/', inventoryItemController.getAllInventoryItems);
 
@@ -273,6 +283,12 @@ router.get('/:id', inventoryItemController.getInventoryItemById);
  *                   type: string
  *                   enum: [NORMAL, LOW, CRITICAL]
  *                   description: Current stock status
+ *                 department:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     enum: [KITCHEN, BAR, SERVICE, OPERATIONS, MANAGEMENT]
+ *                   description: Array of departments this item belongs to
  *
  *     responses:
  *       200:

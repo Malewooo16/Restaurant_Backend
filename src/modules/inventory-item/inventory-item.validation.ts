@@ -13,6 +13,7 @@ export const createInventoryItemSchema = z.object({
     supplier: z.string().optional(),
     location: z.enum(['KITCHEN', 'BAR', 'STORAGE', 'WALKIN_COOLER', 'FREEZER', 'DRY_STORAGE']).optional(),
     storageLocation: z.string().optional(),
+    department: z.array(z.enum(['KITCHEN', 'BAR', 'SERVICE', 'OPERATIONS', 'MANAGEMENT'])).optional(),
 });
 
 export const updateInventoryItemSchema = z.object({
@@ -29,4 +30,5 @@ export const updateInventoryItemSchema = z.object({
     location: z.enum(['KITCHEN', 'BAR', 'STORAGE', 'WALKIN_COOLER', 'FREEZER', 'DRY_STORAGE']).optional(),
     storageLocation: z.string().optional(),
     status: z.enum(['NORMAL', 'LOW', 'CRITICAL']).optional(),
+    department: z.array(z.enum(['KITCHEN', 'BAR', 'SERVICE', 'OPERATIONS', 'MANAGEMENT'])).optional(),
 });

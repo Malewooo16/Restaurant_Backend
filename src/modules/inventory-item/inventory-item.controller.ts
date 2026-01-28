@@ -3,8 +3,14 @@ import * as inventoryItemService from './inventory-item.service';
 
 export const createInventoryItem = async (req: Request, res: Response) => {
   try {
+    // Transform flat input to nested Prisma input
+    const { categoryId, ...rest } = req.body;
+    const data = {
+      ...rest,
+      category: categoryId ? { connect: { id: categoryId } } : undefined,
+    };
     const inventoryItem = await inventoryItemService.createInventoryItem(
-      req.body
+      data
     );
     res.status(201).json(inventoryItem);
   } catch (error: any) {
@@ -48,9 +54,15 @@ export const updateInventoryItem = async (
 ) => {
   try {
     const { id } = req.params;
+    // Transform flat input to nested Prisma input
+    const { categoryId, ...rest } = req.body;
+    const data = {
+      ...rest,
+      category: categoryId ? { connect: { id: categoryId } } : undefined,
+    };
     const inventoryItem = await inventoryItemService.updateInventoryItem(
       parseInt(id as string),
-      req.body
+      data
     );
     res.status(200).json(inventoryItem);
   } catch (error: any) {

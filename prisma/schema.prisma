@@ -354,6 +354,19 @@ model InventoryItem {
   purchaseOrderItems PurchaseOrderItem[]
   goodsReceivingItems GoodsReceivingItem[]
   batches            Batch[]
+  departmentInventories DepartmentInventory[]
+}
+
+model DepartmentInventory {
+  id              Int         @id @default(autoincrement())
+  inventoryItemId Int
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  department      Departments // Use the existing enum
+  quantity        Float       @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@unique([inventoryItemId, department]) // An item can only have one entry per department
 }
 
 // Inventory transaction model for tracking movements
@@ -375,7 +388,7 @@ model StockRequest {
   requestId   String @unique
   status      String @default("pending") // pending, approved, rejected, fulfilled
   requestedBy String?
-  requestedFrom PrepArea? // KITCHEN or BAR - who is requesting
+  requestedFrom Departments? // KITCHEN or BAR - who is requesting
   requestedAt DateTime @default(now())
   approvedAt  DateTime?
   fulfilledAt DateTime?
