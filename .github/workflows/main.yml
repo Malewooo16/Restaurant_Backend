@@ -38,8 +38,7 @@ jobs:
 
             # 5. Delete and restart PM2 (ensures no caching)
             pm2 delete restaurant-backend || true
+            pm2 kill
             pm2 start ecosystem.config.js --env production
             pm2 save
             
-            # 6. Verify the process is running
-            pm2 list
