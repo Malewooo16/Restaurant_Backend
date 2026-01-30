@@ -23,17 +23,23 @@ jobs:
             # 1. Enter the project directory
             cd /var/www/restaurant/backend
 
-            # 2. Pull the latest code
+            # 2. Stop PM2 BEFORE pulling new code
+            pm2 stop restaurant-backend || true
+
+            # 3. Pull the latest code
             git fetch origin main
             git reset --hard origin/main
             git clean -fd
 
-            # 3. Fresh install & build
+            # 4. Fresh install & build
             npm ci
             rm -rf dist
             npm run build
 
-            # 4. Restart with PM2
+            # 5. Delete and restart PM2 (ensures no caching)
             pm2 delete restaurant-backend || true
             pm2 start ecosystem.config.js --env production
             pm2 save
+            
+            # 6. Verify the process is running
+            pm2 list
