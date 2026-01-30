@@ -38,6 +38,26 @@ export const getTodayReservations = async (
   }
 };
 
+export const getReservationsByDateRange = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: 'startDate and endDate are required' });
+    }
+    const reservations =
+      await reservationService.getReservationsByDateRange(
+        startDate as string,
+        endDate as string
+      );
+    res.status(200).json(reservations);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getBookedTables = async (
   req: Request,
   res: Response

@@ -406,11 +406,20 @@ export const updateOrderItemStatus = (
 };
 
 export const getRecentOrders = () => {
+  const todayUTC = new Date().toISOString().slice(0, 10); // "2026-01-07"
+
+  const start = new Date(`${todayUTC}T00:00:00.000Z`);
+  const end = new Date(`${todayUTC}T23:59:59.999Z`);
+
   return prisma.order.findMany({
     where: {
       status: {
         notIn: [OrderStatus.PAID, OrderStatus.CANCELLED],
       },
+      createdAt:{
+        gte: start,
+        lte: end,
+      }
     },
     include: {
       orderItems: {

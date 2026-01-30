@@ -19,14 +19,86 @@ export const getAllTables = () => {
   return prisma.table.findMany();
 };
 
-export const getAvailableTables = async () => {
-  // Get all available tables with their reservations
+export const getAvailableTables = async (date?: string) => {
+  const now = new Date();
+  
+  // If reservation date is specified and is in the future, show all tables
+  // If no date or date is today, only show AVAILABLE tables
+  let reservationDate: Date | undefined;
+  if (date) {
+    reservationDate = new Date(date);
+    // Set to midnight for comparison
+    reservationDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // If reservation is for today, filter by AVAILABLE status
+    // If reservation is for future date, show only tables without reservations for that date
+    const isToday = reservationDate.getTime() === today.getTime();
+    if (!isToday) {
+      // Future date - show only tables that are NOT reserved for this specific date
+      const dayStart = new Date(date);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(date);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const allTables = await prisma.table.findMany({
+        where: {
+          NOT: {
+            reservations: {
+              some: {
+                reservation: {
+                  date: {
+                    gte: dayStart,
+                    lte: dayEnd,
+                  },
+                },
+              },
+            },
+          },
+        },
+        include: {
+          reservations: {
+            where: {
+              reservation: {
+                date: {
+                  gte: dayStart,
+                  lte: dayEnd,
+                },
+              },
+            },
+            include: {
+              reservation: true,
+            },
+          },
+        },
+      });
+
+      return allTables.map((table) => ({
+        id: table.id,
+        number: table.number,
+        capacity: table.capacity,
+        status: table.status,
+        reservationDue: null,
+      }));
+    }
+  }
+
+  // Today's reservation - show AVAILABLE tables with reservationDue info
+  // Tables within 30 min of reservation will be marked but not hidden
   const availableTables = await prisma.table.findMany({
     where: {
       status: TableStatus.AVAILABLE,
     },
     include: {
       reservations: {
+        where: {
+          reservation: {
+            date: {
+              gte: now,
+            },
+          },
+        },
         include: {
           reservation: true,
         },
@@ -39,9 +111,8 @@ export const getAvailableTables = async () => {
     const reservationTables = table.reservations || [];
     const upcomingReservation = reservationTables
       .filter((rt: any) => {
-        const reservationDate = new Date(rt.reservation.date);
-        const now = new Date();
-        return reservationDate > now;
+        const reservationDateTime = new Date(rt.reservation.date);
+        return reservationDateTime > now;
       })
       .sort((a: any, b: any) => {
         const dateA = new Date(a.reservation.date).getTime();
@@ -51,8 +122,8 @@ export const getAvailableTables = async () => {
 
     let reservationDue = null;
     if (upcomingReservation) {
-      const reservationDate = new Date(upcomingReservation.reservation.date);
-      reservationDue = new Date(reservationDate.getTime() - 30 * 60 * 1000).toISOString();
+      const reservationDateTime = new Date(upcomingReservation.reservation.date);
+      reservationDue = new Date(reservationDateTime.getTime() - 30 * 60 * 1000).toISOString();
     }
 
     return {

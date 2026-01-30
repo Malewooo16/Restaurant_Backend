@@ -30,8 +30,9 @@ export const getAvailableTables = async (
   res: Response
 ) => {
   try {
+    const date = req.query.date as string | undefined;
     const tables =
-      await tableService.getAvailableTables();
+      await tableService.getAvailableTables(date);
     res.status(200).json(tables);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

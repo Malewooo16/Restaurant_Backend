@@ -81,6 +81,35 @@ export const getTodayReservations = async () => {
   });
 };
 
+export const getReservationsByDateRange = async (startDate: string, endDate: string) => {
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
+
+  return prisma.reservation.findMany({
+    where: {
+      date: {
+        gte: start,
+        lte: end,
+      },
+      status: {
+        notIn: ['CANCELLED', 'COMPLETED'],
+      },
+    },
+    include: {
+      tables: {
+        include: {
+          table: true,
+        },
+      },
+    },
+    orderBy: {
+      date: 'asc',
+    },
+  });
+};
+
 export const getBookedTables = async () => {
   const todayUTC = new Date().toISOString().slice(0, 10);
   const start = new Date(`${todayUTC}T00:00:00.000Z`);

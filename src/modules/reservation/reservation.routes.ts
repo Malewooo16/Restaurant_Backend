@@ -69,6 +69,35 @@ router.get('/today', reservationController.getTodayReservations);
 
 /**
  * @swagger
+ * /api/reservations/by-date-range:
+ *   get:
+ *     summary: Retrieve reservations within a date range
+ *     tags: [Reservation]
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: A list of reservations within the date range.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ */
+router.get('/by-date-range', reservationController.getReservationsByDateRange);
+
+/**
+ * @swagger
  * /api/reservations/tables:
  *   get:
  *     summary: Retrieve tables that are booked/reserved for today
