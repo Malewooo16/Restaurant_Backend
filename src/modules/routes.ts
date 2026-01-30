@@ -11,6 +11,12 @@ import goodsReceivingRoutes from './goods-receiving/goods-receiving.routes';
 import batchRoutes from './batch/batch.routes'; // New
 import departmentInventoryRoutes from './department-inventory/department-inventory.routes'; // New
 
+import expenseRoutes from './expense/expense.routes';
+import expenseCategoryRoutes from './expense/expense-category.routes';
+
+import tableRoutes from './table/table.routes';
+import reservationRoutes from './reservation/reservation.routes';
+
 const router = Router();
 
 router.use('/menu', menuRoutes);
@@ -24,5 +30,9 @@ router.use('/goods-receiving', goodsReceivingRoutes);
 router.use('/batches', batchRoutes); // New
 router.use('/department-inventory', departmentInventoryRoutes); // New
 router.use('/stock-request', stockRequestRoutes);
+router.use('/expenses', expenseRoutes);
+router.use('/expense-categories', expenseCategoryRoutes);
+router.use('/tables', tableRoutes);
+router.use('/reservations', reservationRoutes);
 
 export default router;

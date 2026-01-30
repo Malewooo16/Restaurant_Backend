@@ -4,6 +4,7 @@ import {
   OrderStatus,
   KitchenOrderStatus,
   BarOrderStatus,
+  TableStatus,
 } from "../../../generated/prisma/client";
 import { prisma } from "../../../lib/prisma";
 
@@ -26,7 +27,7 @@ const getTodayOrders = async () => {
 
 
 export const createOrder = async (
-  data: Prisma.OrderCreateInput,
+  data: Prisma.OrderCreateInput & { tableId?: number; tableNumber?: number },
   orderItems: {
     menuItemId: number;
     quantity: number;
@@ -107,9 +108,40 @@ export const createOrder = async (
   const orderNumber = todaysOrders + 1;
 
   return prisma.$transaction(async (tx) => {
+    // Find table by tableId or tableNumber
+    let tableId: number | undefined;
+    if (data.tableId) {
+      tableId = data.tableId;
+    } else if (data.tableNumber) {
+      const table = await tx.table.findUnique({
+        where: { number: data.tableNumber },
+      });
+      if (table) {
+        tableId = table.id;
+      }
+    }
+
+    // Set tableNumber from the found table
+    let tableNumber: number | undefined;
+    if (tableId) {
+      const table = await tx.table.findUnique({
+        where: { id: tableId },
+      });
+      if (table) {
+        tableNumber = table.number;
+        // Update table status to OCCUPIED
+        await tx.table.update({
+          where: { id: tableId },
+          data: { status: TableStatus.OCCUPIED },
+        });
+      }
+    }
+
+    const { tableId: _tableId, ...orderData } = data;
     const order = await tx.order.create({
       data: {
-        ...data,
+        ...orderData,
+        tableNumber,
         total,
         orderNumber,
         orderItems: {

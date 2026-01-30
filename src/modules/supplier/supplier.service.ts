@@ -3,6 +3,19 @@ import { prisma } from '../../../lib/prisma';
 
 export const createSupplier = async (data: { name: string; contactPerson?: string; email?: string; phone?: string; address?: string; categories?: number[] }) => {
   const { categories, ...supplierData } = data;
+
+ const supplierExists = await prisma.supplier.findFirst({
+  where: {
+    OR: [
+      { name: supplierData.name },
+      { email: supplierData.email }
+    ]
+  }
+});
+
+if (supplierExists) {
+  throw new Error('Supplier with the same name or email already exists.');
+}
   
   return prisma.supplier.create({
     data: {

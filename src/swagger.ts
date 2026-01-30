@@ -673,6 +673,84 @@ const swaggerDefinition = {
           quantity: { type: 'number', description: 'The new quantity for the inventory item in the department' },
         },
       },
+
+      // ==== TABLE MODELS ====
+      Table: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          number: { type: 'integer' },
+          capacity: { type: 'integer' },
+          status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+        },
+      },
+      CreateTable: {
+        type: 'object',
+        required: ['number', 'capacity'],
+        properties: {
+          number: { type: 'integer' },
+          capacity: { type: 'integer' },
+          status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+        },
+      },
+      UpdateTable: {
+        type: 'object',
+        properties: {
+          number: { type: 'integer' },
+          capacity: { type: 'integer' },
+          status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+        },
+      },
+
+      // ==== RESERVATION MODELS ====
+      Reservation: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          customerName: { type: 'string' },
+          customerPhone: { type: 'string' },
+          customerEmail: { type: 'string', nullable: true },
+          date: { type: 'string', format: 'date-time' },
+          numberOfGuests: { type: 'integer' },
+          status: { type: 'string', enum: ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'] },
+          notes: { type: 'string', nullable: true },
+          tables: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                table: { $ref: '#/components/schemas/Table' }
+              }
+            }
+          }
+        },
+      },
+      CreateReservation: {
+        type: 'object',
+        required: ['customerName', 'customerPhone', 'date', 'numberOfGuests', 'tableIds'],
+        properties: {
+          customerName: { type: 'string' },
+          customerPhone: { type: 'string' },
+          customerEmail: { type: 'string', nullable: true },
+          date: { type: 'string', format: 'date-time' },
+          numberOfGuests: { type: 'integer' },
+          notes: { type: 'string', nullable: true },
+          tableIds: { type: 'array', items: { type: 'integer' } },
+        },
+      },
+      UpdateReservation: {
+        type: 'object',
+        properties: {
+          customerName: { type: 'string' },
+          customerPhone: { type: 'string' },
+          customerEmail: { type: 'string', nullable: true },
+          date: { type: 'string', format: 'date-time' },
+          numberOfGuests: { type: 'integer' },
+          status: { type: 'string', enum: ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'] },
+          notes: { type: 'string', nullable: true },
+          tableIds: { type: 'array', items: { type: 'integer' } },
+        },
+      },
     },
   },
 };
