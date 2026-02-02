@@ -345,8 +345,30 @@ export const getAllBarOrders = () => {
       },
     },
     include: {
-      items: true,
-      order: true, // Include the parent order to verify the status filtering
+      items: {
+        include: {
+          menuItem: {
+            select: {
+              name: true,
+              id: true,
+            },
+          },
+        },
+      },
+      order: {
+        include: {
+          orderItems: {
+            include: {
+              menuItem: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 };

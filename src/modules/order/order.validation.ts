@@ -4,7 +4,7 @@ export const createOrderSchema = z.object({
   body: z.object({
     tableId: z.number().optional(),
     tableNumber: z.number().optional(),
-    customerName: z.string().optional(),
+    customerName: z.string().nullish(),
     waiter: z.string().optional(),
     guestCount: z.number().optional(),
     orderItems: z.array(
