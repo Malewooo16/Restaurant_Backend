@@ -17,8 +17,12 @@ export const getAllExpenses = async (
   res: Response
 ) => {
   try {
-    const expenses =
-      await expenseService.getAllExpenses();
+    const { startDate, endDate, categoryId } = req.query;
+    const expenses = await expenseService.getAllExpenses({
+      startDate: startDate as string,
+      endDate: endDate as string,
+      categoryId: categoryId ? parseInt(categoryId as string) : undefined,
+    });
     res.status(200).json(expenses);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

@@ -16,6 +16,7 @@ import expenseCategoryRoutes from './expense/expense-category.routes';
 
 import tableRoutes from './table/table.routes';
 import reservationRoutes from './reservation/reservation.routes';
+import paymentRoutes from './payment/payment.routes';
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use('/expenses', expenseRoutes);
 router.use('/expense-categories', expenseCategoryRoutes);
 router.use('/tables', tableRoutes);
 router.use('/reservations', reservationRoutes);
+router.use('/payments', paymentRoutes);
 
 export default router;

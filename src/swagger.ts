@@ -751,6 +751,29 @@ const swaggerDefinition = {
           tableIds: { type: 'array', items: { type: 'integer' } },
         },
       },
+
+      // ==== PAYMENT MODELS ====
+      Payment: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          orderId: { type: 'integer' },
+          amount: { type: 'number' },
+          paymentMethod: { type: 'string', enum: ['CASH', 'CARD', 'ONLINE'] },
+          status: { type: 'string', enum: ['PENDING', 'COMPLETED', 'FAILED'] },
+          transactionId: { type: 'string', nullable: true },
+        },
+      },
+      CreatePayment: {
+        type: 'object',
+        required: ['orderId', 'amount', 'paymentMethod'],
+        properties: {
+          orderId: { type: 'integer' },
+          amount: { type: 'number' },
+          paymentMethod: { type: 'string', enum: ['CASH', 'CARD', 'ONLINE'] },
+          transactionId: { type: 'string' },
+        },
+      },
     },
   },
 };

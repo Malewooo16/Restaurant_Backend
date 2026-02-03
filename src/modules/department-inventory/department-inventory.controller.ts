@@ -15,7 +15,7 @@ export const getDepartmentInventory = async (req: Request, res: Response) => {
 
 export const updateDepartmentInventory = async (req: Request, res: Response) => {
   try {
-    const { departmentInventoryId } = updateDepartmentInventorySchema.parse({ params: req.params }).params;
+    const departmentInventoryId = parseInt(req.params.departmentInventoryId as string, 10);
     const { quantity } = updateDepartmentInventorySchema.parse({ body: req.body }).body;
 
     const updatedItem = await updateDepartmentInventoryQuantity(

@@ -7,7 +7,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/expense-category:
+ * /api/expense-categories:
  *   post:
  *     summary: Create a new expense category
  *     tags: [Expense Category]
@@ -33,7 +33,7 @@ router.post(
 
 /**
  * @swagger
- * /api/expense-category:
+ * /api/expense-categories:
  *   get:
  *     summary: Retrieve a list of expense categories
  *     tags: [Expense Category]
@@ -51,7 +51,7 @@ router.get('/', expenseCategoryController.getAllExpenseCategories);
 
 /**
  * @swagger
- * /api/expense-category/{id}:
+ * /api/expense-categories/{id}:
  *   get:
  *     summary: Retrieve a single expense category
  *     tags: [Expense Category]
@@ -73,7 +73,7 @@ router.get('/:id', expenseCategoryController.getExpenseCategoryById);
 
 /**
  * @swagger
- * /api/expense-category/{id}:
+ * /api/expense-categories/{id}:
  *   patch:
  *     summary: Update an expense category
  *     tags: [Expense Category]
@@ -105,7 +105,7 @@ router.patch(
 
 /**
  * @swagger
- * /api/expense-category/{id}:
+ * /api/expense-categories/{id}:
  *   delete:
  *     summary: Delete an expense category
  *     tags: [Expense Category]

@@ -1,11 +1,45 @@
 import { Departments, Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
-export const getAllStockRequests = async (department?: string, status?: string) => {
+export const getAllStockRequests = async (
+  department?: string,
+  status?: string,
+  startDate?: string,
+  endDate?: string
+) => {
+  // Build date filter
+  let dateFilter = {};
+  if (startDate || endDate) {
+    const start = startDate ? new Date(`${startDate}T00:00:00.000Z`) : undefined;
+    const end = endDate ? new Date(`${endDate}T23:59:59.999Z`) : undefined;
+    
+    if (start && end) {
+      dateFilter = {
+        requestedAt: {
+          gte: start,
+          lte: end,
+        },
+      };
+    } else if (start) {
+      dateFilter = {
+        requestedAt: {
+          gte: start,
+        },
+      };
+    } else if (end) {
+      dateFilter = {
+        requestedAt: {
+          lte: end,
+        },
+      };
+    }
+  }
+
   return prisma.stockRequest.findMany({
     where: {
       requestedFrom: department ? (department.toUpperCase() as Departments) : undefined,
       status: status || undefined,
+      ...dateFilter,
     },
     include: {
       requestItems: {

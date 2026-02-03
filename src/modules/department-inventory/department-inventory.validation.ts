@@ -8,12 +8,12 @@ export const getDepartmentInventorySchema = z.object({
 });
 
 export const updateDepartmentInventorySchema = z.object({
-  params: z.object({
-    departmentInventoryId: z.string().refine(val => !isNaN(Number(val)), {
-      message: 'departmentInventoryId must be a number',
-    }).transform(Number),
-  }),
   body: z.object({
-    quantity: z.number().min(0, 'Quantity cannot be negative'),
+    quantity: z.union([
+      z.number().min(0, 'Quantity cannot be negative'),
+      z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
+        message: 'Quantity must be a valid non-negative number',
+      }).transform(Number),
+    ]),
   }),
 });

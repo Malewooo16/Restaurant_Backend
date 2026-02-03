@@ -3,10 +3,12 @@ import * as stockRequestService from './stock-request.service';
 
 export const getAllStockRequests = async (req: Request, res: Response) => {
   try {
-    const { department, status } = req.query;
+    const { department, status, startDate, endDate } = req.query;
     const stockRequests = await stockRequestService.getAllStockRequests(
       department as string | undefined,
-      status as string | undefined
+      status as string | undefined,
+      startDate as string | undefined,
+      endDate as string | undefined
     );
     res.status(200).json(stockRequests);
   } catch (error: any) {

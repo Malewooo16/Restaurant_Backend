@@ -2,6 +2,7 @@
 import {
   Prisma,
   OrderStatus,
+  OrderItemStatus,
   KitchenOrderStatus,
   BarOrderStatus,
   TableStatus,
@@ -107,37 +108,41 @@ export const createOrder = async (
   const todaysOrders = await getTodayOrders();
   const orderNumber = todaysOrders + 1;
 
+  // Find table info before transaction
+  let tableId: number | undefined;
+  let tableNumber: number | undefined;
+  if (data.tableId) {
+    tableId = data.tableId;
+  } else if (data.tableNumber) {
+    const table = await prisma.table.findUnique({
+      where: { number: data.tableNumber },
+    });
+    if (table) {
+      tableId = table.id;
+    }
+  }
+
+  if (tableId) {
+    const table = await prisma.table.findUnique({
+      where: { id: tableId },
+    });
+    if (table) {
+      tableNumber = table.number;
+    }
+  }
+
+  const { tableId: _tableId, ...orderData } = data;
+
   return prisma.$transaction(async (tx) => {
-    // Find table by tableId or tableNumber
-    let tableId: number | undefined;
-    if (data.tableId) {
-      tableId = data.tableId;
-    } else if (data.tableNumber) {
-      const table = await tx.table.findUnique({
-        where: { number: data.tableNumber },
-      });
-      if (table) {
-        tableId = table.id;
-      }
-    }
+    // Update table status to OCCUPIED if tableId exists
+    // if (tableId) {
+    //   await tx.table.update({
+    //     where: { id: tableId },
+    //     data: { status: TableStatus.OCCUPIED },
+    //   });
+    // }
 
-    // Set tableNumber from the found table
-    let tableNumber: number | undefined;
-    if (tableId) {
-      const table = await tx.table.findUnique({
-        where: { id: tableId },
-      });
-      if (table) {
-        tableNumber = table.number;
-        // Update table status to OCCUPIED
-        await tx.table.update({
-          where: { id: tableId },
-          data: { status: TableStatus.OCCUPIED },
-        });
-      }
-    }
-
-    const { tableId: _tableId, ...orderData } = data;
+    // Create the order with items
     const order = await tx.order.create({
       data: {
         ...orderData,
@@ -161,40 +166,53 @@ export const createOrder = async (
       .filter((item) => item.prepArea === "BAR")
       .map((item) => ({ id: item.id }));
 
+    // Create kitchen order if needed
     if (kitchenItemIds.length > 0) {
-      await tx.order.update({
-        where: { id: order.id },
+      const kitchenOrder = await tx.kitchenOrder.create({
         data: {
-          kitchenOrder: {
-            create: {
-              items: {
-                connect: kitchenItemIds,
-              },
-            },
+          orderId: order.id,
+          items: {
+            connect: kitchenItemIds,
           },
         },
+        include: { items: true },
+      });
+      
+      // Update items with kitchenOrderId
+      await tx.orderItem.updateMany({
+        where: { id: { in: kitchenItemIds.map(i => i.id) } },
+        data: { kitchenOrderId: kitchenOrder.id },
       });
     }
 
+    // Create bar order if needed
     if (barItemIds.length > 0) {
-      await tx.order.update({
-        where: { id: order.id },
+      const barOrder = await tx.barOrder.create({
         data: {
-          barOrder: {
-            create: {
-              items: {
-                connect: barItemIds,
-              },
-            },
+          orderId: order.id,
+          items: {
+            connect: barItemIds,
           },
         },
+        include: { items: true },
+      });
+      
+      // Update items with barOrderId
+      await tx.orderItem.updateMany({
+        where: { id: { in: barItemIds.map(i => i.id) } },
+        data: { barOrderId: barOrder.id },
       });
     }
 
+    // Return the complete order
     return tx.order.findUnique({
       where: { id: order.id },
       include: {
-        orderItems: true,
+        orderItems: {
+          include: {
+            menuItem: { select: { name: true, id: true } },
+          },
+        },
         kitchenOrder: { include: { items: true } },
         barOrder: { include: { items: true } },
       },
@@ -231,11 +249,11 @@ export const getOrderById = (id: number) => {
               name: true,
             },
           },
-          
         },
       },
       kitchenOrder: true,
       barOrder: true,
+      payments: true,
     },
   });
 };
@@ -417,15 +435,113 @@ export const updateBarOrderStatus = (
   });
 };
 
-export const updateOrderItemStatus = (
-  id: number,
-  data: Prisma.OrderItemUpdateInput
-) => {
-  return prisma.orderItem.update({
-    where: { id },
-    data,
-  });
-};
+  export const updateOrderItemStatus = async (
+    id: number,
+    data: Prisma.OrderItemUpdateInput
+  ) => {
+    // Get the order item first to find order/kitchen/bar IDs
+    const existingItem = await prisma.orderItem.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        orderId: true,
+        kitchenOrderId: true,
+        barOrderId: true,
+        status: true,
+      },
+    });
+
+    if (!existingItem) {
+      throw new Error('Order item not found');
+    }
+
+    // Update the order item status
+    const orderItem = await prisma.orderItem.update({
+      where: { id },
+      data,
+      include: {
+        order: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    return prisma.$transaction(async (tx) => {
+      // Check and update kitchen order status if all items are ready/cancelled/served
+      if (existingItem.kitchenOrderId) {
+        const kitchenOrder = await tx.kitchenOrder.findUnique({
+          where: { id: existingItem.kitchenOrderId },
+          include: { items: { select: { status: true } } },
+        });
+
+        if (kitchenOrder) {
+          const allItemsReady = kitchenOrder.items.every(
+            (item) =>
+              item.status === 'READY' ||
+              item.status === 'CANCELLED' ||
+              item.status === 'SERVED'
+          );
+
+          if (allItemsReady && kitchenOrder.status !== KitchenOrderStatus.READY) {
+            await tx.kitchenOrder.update({
+              where: { id: kitchenOrder.id },
+              data: { status: KitchenOrderStatus.READY },
+            });
+          }
+        }
+      }
+
+      // Check and update bar order status if all items are ready/cancelled/served
+      if (existingItem.barOrderId) {
+        const barOrder = await tx.barOrder.findUnique({
+          where: { id: existingItem.barOrderId },
+          include: { items: { select: { status: true } } },
+        });
+
+        if (barOrder) {
+          const allItemsReady = barOrder.items.every(
+            (item) =>
+              item.status === 'READY' ||
+              item.status === 'CANCELLED' ||
+              item.status === 'SERVED'
+          );
+
+          if (allItemsReady && barOrder.status !== BarOrderStatus.READY) {
+            await tx.barOrder.update({
+              where: { id: barOrder.id },
+              data: { status: BarOrderStatus.READY },
+            });
+          }
+        }
+      }
+
+      // Check if main order should be completed
+      const updatedKitchenOrder = existingItem.kitchenOrderId
+        ? await tx.kitchenOrder.findUnique({ where: { id: existingItem.kitchenOrderId } })
+        : null;
+        
+      const updatedBarOrder = existingItem.barOrderId
+        ? await tx.barOrder.findUnique({ where: { id: existingItem.barOrderId } })
+        : null;
+
+      const kitchenOrderReady =
+        !updatedKitchenOrder || updatedKitchenOrder.status === KitchenOrderStatus.READY;
+      const barOrderReady =
+        !updatedBarOrder || updatedBarOrder.status === BarOrderStatus.READY;
+
+      if (kitchenOrderReady && barOrderReady && orderItem.order.status !== OrderStatus.COMPLETED) {
+        await tx.order.update({
+          where: { id: orderItem.order.id },
+          data: { status: OrderStatus.COMPLETED },
+        });
+      }
+
+      return orderItem;
+    });
+  };
 
 export const getRecentOrders = () => {
   const todayUTC = new Date().toISOString().slice(0, 10); // "2026-01-07"
@@ -455,6 +571,7 @@ export const getRecentOrders = () => {
       },
       kitchenOrder: true,
       barOrder: true,
+      payments: true,
     },
   });
 };

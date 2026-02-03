@@ -9,10 +9,35 @@ export const createExpense = async (
   });
 };
 
-export const getAllExpenses = () => {
+interface GetAllExpensesParams {
+  startDate?: string;
+  endDate?: string;
+  categoryId?: number;
+}
+
+export const getAllExpenses = (params?: GetAllExpensesParams) => {
+  const where: Prisma.ExpenseWhereInput = {};
+
+  if (params?.startDate && params?.endDate) {
+    const start = new Date(`${params.startDate}T00:00:00.000Z`);
+    const end = new Date(`${params.endDate}T23:59:59.999Z`);
+    where.date = {
+      gte: start,
+      lte: end,
+    };
+  }
+
+  if (params?.categoryId) {
+    where.categoryId = params.categoryId;
+  }
+
   return prisma.expense.findMany({
+    where,
     include: {
       category: true,
+    },
+    orderBy: {
+      date: 'desc',
     },
   });
 };

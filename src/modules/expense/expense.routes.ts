@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import * as expenseController from './expense.controller';
+import * as expenseCategoryController from './expense-category.controller';
 import { validate } from '../../middleware/validate';
 import * as expenseValidation from './expense.validation';
+import * as expenseCategoryValidation from './expense-category.validation';
 
 const router = Router();
 
@@ -37,6 +39,22 @@ router.post(
  *   get:
  *     summary: Retrieve a list of expenses
  *     tags: [Expense]
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *         description: Start date filter (ISO format)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *         description: End date filter (ISO format)
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: integer
+ *         description: Filter by category ID
  *     responses:
  *       200:
  *         description: A list of expenses.
