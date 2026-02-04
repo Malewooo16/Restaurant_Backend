@@ -127,4 +127,86 @@ router.patch(
  */
 router.delete('/:id', purchaseOrderController.deletePurchaseOrder);
 
+/**
+ * @swagger
+ * /api/purchase-orders/{id}/approve:
+ *   post:
+ *     summary: Approve a purchase order
+ *     tags: [Purchase Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Purchase order approved successfully.
+ */
+router.post('/:id/approve', purchaseOrderController.approvePurchaseOrder);
+
+/**
+ * @swagger
+ * /api/purchase-orders/{id}/reject:
+ *   post:
+ *     summary: Reject a purchase order
+ *     tags: [Purchase Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: Reason for rejection
+ *     responses:
+ *       200:
+ *         description: Purchase order rejected successfully.
+ */
+router.post('/:id/reject', purchaseOrderController.rejectPurchaseOrder);
+
+/**
+ * @swagger
+ * /api/purchase-orders/{id}/partially-received:
+ *   post:
+ *     summary: Mark a purchase order as partially received
+ *     tags: [Purchase Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Purchase order marked as partially received.
+ */
+router.post('/:id/partially-received', purchaseOrderController.markPartiallyReceived);
+
+/**
+ * @swagger
+ * /api/purchase-orders/{id}/complete:
+ *   post:
+ *     summary: Mark a purchase order as completed
+ *     tags: [Purchase Order]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Purchase order marked as completed.
+ */
+router.post('/:id/complete', purchaseOrderController.markCompleted);
+
 export default router;

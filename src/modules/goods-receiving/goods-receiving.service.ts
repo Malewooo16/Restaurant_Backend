@@ -8,6 +8,54 @@ interface GoodsReceivingItemInput {
   expiryDate?: Date;    // Optional expiry date for creating a new batch
 }
 
+// Helper function to update purchase order status based on received quantities
+async function updatePurchaseOrderStatus(tx: Prisma.TransactionClient, purchaseOrderId: number) {
+  // Get all goods receiving items for this PO
+  const allReceivings = await tx.goodsReceiving.findMany({
+    where: { purchaseOrderId },
+    include: {
+      receivedItems: true,
+    },
+  });
+
+  // Get the purchase order items
+  const purchaseOrder = await tx.purchaseOrder.findUnique({
+    where: { id: purchaseOrderId },
+    include: { items: true },
+  });
+
+  if (!purchaseOrder) return;
+
+  // Calculate total received per item
+  const receivedByItem: Record<number, number> = {};
+  allReceivings.forEach(gr => {
+    gr.receivedItems.forEach(item => {
+      receivedByItem[item.inventoryItemId] = (receivedByItem[item.inventoryItemId] || 0) + item.quantityReceived;
+    });
+  });
+
+  // Check if all items are fully received
+  let allReceived = true;
+  let anyReceived = false;
+
+  for (const poItem of purchaseOrder.items) {
+    const received = receivedByItem[poItem.inventoryItemId] || 0;
+    if (received >= poItem.quantityOrdered) {
+      anyReceived = true;
+    } else {
+      allReceived = false;
+    }
+  }
+
+  // Update PO status
+  const newStatus = allReceived ? 'COMPLETED' as const : anyReceived ? 'PARTIALLY_RECEIVED' as const : 'ORDERED' as const;
+  
+  await tx.purchaseOrder.update({
+    where: { id: purchaseOrderId },
+    data: { status: newStatus },
+  });
+}
+
 export const createGoodsReceiving = async (
   data: Omit<Prisma.GoodsReceivingCreateInput, 'receivedItems'>,
   receivedItems: GoodsReceivingItemInput[]
@@ -56,6 +104,12 @@ export const createGoodsReceiving = async (
         receivedItems: true,
       },
     });
+
+    // Auto-update PO status if this GRN is linked to a PO
+    if ((data as any).purchaseOrderId) {
+      await updatePurchaseOrderStatus(tx, (data as any).purchaseOrderId);
+    }
+
     return goodsReceiving;
   });
 };

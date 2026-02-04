@@ -60,3 +60,44 @@ export const deletePurchaseOrder = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const approvePurchaseOrder = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const purchaseOrder = await purchaseOrderService.approvePurchaseOrder(parseInt(id as string));
+    res.status(200).json(purchaseOrder);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const rejectPurchaseOrder = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const purchaseOrder = await purchaseOrderService.rejectPurchaseOrder(parseInt(id as string), reason);
+    res.status(200).json(purchaseOrder);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const markPartiallyReceived = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const purchaseOrder = await purchaseOrderService.markPartiallyReceived(parseInt(id as string));
+    res.status(200).json(purchaseOrder);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const markCompleted = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const purchaseOrder = await purchaseOrderService.markCompleted(parseInt(id as string));
+    res.status(200).json(purchaseOrder);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

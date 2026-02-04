@@ -94,3 +94,72 @@ export const deletePurchaseOrder = async (id: number) => {
     where: { id },
   });
 };
+
+export const approvePurchaseOrder = async (id: number) => {
+  return prisma.purchaseOrder.update({
+    where: { id },
+    data: {
+      status: 'APPROVED',
+    },
+    include: {
+      supplier: true,
+      items: {
+        include: {
+          inventoryItem: true,
+        },
+      },
+    },
+  });
+};
+
+export const rejectPurchaseOrder = async (id: number, reason?: string) => {
+  return prisma.purchaseOrder.update({
+    where: { id },
+    data: {
+      status: 'CANCELLED',
+      notes: reason ? `${reason}` : undefined,
+    },
+    include: {
+      supplier: true,
+      items: {
+        include: {
+          inventoryItem: true,
+        },
+      },
+    },
+  });
+};
+
+export const markPartiallyReceived = async (id: number) => {
+  return prisma.purchaseOrder.update({
+    where: { id },
+    data: {
+      status: 'PARTIALLY_RECEIVED',
+    },
+    include: {
+      supplier: true,
+      items: {
+        include: {
+          inventoryItem: true,
+        },
+      },
+    },
+  });
+};
+
+export const markCompleted = async (id: number) => {
+  return prisma.purchaseOrder.update({
+    where: { id },
+    data: {
+      status: 'COMPLETED',
+    },
+    include: {
+      supplier: true,
+      items: {
+        include: {
+          inventoryItem: true,
+        },
+      },
+    },
+  });
+};

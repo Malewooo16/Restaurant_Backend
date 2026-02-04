@@ -143,6 +143,33 @@ router.put('/menu-items/:id', validate(updateMenuItemSchema), updateMenuItem);
  */
 router.delete('/menu-items/:id', deleteMenuItem);
 
+/**
+ * @swagger
+ * /api/menu/menu-items/{id}:
+ *   patch:
+ *     summary: Partial update a menu item
+ *     tags: [Menu]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isAvailable:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: The updated menu item.
+ */
+router.patch('/menu-items/:id', updateMenuItem);
+
 // MenuAddon Routes
 /**
  * @swagger
@@ -252,6 +279,33 @@ router.put('/addons/:id', validate(updateMenuAddonSchema), updateMenuAddon);
  */
 router.delete('/addons/:id', deleteMenuAddon);
 
+/**
+ * @swagger
+ * /api/menu/addons/{id}:
+ *   patch:
+ *     summary: Partial update a menu addon
+ *     tags: [Menu]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isAvailable:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: The updated menu addon.
+ */
+router.patch('/addons/:id', updateMenuAddon);
+
 // MenuSideDish Routes
 /**
  * @swagger
@@ -360,6 +414,33 @@ router.put('/side-dishes/:id', validate(updateMenuSideDishSchema), updateMenuSid
  *         description: No content
  */
 router.delete('/side-dishes/:id', deleteMenuSideDish);
+
+/**
+ * @swagger
+ * /api/menu/side-dishes/{id}:
+ *   patch:
+ *     summary: Partial update a menu side dish
+ *     tags: [Menu]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isAvailable:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: The updated menu side dish.
+ */
+router.patch('/side-dishes/:id', updateMenuSideDish);
 
 // MenuCategory Routes
 /**
