@@ -33,6 +33,43 @@ router.post(
 
 /**
  * @swagger
+ * /api/payments/split:
+ *   post:
+ *     summary: Process split bill payments (multiple payment methods)
+ *     tags: [Payment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               orderId:
+ *                 type: integer
+ *               payments:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     amount:
+ *                       type: number
+ *                     paymentMethod:
+ *                       type: string
+ *                       enum: [CASH, CARD, ONLINE]
+ *                     transactionId:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Array of created payments
+ */
+router.post(
+  '/split',
+  validate(paymentValidation.createSplitPaymentSchema),
+  paymentController.processSplitPayment
+);
+
+/**
+ * @swagger
  * /api/payments/order/:orderId/summary:
  *   get:
  *     summary: Get payment summary for an order

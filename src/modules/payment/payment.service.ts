@@ -1,54 +1,73 @@
 import { Prisma, PaymentStatus, OrderStatus } from "../../../generated/prisma/client";
+import { generatePaymentCode } from "../../../lib/functions";
 import { prisma } from "../../../lib/prisma";
 
-export const createPayment = async (data: Prisma.PaymentUncheckedCreateInput) => {
-  // By default, a new payment is considered completed
-  const paymentData = { ...data, status: PaymentStatus.COMPLETED };
-
-  return prisma.$transaction(async (tx) => {
-    // Get order with existing payments
-    const order = await tx.order.findUnique({
-      where: { id: data.orderId },
-      include: { payments: true },
-    });
-
-    if (!order) {
-      throw new Error(`Order with id ${data.orderId} not found`);
-    }
-
-    const totalPaid = order.payments.reduce((acc, p) => acc + p.amount, 0);
-    const totalAmount = order.total ?? 0;
-    const remainingAmount = totalAmount - totalPaid;
-
-    // Check if order is already fully paid
-    if (totalPaid >= totalAmount) {
-      throw new Error("Order is already fully paid");
-    }
-
-    // Validate payment amount doesn't exceed remaining
-    if (data.amount > remainingAmount) {
-      throw new Error(
-        `Payment amount (${data.amount}) exceeds remaining amount (${remainingAmount})`
-      );
-    }
-
-    // Create the payment
-    const payment = await tx.payment.create({
-      data: paymentData,
-    });
-
-    // Check if order is now fully paid
-    const newTotalPaid = totalPaid + data.amount;
-    if (newTotalPaid >= totalAmount) {
-      await tx.order.update({
+export const createPayment = async (
+  data: Prisma.PaymentUncheckedCreateInput
+) => {
+  return prisma.$transaction(
+    async (tx) => {
+      // 1️⃣ Get order total (minimal read)
+      const order = await tx.order.findUnique({
         where: { id: data.orderId },
-        data: { status: OrderStatus.PAID },
+        select: { total: true, status: true },
       });
-    }
 
-    return payment;
-  });
+      if (!order) {
+        throw new Error(`Order with id ${data.orderId} not found`);
+      }
+
+      if (order.status === OrderStatus.PAID) {
+        throw new Error('Order is already fully paid');
+      }
+
+      const totalAmount = order.total ?? 0;
+
+      // 2️⃣ Aggregate total paid so far (DB does the math)
+      const paymentAgg = await tx.payment.aggregate({
+        where: { orderId: data.orderId },
+        _sum: { amount: true },
+      });
+
+      const totalPaid = paymentAgg._sum.amount ?? 0;
+      const remainingAmount = totalAmount - totalPaid;
+
+      if (remainingAmount <= 0) {
+        throw new Error('Order is already fully paid');
+      }
+
+      if (data.amount > remainingAmount) {
+        throw new Error(
+          `Payment amount (${data.amount}) exceeds remaining amount (${remainingAmount})`
+        );
+      }
+
+      // 3️⃣ Create payment with generated code
+      const payment = await tx.payment.create({
+        data: {
+          ...data,
+          status: PaymentStatus.COMPLETED,
+          receiptNumber: generatePaymentCode(8), // 👈 HERE
+        },
+      });
+
+      // 4️⃣ Mark order as PAID if fully settled
+      if (totalPaid + data.amount >= totalAmount) {
+        await tx.order.update({
+          where: { id: data.orderId },
+          data: { status: OrderStatus.PAID },
+        });
+      }
+
+      return payment;
+    },
+    {
+      timeout: 10000, // safe upper bound
+      maxWait: 3000,
+    }
+  );
 };
+
 
 export const getOrderPaymentSummary = async (orderId: number) => {
   const order = await prisma.order.findUnique({

@@ -10,6 +10,27 @@ export const createPayment = async (req: Request, res: Response) => {
   }
 };
 
+export const processSplitPayment = async (req: Request, res: Response) => {
+  try {
+    const { orderId, payments } = req.body;
+    
+    const results = [];
+    for (const payment of payments) {
+      const result = await paymentService.createPayment({
+        orderId,
+        amount: payment.amount,
+        paymentMethod: payment.paymentMethod,
+        transactionId: payment.transactionId,
+      });
+      results.push(result);
+    }
+    
+    res.status(201).json(results);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getOrderPaymentSummary = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.params;

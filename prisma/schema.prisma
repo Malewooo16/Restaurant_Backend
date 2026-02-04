@@ -252,6 +252,7 @@ model Order {
 model Payment {
   id            Int            @id @default(autoincrement())
   orderId       Int
+  receiptNumber String?         @unique   // Revert to required when reinstating db
   order         Order          @relation(fields: [orderId], references: [id])
   amount        Float
   paymentMethod PaymentMethod

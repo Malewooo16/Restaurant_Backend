@@ -217,7 +217,7 @@ export const createOrder = async (
         barOrder: { include: { items: true } },
       },
     });
-  });
+  }, {maxWait: 5000, timeout: 15000});
 };
 
 export const getAllOrders = () => {
