@@ -31,7 +31,7 @@ jobs:
             git reset --hard origin/main
             git clean -fd
 
-            # 4. Fresh install & build
+            # 4. Fresh install & building
             npm ci
             rm -rf dist
             npm run build
