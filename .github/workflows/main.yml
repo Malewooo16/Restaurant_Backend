@@ -41,4 +41,7 @@ jobs:
             pm2 kill
             pm2 start ecosystem.config.js --env production
             pm2 save
-            
+
+            # 6. Restart nginx to apply changes
+            sudo systemctl restart nginx
+            sudo systemctl status nginx

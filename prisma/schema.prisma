@@ -614,3 +614,15 @@ model ReservationTable {
   @@id([reservationId, tableId])
 }
 
+// =======================
+// SETTINGS MODEL
+// =======================
+model Setting {
+  id                Int      @id @default(autoincrement())
+  key               String   @unique
+  value             String?
+  description       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+

@@ -10,6 +10,7 @@ import purchaseOrderRoutes from './purchase-order/purchase-order.routes';
 import goodsReceivingRoutes from './goods-receiving/goods-receiving.routes';
 import batchRoutes from './batch/batch.routes'; // New
 import departmentInventoryRoutes from './department-inventory/department-inventory.routes'; // New
+import settingRoutes from './setting/setting.routes';
 
 import expenseRoutes from './expense/expense.routes';
 import expenseCategoryRoutes from './expense/expense-category.routes';
@@ -36,5 +37,6 @@ router.use('/expense-categories', expenseCategoryRoutes);
 router.use('/tables', tableRoutes);
 router.use('/reservations', reservationRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/settings', settingRoutes);
 
 export default router;
