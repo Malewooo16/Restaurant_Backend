@@ -220,8 +220,42 @@ export const createOrder = async (
   }, {maxWait: 5000, timeout: 15000});
 };
 
-export const getAllOrders = () => {
+interface GetOrdersParams {
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+}
+
+export const getAllOrders = (params?: GetOrdersParams) => {
+  const where: any = {};
+
+  // Add date range filter
+  if (params?.startDate && params?.endDate) {
+    const start = new Date(params.startDate);
+    const end = new Date(params.endDate);
+    where.createdAt = {
+      gte: start,
+      lte: end,
+    };
+  } else if (params?.startDate) {
+    const start = new Date(params.startDate);
+    where.createdAt = {
+      gte: start,
+    };
+  } else if (params?.endDate) {
+    const end = new Date(params.endDate);
+    where.createdAt = {
+      lte: end,
+    };
+  }
+
+  // Add status filter
+  if (params?.status) {
+    where.status = params.status;
+  }
+
   return prisma.order.findMany({
+    where,
     include: {
       orderItems:{
          include: {

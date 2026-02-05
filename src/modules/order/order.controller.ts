@@ -15,7 +15,12 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
-    const orders = await orderService.getAllOrders();
+    const { startDate, endDate, status } = req.query;
+    const orders = await orderService.getAllOrders({
+      startDate: startDate as string,
+      endDate: endDate as string,
+      status: status as string,
+    });
     res.status(200).json(orders);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
