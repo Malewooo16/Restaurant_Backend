@@ -51,6 +51,24 @@ router.get('/', goodsReceivingController.getAllGoodsReceiving);
 
 /**
  * @swagger
+ * /api/goods-receiving/po/{purchaseOrderId}:
+ *   get:
+ *     summary: Get all goods receiving records for a purchase order
+ *     tags: [Goods Receiving]
+ *     parameters:
+ *       - in: path
+ *         name: purchaseOrderId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: A list of goods receiving records for the PO.
+ */
+router.get('/po/:purchaseOrderId', goodsReceivingController.getGoodsReceivingByPurchaseOrderId);
+
+/**
+ * @swagger
  * /api/goods-receiving/{id}:
  *   get:
  *     summary: Get a goods receiving record by ID

@@ -8,13 +8,15 @@ export const purchaseOrderItemSchema = z.object({
 });
 
 export const createPurchaseOrderSchema = z.object({
-    poNumber: z.string().min(1, 'Purchase Order Number is required'),
+  body: z.object({
+//    poNumber: z.string().min(1, 'Purchase Order Number is required'),
     supplierId: z.number().int().positive('Supplier ID must be a positive integer'),
     status: z.nativeEnum(PurchaseOrderStatus).default(PurchaseOrderStatus.PENDING).optional(),
     notes: z.string().optional(),
     orderedAt: z.preprocess((arg) => new Date(arg as string), z.date()).optional(),
     expectedDeliveryAt: z.preprocess((arg) => new Date(arg as string), z.date()).optional(),
     items: z.array(purchaseOrderItemSchema).min(1, 'At least one item is required for a purchase order'),
+  }),
 });
 
 export const updatePurchaseOrderSchema = z.object({

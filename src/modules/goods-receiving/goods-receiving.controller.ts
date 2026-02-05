@@ -22,6 +22,17 @@ export const getAllGoodsReceiving = async (req: Request, res: Response) => {
   }
 };
 
+export const getGoodsReceivingByPurchaseOrderId = async (req: Request, res: Response) => {
+  try {
+    const { purchaseOrderId } = req.params;
+    const poId = Array.isArray(purchaseOrderId) ? parseInt(purchaseOrderId[0]) : parseInt(purchaseOrderId);
+    const goodsReceivingRecords = await goodsReceivingService.getGoodsReceivingByPurchaseOrderId(poId);
+    res.status(200).json(goodsReceivingRecords);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getGoodsReceivingById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

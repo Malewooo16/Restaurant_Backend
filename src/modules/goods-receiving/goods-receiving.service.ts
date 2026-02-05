@@ -56,14 +56,35 @@ async function updatePurchaseOrderStatus(tx: Prisma.TransactionClient, purchaseO
   });
 }
 
+// Helper function to generate unique GRN number
+async function generateGRNNumber(tx: Prisma.TransactionClient): Promise<string> {
+  const timestamp = Date.now().toString(36).toUpperCase().replace(/^0+/, '');
+  const prefix = 'GRN';
+  const candidate = `${prefix}-${timestamp}`;
+  
+  // Check if it exists, if so, append a random suffix
+  const existing = await tx.goodsReceiving.findFirst({
+    where: { grnNumber: candidate },
+  });
+  
+  if (existing) {
+    return `${candidate}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+  }
+  return candidate;
+}
+
 export const createGoodsReceiving = async (
   data: Omit<Prisma.GoodsReceivingCreateInput, 'receivedItems'>,
   receivedItems: GoodsReceivingItemInput[]
 ) => {
   return prisma.$transaction(async (tx) => {
+    // Auto-generate GRN number if not provided
+    const grnNumber = data.grnNumber || await generateGRNNumber(tx);
+    
     const goodsReceiving = await tx.goodsReceiving.create({
       data: {
         ...data,
+        grnNumber,
         receivedItems: {
           create: await Promise.all(receivedItems.map(async (item) => {
             const receivedItemData: Prisma.GoodsReceivingItemCreateWithoutGoodsReceivingInput = {
@@ -116,6 +137,22 @@ export const createGoodsReceiving = async (
 
 export const getAllGoodsReceiving = async () => {
   return prisma.goodsReceiving.findMany({
+    include: {
+      supplier: true,
+      purchaseOrder: true,
+      receivedItems: {
+        include: {
+          inventoryItem: true,
+          batch: true,
+        },
+      },
+    },
+  });
+};
+
+export const getGoodsReceivingByPurchaseOrderId = async (purchaseOrderId: number) => {
+  return prisma.goodsReceiving.findMany({
+    where: { purchaseOrderId },
     include: {
       supplier: true,
       purchaseOrder: true,

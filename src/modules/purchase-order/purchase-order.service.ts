@@ -7,14 +7,40 @@ interface PurchaseOrderItemInput {
   unitPrice: number;
 }
 
+// Helper function to generate unique PO number
+async function generatePONumber(tx: Prisma.TransactionClient): Promise<string> {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const candidate = `PO-${year}${month}${day}-${random}`;
+  
+  // Check if it exists, if so, generate a new one
+  const existing = await tx.purchaseOrder.findFirst({
+    where: { poNumber: candidate },
+  });
+  
+  if (existing) {
+    // Try again with different random
+    const newRandom = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `PO-${year}${month}${day}-${newRandom}`;
+  }
+  return candidate;
+}
+
 export const createPurchaseOrder = async (
-  data: Omit<Prisma.PurchaseOrderCreateInput, 'items'>, // Exclude 'items' from data as we handle them separately
+  data: Omit<Prisma.PurchaseOrderCreateInput, 'items' | 'poNumber'>, // Exclude 'items' and 'poNumber' as we handle them separately
   items: PurchaseOrderItemInput[]
 ) => {
   return prisma.$transaction(async (tx) => {
+    // Auto-generate PO number if not provided
+    const poNumber = (data as any).poNumber || await generatePONumber(tx);
+    
     const purchaseOrder = await tx.purchaseOrder.create({
       data: {
         ...data,
+        poNumber,
         items: {
           create: items.map(item => ({
             inventoryItem: { connect: { id: item.inventoryItemId } },

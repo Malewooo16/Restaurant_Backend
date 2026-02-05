@@ -1,14 +1,24 @@
 import { Request, Response } from 'express';
 import * as purchaseOrderService from './purchase-order.service';
-import { validatePurchaseOrderItems } from './purchase-order.validation'; 
+import { validatePurchaseOrderItems } from './purchase-order.validation';
 
 export const createPurchaseOrder = async (req: Request, res: Response) => {
   try {
+    // The validation middleware already validated req.body, so data is in req.body
     const { items, ...purchaseOrderData } = req.body;
+    
+    // Validate items
     await validatePurchaseOrderItems.parseAsync(items);
     const purchaseOrder = await purchaseOrderService.createPurchaseOrder(purchaseOrderData, items);
     res.status(201).json(purchaseOrder);
   } catch (error: any) {
+    console.error('Create Purchase Order Error:', error);
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        message: 'Validation error',
+        errors: error.errors
+      });
+    }
     res.status(500).json({ message: error.message });
   }
 };

@@ -9,7 +9,7 @@ export const goodsReceivingItemSchema = z.object({
 
 export const createGoodsReceivingSchema = z.object({
     body: z.object({
-        grnNumber: z.string().min(1, 'GRN Number is required'),
+        //grnNumber: z.string().min(1, 'GRN Number is required'),
         purchaseOrderId: z.number().int().positive('Purchase Order ID must be a positive integer').optional(),
         supplierId: z.number().int().positive('Supplier ID must be a positive integer'),
         receivedAt: z.preprocess((arg) => new Date(arg as string), z.date()).optional(),
