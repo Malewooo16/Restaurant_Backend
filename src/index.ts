@@ -9,7 +9,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:8080",
-  "https://yourdomain.com",
+  "https://restaurant.maison.run.place",
   "http://212.115.110.115:8080",  //Swagger server
   "http://tauri.localhost"
 ];
