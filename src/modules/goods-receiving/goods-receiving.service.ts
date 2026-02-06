@@ -98,7 +98,7 @@ export const createGoodsReceiving = async (
                 data: {
                   inventoryItem: { connect: { id: item.inventoryItemId } },
                   quantity: item.quantityReceived, // Initial quantity of the batch is what's received
-                  batchNumber: item.batchNumber || `AUTO_BATCH_${Date.now()}`, // Generate if not provided
+                  batchNumber: item.batchNumber || `BATCH_${Date.now()}`, // Generate if not provided
                   expiryDate: item.expiryDate,
                   receivedAt: (data as any).receivedAt || new Date(),
                 },
