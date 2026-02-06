@@ -17,8 +17,16 @@ export const createInventoryItem = async (
 
 export const getAllInventoryItems = () => {
   return prisma.inventoryItem.findMany({
+    where:{
+      name: {
+        mode: 'insensitive',
+      }
+    },
     include: {
       category: true,
+    },
+    orderBy: {
+      name: 'asc',
     },
   });
 };

@@ -34,8 +34,16 @@ if (supplierExists) {
 
 export const getAllSuppliers = async () => {
   return prisma.supplier.findMany({
+    where:{
+      name:{
+        mode: 'insensitive',
+      }
+    },
     include: {
       inventoryCategories: true,
+    },
+    orderBy:{
+      name: 'asc',
     }
   });
 };

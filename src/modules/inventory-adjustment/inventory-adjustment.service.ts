@@ -1,11 +1,17 @@
 import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
-export const getAllInventoryAdjustments = async (inventoryItemId?: number, batchId?: number) => {
+export const getAllInventoryAdjustments = async (inventoryItemId?: number, batchId?: number, fromDate?: Date, toDate?: Date) => {
   return prisma.inventoryAdjustment.findMany({
     where: {
       ...(inventoryItemId && { inventoryItemId }),
       ...(batchId && { batchId }),
+      ...(fromDate && toDate && {
+        createdAt: {
+          gte: fromDate,
+          lte: toDate,
+        },
+      }),
     },
     include: {
       inventoryItem: true,

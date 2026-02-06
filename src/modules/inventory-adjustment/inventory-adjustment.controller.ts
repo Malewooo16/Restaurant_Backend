@@ -3,10 +3,12 @@ import * as inventoryAdjustmentService from './inventory-adjustment.service';
 
 export const getAllInventoryAdjustments = async (req: Request, res: Response) => {
   try {
-    const { inventoryItemId, batchId } = req.query;
+    const { inventoryItemId, batchId, fromDate, toDate } = req.query;
     const adjustments = await inventoryAdjustmentService.getAllInventoryAdjustments(
       inventoryItemId ? parseInt(inventoryItemId as string) : undefined,
-      batchId ? parseInt(batchId as string) : undefined
+      batchId ? parseInt(batchId as string) : undefined,
+      fromDate ? new Date(fromDate as string) : undefined,
+      toDate ? new Date(toDate as string) : undefined
     );
     res.status(200).json(adjustments);
   } catch (error: any) {
