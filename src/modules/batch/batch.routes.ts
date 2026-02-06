@@ -51,6 +51,30 @@ router.get('/', batchController.getAllBatches);
 
 /**
  * @swagger
+ * /api/batches/item/:itemId:
+ *   get:
+ *     summary: Get batches by inventory item ID
+ *     tags: [Batch]
+ *     parameters:
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: A list of batches for the specified inventory item.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Batch'
+ */
+router.get('/item/:itemId', batchController.getBatchesByItemId);
+
+/**
+ * @swagger
  * /api/batches/expiring:
  *   get:
  *     summary: Get batches expiring in the next 10 days

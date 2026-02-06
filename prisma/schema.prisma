@@ -382,6 +382,7 @@ model InventoryItem {
   goodsReceivingItems GoodsReceivingItem[]
   batches            Batch[]
   departmentInventories DepartmentInventory[]
+  adjustments        InventoryAdjustment[]
 }
 
 model DepartmentInventory {
@@ -545,6 +546,45 @@ model Batch {
   updatedAt            DateTime           @updatedAt
 
   goodsReceivingItem   GoodsReceivingItem[] // Batches can be linked to multiple GRN items (e.g. partial receipts)
+  adjustments          InventoryAdjustment[]
+}
+
+// =======================
+// INVENTORY ADJUSTMENT MODELS
+// =======================
+
+model AdjustmentReason {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  type        String // "increase", "decrease", "both"
+  description String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  adjustments InventoryAdjustment[]
+}
+
+model InventoryAdjustment {
+  id              Int                @id @default(autoincrement())
+  adjustmentNumber String            @unique
+  inventoryItemId Int
+  inventoryItem   InventoryItem      @relation(fields: [inventoryItemId], references: [id])
+  batchId         Int?
+  batch           Batch?            @relation(fields: [batchId], references: [id])
+  adjustmentReasonId Int
+  adjustmentReason AdjustmentReason @relation(fields: [adjustmentReasonId], references: [id])
+  adjustmentType   String // "increase", "decrease"
+  quantity        Float
+  previousQuantity Float
+  newQuantity     Float
+  notes           String?
+  adjustedBy      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([inventoryItemId])
+  @@index([batchId])
 }
 
 model ExpenseCategory {

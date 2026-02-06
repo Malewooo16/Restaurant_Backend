@@ -19,6 +19,16 @@ export const getAllBatches = async (req: Request, res: Response) => {
   }
 };
 
+export const getBatchesByItemId = async (req: Request, res: Response) => {
+  try {
+    const { itemId } = req.params;
+    const batches = await batchService.getBatchesByItemId(parseInt(itemId as string));
+    res.status(200).json(batches);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getExpiringBatches = async (req: Request, res: Response) => {
   try {
     const expiringBatches = await batchService.getExpiringBatches(10); // 10 days as requested

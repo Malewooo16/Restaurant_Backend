@@ -8,9 +8,11 @@ import inventoryItemRoutes from './inventory-item/inventory-item.routes';
 import supplierRoutes from './supplier/supplier.routes';
 import purchaseOrderRoutes from './purchase-order/purchase-order.routes';
 import goodsReceivingRoutes from './goods-receiving/goods-receiving.routes';
-import batchRoutes from './batch/batch.routes'; // New
-import departmentInventoryRoutes from './department-inventory/department-inventory.routes'; // New
+import batchRoutes from './batch/batch.routes';
+import departmentInventoryRoutes from './department-inventory/department-inventory.routes';
 import settingRoutes from './setting/setting.routes';
+import adjustmentReasonRoutes from './adjustment-reason/adjustment-reason.routes';
+import inventoryAdjustmentRoutes from './inventory-adjustment/inventory-adjustment.routes';
 
 import expenseRoutes from './expense/expense.routes';
 import expenseCategoryRoutes from './expense/expense-category.routes';
@@ -29,8 +31,8 @@ router.use('/inventory-item', inventoryItemRoutes);
 router.use('/suppliers', supplierRoutes);
 router.use('/purchase-orders', purchaseOrderRoutes);
 router.use('/goods-receiving', goodsReceivingRoutes);
-router.use('/batches', batchRoutes); // New
-router.use('/department-inventory', departmentInventoryRoutes); // New
+router.use('/batches', batchRoutes);
+router.use('/department-inventory', departmentInventoryRoutes);
 router.use('/stock-request', stockRequestRoutes);
 router.use('/expenses', expenseRoutes);
 router.use('/expense-categories', expenseCategoryRoutes);
@@ -38,5 +40,7 @@ router.use('/tables', tableRoutes);
 router.use('/reservations', reservationRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/settings', settingRoutes);
+router.use('/adjustment-reasons', adjustmentReasonRoutes);
+router.use('/inventory-adjustments', inventoryAdjustmentRoutes);
 
 export default router;

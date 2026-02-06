@@ -16,15 +16,43 @@ export const getAllBatches = async () => {
   });
 };
 
+export const getBatchesByItemId = async (itemId: number) => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+
+  return prisma.batch.findMany({
+    where: {
+      inventoryItemId: itemId,
+      quantity: { gt: 0 },
+      OR: [
+        { expiryDate: null },
+        { expiryDate: { gt: tomorrow } },
+      ],
+    },
+    include: {
+      inventoryItem: true,
+      goodsReceivingItem: true,
+    },
+    orderBy: [
+      { expiryDate: 'asc' },
+    ],
+  });
+};
+
 export const getExpiringBatches = async (days: number) => {
-  const futureDate = new Date();
+  const now = new Date();
+  const futureDate = new Date(now);
   futureDate.setDate(futureDate.getDate() + days);
 
   return prisma.batch.findMany({
     where: {
+      quantity: {
+        gt: 0, // 👈 exclude quantity === 0
+      },
       expiryDate: {
-        lte: futureDate,
-        gte: new Date(), // Only include batches with expiryDate in the future
+        gte: now,       // not expired yet
+        lte: futureDate, // expiring within X days
       },
     },
     include: {
@@ -33,6 +61,7 @@ export const getExpiringBatches = async (days: number) => {
     },
   });
 };
+
 
 export const getBatchById = async (id: number) => {
   return prisma.batch.findUnique({
