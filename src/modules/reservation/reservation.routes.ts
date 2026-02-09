@@ -35,43 +35,7 @@ router.post(
  * @swagger
  * /api/reservations:
  *   get:
- *     summary: Retrieve a list of reservations
- *     tags: [Reservation]
- *     responses:
- *       200:
- *         description: A list of reservations.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Reservation'
- */
-router.get('/', reservationController.getAllReservations);
-
-/**
- * @swagger
- * /api/reservations/today:
- *   get:
- *     summary: Retrieve today's reservations
- *     tags: [Reservation]
- *     responses:
- *       200:
- *         description: A list of today's reservations.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Reservation'
- */
-router.get('/today', reservationController.getTodayReservations);
-
-/**
- * @swagger
- * /api/reservations/by-date-range:
- *   get:
- *     summary: Retrieve reservations within a date range
+ *     summary: Retrieve reservations with optional filtering
  *     tags: [Reservation]
  *     parameters:
  *       - in: query
@@ -84,9 +48,17 @@ router.get('/today', reservationController.getTodayReservations);
  *         schema:
  *           type: string
  *           format: date
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: A list of reservations within the date range.
+ *         description: A list of reservations matching the filters.
  *         content:
  *           application/json:
  *             schema:
@@ -94,7 +66,7 @@ router.get('/today', reservationController.getTodayReservations);
  *               items:
  *                 $ref: '#/components/schemas/Reservation'
  */
-router.get('/by-date-range', reservationController.getReservationsByDateRange);
+router.get('/', reservationController.getReservations);
 
 /**
  * @swagger

@@ -41,62 +41,46 @@ export const createReservation = async (data: any) => {
   });
 };
 
-export const getAllReservations = () => {
-  return prisma.reservation.findMany({
-    include: {
-      tables: {
-        include: {
-          table: true,
-        },
-      },
-    },
-  });
-};
+interface GetReservationsParams {
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  search?: string;
+}
 
-export const getTodayReservations = async () => {
-  const todayUTC = new Date().toISOString().slice(0, 10);
-  const start = new Date(`${todayUTC}T00:00:00.000Z`);
-  const end = new Date(`${todayUTC}T23:59:59.999Z`);
+export const getReservations = async (params: GetReservationsParams) => {
+  const { startDate, endDate, status, search } = params;
 
-  return prisma.reservation.findMany({
-    where: {
-      date: {
-        gte: start,
-        lte: end,
-      },
-      status: {
-        notIn: ['CANCELLED', 'COMPLETED'],
-      },
-    },
-    include: {
-      tables: {
-        include: {
-          table: true,
-        },
-      },
-    },
-    orderBy: {
-      date: 'asc',
-    },
-  });
-};
+  // Build where clause
+  const where: any = {};
 
-export const getReservationsByDateRange = async (startDate: string, endDate: string) => {
-  const start = new Date(startDate);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setHours(23, 59, 59, 999);
+  // Date range filter - use the provided dates directly
+  if (startDate) {
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date(startDate);
+  
+    where.date = {
+      gte: start,
+      lte: end,
+    };
+  }
+
+  // Status filter
+  if (status && status !== 'all') {
+    where.status = status;
+  }
+
+  // Search filter (customer name, phone, email)
+  if (search) {
+    where.OR = [
+      { customerName: { contains: search, mode: 'insensitive' } },
+      { customerPhone: { contains: search } },
+      { customerEmail: { contains: search, mode: 'insensitive' } },
+    ];
+  }
 
   return prisma.reservation.findMany({
-    where: {
-      date: {
-        gte: start,
-        lte: end,
-      },
-      status: {
-        notIn: ['CANCELLED', 'COMPLETED'],
-      },
-    },
+    where,
     include: {
       tables: {
         include: {
@@ -111,7 +95,7 @@ export const getReservationsByDateRange = async (startDate: string, endDate: str
 };
 
 export const getBookedTables = async () => {
-  const todayUTC = new Date().toISOString().slice(0, 10);
+  const todayUTC = new Date().toISOString().split('T')[0];
   const start = new Date(`${todayUTC}T00:00:00.000Z`);
   const end = new Date(`${todayUTC}T23:59:59.999Z`);
 

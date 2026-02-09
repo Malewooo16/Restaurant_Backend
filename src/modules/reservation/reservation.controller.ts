@@ -12,46 +12,18 @@ export const createReservation = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllReservations = async (
+export const getReservations = async (
   req: Request,
   res: Response
 ) => {
   try {
-    const reservations =
-      await reservationService.getAllReservations();
-    res.status(200).json(reservations);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const getTodayReservations = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const reservations =
-      await reservationService.getTodayReservations();
-    res.status(200).json(reservations);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const getReservationsByDateRange = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { startDate, endDate } = req.query;
-    if (!startDate || !endDate) {
-      return res.status(400).json({ message: 'startDate and endDate are required' });
-    }
-    const reservations =
-      await reservationService.getReservationsByDateRange(
-        startDate as string,
-        endDate as string
-      );
+    const { startDate, endDate, status, search } = req.query;
+    const reservations = await reservationService.getReservations({
+      startDate: startDate as string,
+      endDate: endDate as string,
+      status: status as string,
+      search: search as string,
+    });
     res.status(200).json(reservations);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
