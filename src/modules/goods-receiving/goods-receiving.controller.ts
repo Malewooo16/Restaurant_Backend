@@ -15,7 +15,11 @@ export const createGoodsReceiving = async (req: Request, res: Response) => {
 
 export const getAllGoodsReceiving = async (req: Request, res: Response) => {
   try {
-    const goodsReceivingRecords = await goodsReceivingService.getAllGoodsReceiving();
+    const { startDate, endDate } = req.query;
+    const goodsReceivingRecords = await goodsReceivingService.getAllGoodsReceiving(
+      startDate as string,
+      endDate as string
+    );
     res.status(200).json(goodsReceivingRecords);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

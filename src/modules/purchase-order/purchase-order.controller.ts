@@ -25,7 +25,12 @@ export const createPurchaseOrder = async (req: Request, res: Response) => {
 
 export const getAllPurchaseOrders = async (req: Request, res: Response) => {
   try {
-    const purchaseOrders = await purchaseOrderService.getAllPurchaseOrders();
+    const { status, startDate, endDate } = req.query;
+    const purchaseOrders = await purchaseOrderService.getAllPurchaseOrders(
+      status as string,
+      startDate as string,
+      endDate as string
+    );
     res.status(200).json(purchaseOrders);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

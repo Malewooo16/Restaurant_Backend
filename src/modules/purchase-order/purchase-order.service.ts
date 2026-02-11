@@ -57,8 +57,45 @@ export const createPurchaseOrder = async (
   });
 };
 
-export const getAllPurchaseOrders = async () => {
+export const getAllPurchaseOrders = async (
+  status?: string,
+  startDate?: string,
+  endDate?: string
+) => {
+  // Build date filter using local dates (not UTC) to match calendar selection
+  let dateFilter = {};
+  if (startDate || endDate) {
+    // Use local time by appending time without 'Z' suffix
+    const start = startDate ? new Date(`${startDate}T00:00:00`) : undefined;
+    const end = endDate ? new Date(`${endDate}T23:59:59.999`) : undefined;
+    
+    if (start && end) {
+      dateFilter = {
+        orderedAt: {
+          gte: start,
+          lte: end,
+        },
+      };
+    } else if (start) {
+      dateFilter = {
+        orderedAt: {
+          gte: start,
+        },
+      };
+    } else if (end) {
+      dateFilter = {
+        orderedAt: {
+          lte: end,
+        },
+      };
+    }
+  }
+
   return prisma.purchaseOrder.findMany({
+    where: {
+      status: status as PurchaseOrderStatus || undefined,
+      ...dateFilter,
+    },
     include: {
       supplier: true,
       items: {
@@ -66,6 +103,9 @@ export const getAllPurchaseOrders = async () => {
           inventoryItem: true,
         },
       },
+    },
+    orderBy: {
+      orderedAt: 'desc',
     },
   });
 };

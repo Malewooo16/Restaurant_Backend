@@ -135,8 +135,43 @@ export const createGoodsReceiving = async (
   });
 };
 
-export const getAllGoodsReceiving = async () => {
+export const getAllGoodsReceiving = async (
+  startDate?: string,
+  endDate?: string
+) => {
+  // Build date filter using local dates (not UTC) to match calendar selection
+  let dateFilter = {};
+  if (startDate || endDate) {
+    // Use local time by appending time without 'Z' suffix
+    const start = startDate ? new Date(`${startDate}T00:00:00`) : undefined;
+    const end = endDate ? new Date(`${endDate}T23:59:59.999`) : undefined;
+    
+    if (start && end) {
+      dateFilter = {
+        receivedAt: {
+          gte: start,
+          lte: end,
+        },
+      };
+    } else if (start) {
+      dateFilter = {
+        receivedAt: {
+          gte: start,
+        },
+      };
+    } else if (end) {
+      dateFilter = {
+        receivedAt: {
+          lte: end,
+        },
+      };
+    }
+  }
+
   return prisma.goodsReceiving.findMany({
+    where: {
+      ...dateFilter,
+    },
     include: {
       supplier: true,
       purchaseOrder: true,
@@ -146,6 +181,9 @@ export const getAllGoodsReceiving = async () => {
           batch: true,
         },
       },
+    },
+    orderBy: {
+      receivedAt: 'desc',
     },
   });
 };

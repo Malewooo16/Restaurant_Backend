@@ -1,37 +1,51 @@
 import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
-export const createSupplier = async (data: { name: string; contactPerson?: string; email?: string; phone?: string; address?: string; categories?: number[] }) => {
-  const { categories, ...supplierData } = data;
+export const createSupplier = async (data: { 
+  name: string; 
+  contactPerson?: string; 
+  email?: string; 
+  phone?: string; 
+  address?: string; 
+  categories?: number[] 
+}) => {
+  try {
+    const { categories, ...supplierData } = data;
 
- const supplierExists = await prisma.supplier.findFirst({
-  where: {
-    OR: [
-      { name: supplierData.name },
-      { email: supplierData.email }
-    ]
+    // 1. Check for existing supplier
+    const supplierExists = await prisma.supplier.findFirst({
+      where: {
+        OR: [
+          { name: supplierData.name },
+          ...(supplierData.email ? [{ email: supplierData.email }] : []),
+        ]
+      }
+    });
+
+    if (supplierExists) {
+      throw new Error('Supplier with the same name or email already exists.');
+    }
+
+    // 2. Create the supplier
+    return await prisma.supplier.create({
+      data: {
+        ...supplierData,
+        ...(categories && categories.length > 0 && {
+          inventoryCategories: {
+            connect: categories.map((id) => ({ id })),
+          },
+        }),
+      },
+      include: {
+        inventoryCategories: true,
+      },
+    });
+  } catch (error: any) {
+    // 3. Log the error for debugging and re-throw
+    console.error("Error creating supplier:", error.message);
+    throw new Error(error.message || "An unexpected error occurred while creating the supplier.");
   }
-});
-
-if (supplierExists) {
-  throw new Error('Supplier with the same name or email already exists.');
-}
-  
-  return prisma.supplier.create({
-    data: {
-      ...supplierData,
-      ...(categories && categories.length > 0 && {
-        inventoryCategories: {
-          connect: categories.map((id) => ({ id })),
-        },
-      }),
-    },
-    include: {
-      inventoryCategories: true,
-    },
-  });
 };
-
 export const getAllSuppliers = async () => {
   return prisma.supplier.findMany({
     where:{

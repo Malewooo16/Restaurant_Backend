@@ -10,8 +10,9 @@ export const getAllStockRequests = async (
   // Build date filter
   let dateFilter = {};
   if (startDate || endDate) {
-    const start = startDate ? new Date(`${startDate}T00:00:00.000Z`) : undefined;
-    const end = endDate ? new Date(`${endDate}T23:59:59.999Z`) : undefined;
+    // Parse dates directly - ISO strings from frontend include timezone info
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
     
     if (start && end) {
       dateFilter = {

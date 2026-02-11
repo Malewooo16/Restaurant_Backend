@@ -8,6 +8,9 @@ export const getDepartmentInventoryItems = async (department: Departments) => {
     where: {
       // Filter InventoryItems that are explicitly marked as usable by the requested department
       department: { has: department },
+      name:{
+        mode: 'insensitive'
+      }
     },
     include: {
       category: {
@@ -25,6 +28,9 @@ export const getDepartmentInventoryItems = async (department: Departments) => {
         },
       },
     },
+    orderBy:{
+      name: 'asc' // Order by item name alphabetically
+    }
   });
 
   // Map and transform the data to the desired output format
@@ -79,18 +85,7 @@ export const updateDepartmentInventoryQuantity = async (
       },
     });
 
-    // 3. Adjust InventoryItem.quantity (main stock) by changeInQuantity
-    //    If departmental stock increases, main stock decreases.
-    //    If departmental stock decreases, main stock increases.
-    // await tx.inventoryItem.update({
-    //   where: { id: existingDepartmentInventory.inventoryItem.id },
-    //   data: {
-    //     quantity: {
-    //       decrement: changeInQuantity,
-    //     },
-    //   },
-    // });
-
+    
     // 4. Record an InventoryTransaction
     await tx.inventoryTransaction.create({
       data: {
