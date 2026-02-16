@@ -156,6 +156,20 @@ export const getReservationById = (id: number) => {
 export const updateReservation = async (id: number, data: any) => {
   const { tableIds, ...reservationData } = data;
 
+  // Get current reservation to know old tables
+  const currentReservation = await prisma.reservation.findUnique({
+    where: { id },
+    include: {
+      tables: {
+        include: { table: true },
+      },
+    },
+  });
+
+  if (!currentReservation) {
+    throw new Error('Reservation not found');
+  }
+
   if (tableIds) {
     const tables = await prisma.table.findMany({
       where: {
@@ -165,35 +179,98 @@ export const updateReservation = async (id: number, data: any) => {
 
     const totalCapacity = tables.reduce((acc, table) => acc + table.capacity, 0);
 
-    const reservation = await prisma.reservation.findUnique({
-        where: { id },
-    });
-
-    if ((reservationData.numberOfGuests || reservation?.numberOfGuests) > totalCapacity) {
+    if ((reservationData.numberOfGuests || currentReservation.numberOfGuests) > totalCapacity) {
       throw new Error('Number of guests exceeds the total capacity of the selected tables.');
     }
   }
 
-  return prisma.reservation.update({
-    where: { id },
-    data: {
-      ...reservationData,
-      tables: tableIds ? {
-        deleteMany: {},
-        create: tableIds.map((tableId: number) => ({
-          table: {
-            connect: { id: tableId },
-          },
-        })),
-      } : undefined,
-    },
-    include: {
-        tables: {
-            include: {
-                table: true,
+  // Update tables within a transaction
+  return prisma.$transaction(async (tx) => {
+    // If tableIds are being updated, handle table status changes
+    if (tableIds) {
+      const oldTableIds = currentReservation.tables.map((rt) => rt.tableId);
+      const newTableIds = tableIds;
+
+      // Free up old tables (set to AVAILABLE)
+      if (oldTableIds.length > 0) {
+        await tx.table.updateMany({
+          where: { id: { in: oldTableIds } },
+          data: { status: 'AVAILABLE' },
+        });
+      }
+
+      // Mark new tables as OCCUPIED
+      if (newTableIds.length > 0) {
+        await tx.table.updateMany({
+          where: { id: { in: newTableIds } },
+          data: { status: 'OCCUPIED' },
+        });
+      }
+    }
+
+    // Update the reservation
+    return tx.reservation.update({
+      where: { id },
+      data: {
+        ...reservationData,
+        tables: tableIds ? {
+          deleteMany: {},
+          create: tableIds.map((tableId: number) => ({
+            table: {
+              connect: { id: tableId },
             },
+          })),
+        } : undefined,
+      },
+      include: {
+        tables: {
+          include: {
+            table: true,
+          },
         },
+      },
+    });
+  });
+};
+
+export const cancelReservation = async (id: number) => {
+  // Get the reservation with its tables
+  const reservation = await prisma.reservation.findUnique({
+    where: { id },
+    include: {
+      tables: {
+        include: { table: true },
+      },
     },
+  });
+
+  if (!reservation) {
+    throw new Error('Reservation not found');
+  }
+
+  // Update reservation status to CANCELLED and free tables
+  return prisma.$transaction(async (tx) => {
+    // Update all tables to AVAILABLE
+    const tableIds = reservation.tables.map((rt) => rt.tableId);
+    if (tableIds.length > 0) {
+      await tx.table.updateMany({
+        where: { id: { in: tableIds } },
+        data: { status: 'AVAILABLE' },
+      });
+    }
+
+    // Update reservation status
+    return tx.reservation.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+      include: {
+        tables: {
+          include: {
+            table: true,
+          },
+        },
+      },
+    });
   });
 };
 

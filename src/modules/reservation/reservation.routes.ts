@@ -154,6 +154,28 @@ router.patch(
 
 /**
  * @swagger
+ * /api/reservations/{id}/cancel:
+ *   patch:
+ *     summary: Cancel a reservation and free up tables
+ *     tags: [Reservation]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: The cancelled reservation.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ */
+router.patch('/:id/cancel', reservationController.cancelReservation);
+
+/**
+ * @swagger
  * /api/reservations/{id}:
  *   delete:
  *     summary: Delete a reservation

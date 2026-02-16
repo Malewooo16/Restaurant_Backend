@@ -81,6 +81,22 @@ export const updateReservation = async (
   }
 };
 
+export const cancelReservation = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { id } = req.params;
+    const reservation =
+      await reservationService.cancelReservation(
+        parseInt(id as string)
+      );
+    res.status(200).json(reservation);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const deleteReservation = async (
   req: Request,
   res: Response
