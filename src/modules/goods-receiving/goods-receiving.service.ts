@@ -58,9 +58,9 @@ async function updatePurchaseOrderStatus(tx: Prisma.TransactionClient, purchaseO
 
 // Helper function to generate unique GRN number
 async function generateGRNNumber(tx: Prisma.TransactionClient): Promise<string> {
-  const timestamp = Date.now().toString(36).toUpperCase().replace(/^0+/, '');
-  const prefix = 'GRN';
-  const candidate = `${prefix}-${timestamp}`;
+    const timestamp = Date.now().toString(36).toUpperCase().replace(/^0+/, '');
+    const prefix = 'GRN';
+    const candidate = `${prefix}-${timestamp}`;
   
   // Check if it exists, if so, append a random suffix
   const existing = await tx.goodsReceiving.findFirst({

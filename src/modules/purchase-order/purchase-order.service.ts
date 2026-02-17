@@ -9,22 +9,17 @@ interface PurchaseOrderItemInput {
 
 // Helper function to generate unique PO number
 async function generatePONumber(tx: Prisma.TransactionClient): Promise<string> {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  const candidate = `PO-${year}${month}${day}-${random}`;
-  
+  const timestamp = Date.now().toString(36).toUpperCase().replace(/^0+/, '');
+  const prefix = 'GRN';
+  const candidate = `${prefix}-${timestamp}`;
   // Check if it exists, if so, generate a new one
   const existing = await tx.purchaseOrder.findFirst({
     where: { poNumber: candidate },
   });
   
+   
   if (existing) {
-    // Try again with different random
-    const newRandom = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    return `PO-${year}${month}${day}-${newRandom}`;
+    return `${candidate}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
   }
   return candidate;
 }
