@@ -4,11 +4,19 @@ import { prisma } from "../../../lib/prisma";
 
 export const getAllMenuItems = async () => {
   return prisma.menuItem.findMany({
+    where:{
+      name:{
+        mode:"insensitive"
+      }
+    },
     include: {
       addons: true,
       sideDishes: true,
       menuCategory: true,
     },
+    orderBy:{
+      name:"asc"
+    }
   });
 };
 
