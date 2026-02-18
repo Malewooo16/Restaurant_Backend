@@ -346,6 +346,9 @@ export const getAllKitchenOrders = () => {
         },
       },
     },
+    orderBy:{
+      createdAt:"desc"
+    }
   });
 };
 
@@ -422,6 +425,9 @@ export const getAllBarOrders = () => {
         },
       },
     },
+    orderBy:{
+      createdAt:"desc"
+    }
   });
 };
 
@@ -503,7 +509,28 @@ export const updateBarOrderStatus = (
       },
     });
 
+    // Check if the new status is PREPARING and update order status accordingly
+    // Handle both plain string format (from HTTP request) and Prisma format (with { set: ... })
+    const newStatus = data.status;
+    let isPreparing = false;
+    
+    if (typeof newStatus === 'string') {
+      // Plain string format: { status: "PREPARING" }
+      isPreparing = newStatus === OrderItemStatus.PREPARING;
+    } else if (typeof newStatus === 'object' && newStatus !== null && 'set' in newStatus) {
+      // Prisma format: { status: { set: "PREPARING" } }
+      isPreparing = (newStatus as any).set === OrderItemStatus.PREPARING;
+    }
+
     return prisma.$transaction(async (tx) => {
+      // If an order item is being set to PREPARING, update the order status to IN_PROGRESS
+      if (isPreparing && orderItem.order.status !== OrderStatus.IN_PROGRESS) {
+        await tx.order.update({
+          where: { id: orderItem.order.id },
+          data: { status: OrderStatus.IN_PROGRESS },
+        });
+      }
+
       // Check and update kitchen order status if all items are ready/cancelled/served
       if (existingItem.kitchenOrderId) {
         const kitchenOrder = await tx.kitchenOrder.findUnique({
@@ -552,21 +579,28 @@ export const updateBarOrderStatus = (
         }
       }
 
-      // Check if main order should be completed
-      const updatedKitchenOrder = existingItem.kitchenOrderId
-        ? await tx.kitchenOrder.findUnique({ where: { id: existingItem.kitchenOrderId } })
-        : null;
-        
-      const updatedBarOrder = existingItem.barOrderId
-        ? await tx.barOrder.findUnique({ where: { id: existingItem.barOrderId } })
-        : null;
+      // Check if main order should be completed by checking ALL order items for this order
+      const allOrderItems = await tx.orderItem.findMany({
+        where: { orderId: orderItem.orderId },
+        select: { status: true, prepArea: true },
+      });
 
-      const kitchenOrderReady =
-        !updatedKitchenOrder || updatedKitchenOrder.status === KitchenOrderStatus.READY;
-      const barOrderReady =
-        !updatedBarOrder || updatedBarOrder.status === BarOrderStatus.READY;
+      // Check if all items are ready, served, or cancelled
+      const allItemsReadyOrServed = allOrderItems.every(
+        (item) =>
+          item.status === OrderItemStatus.READY ||
+          item.status === OrderItemStatus.SERVED ||
+          item.status === OrderItemStatus.CANCELLED
+      );
 
-      if (kitchenOrderReady && barOrderReady && orderItem.order.status !== OrderStatus.COMPLETED) {
+      // Also check if there are any pending items
+      const hasPendingItems = allOrderItems.some(
+        (item) =>
+          item.status === OrderItemStatus.PENDING ||
+          item.status === OrderItemStatus.PREPARING
+      );
+
+      if (allItemsReadyOrServed && !hasPendingItems && orderItem.order.status !== OrderStatus.COMPLETED) {
         await tx.order.update({
           where: { id: orderItem.order.id },
           data: { status: OrderStatus.COMPLETED },
@@ -607,6 +641,9 @@ export const getRecentOrders = () => {
       barOrder: true,
       payments: true,
     },
+    orderBy:{
+      createdAt:"desc"
+    }
   });
 };
 
