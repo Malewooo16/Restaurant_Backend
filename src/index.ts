@@ -4,6 +4,7 @@ import swaggerRoutes from "./swagger";
 import cors from "cors";
 
 const app = express();
+app.disable('etag');
 const port = process.env.PORT || 3001;
 const allowedOrigins = [
   "http://localhost:5173",
