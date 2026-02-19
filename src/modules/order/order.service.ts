@@ -268,6 +268,7 @@ export const getAllOrders = (params?: GetOrdersParams) => {
       },
       kitchenOrder: true,
       barOrder: true,
+      payments: true,
     },
   });
 };
@@ -495,6 +496,30 @@ export const updateBarOrderStatus = (
       throw new Error('Order item not found');
     }
 
+    // Check if the new status is CANCELLED (for special handling)
+    const newStatus = data.status;
+    let isCancelled = false;
+    
+    if (typeof newStatus === 'string') {
+      // Plain string format: { status: "CANCELLED" }
+      isCancelled = newStatus === OrderItemStatus.CANCELLED;
+    } else if (typeof newStatus === 'object' && newStatus !== null && 'set' in newStatus) {
+      // Prisma format: { status: { set: "CANCELLED" } }
+      isCancelled = (newStatus as any).set === OrderItemStatus.CANCELLED;
+    }
+
+    // Check if the new status is PREPARING and update order status accordingly
+    // Handle both plain string format (from HTTP request) and Prisma format (with { set: ... })
+    let isPreparing = false;
+    
+    if (typeof newStatus === 'string') {
+      // Plain string format: { status: "PREPARING" }
+      isPreparing = newStatus === OrderItemStatus.PREPARING;
+    } else if (typeof newStatus === 'object' && newStatus !== null && 'set' in newStatus) {
+      // Prisma format: { status: { set: "PREPARING" } }
+      isPreparing = (newStatus as any).set === OrderItemStatus.PREPARING;
+    }
+
     // Update the order item status
     const orderItem = await prisma.orderItem.update({
       where: { id },
@@ -508,19 +533,6 @@ export const updateBarOrderStatus = (
         },
       },
     });
-
-    // Check if the new status is PREPARING and update order status accordingly
-    // Handle both plain string format (from HTTP request) and Prisma format (with { set: ... })
-    const newStatus = data.status;
-    let isPreparing = false;
-    
-    if (typeof newStatus === 'string') {
-      // Plain string format: { status: "PREPARING" }
-      isPreparing = newStatus === OrderItemStatus.PREPARING;
-    } else if (typeof newStatus === 'object' && newStatus !== null && 'set' in newStatus) {
-      // Prisma format: { status: { set: "PREPARING" } }
-      isPreparing = (newStatus as any).set === OrderItemStatus.PREPARING;
-    }
 
     return prisma.$transaction(async (tx) => {
       // If an order item is being set to PREPARING, update the order status to IN_PROGRESS
@@ -586,7 +598,7 @@ export const updateBarOrderStatus = (
       });
 
       // Check if all items are ready, served, or cancelled
-      const allItemsReadyOrServed = allOrderItems.every(
+      const allItemsReadyOrServedOrCancelled = allOrderItems.every(
         (item) =>
           item.status === OrderItemStatus.READY ||
           item.status === OrderItemStatus.SERVED ||
@@ -600,7 +612,24 @@ export const updateBarOrderStatus = (
           item.status === OrderItemStatus.PREPARING
       );
 
-      if (allItemsReadyOrServed && !hasPendingItems && orderItem.order.status !== OrderStatus.COMPLETED) {
+      // Special case: If cancelling an item and remaining items are SERVED, complete the order
+      if (isCancelled) {
+        // Check if remaining items (excluding cancelled) are all SERVED
+        const remainingItems = allOrderItems.filter(
+          (item) => item.status !== OrderItemStatus.CANCELLED
+        );
+        
+        const allRemainingServed = remainingItems.length > 0 && remainingItems.every(
+          (item) => item.status === OrderItemStatus.READY
+        );
+        
+        if (allRemainingServed && orderItem.order.status !== OrderStatus.COMPLETED) {
+          await tx.order.update({
+            where: { id: orderItem.order.id },
+            data: { status: OrderStatus.COMPLETED },
+          });
+        }
+      } else if (allItemsReadyOrServedOrCancelled && !hasPendingItems && orderItem.order.status !== OrderStatus.COMPLETED) {
         await tx.order.update({
           where: { id: orderItem.order.id },
           data: { status: OrderStatus.COMPLETED },

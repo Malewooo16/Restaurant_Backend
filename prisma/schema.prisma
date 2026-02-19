@@ -669,7 +669,77 @@ model Setting {
   key               String   @unique
   value             String?
   description       String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+// =======================
+// DISSATISFACTION MODEL (Kitchen Issues)
+// =======================
+
+enum DissatisfactionStatus {
+  PENDING
+  REMADE
+  RESOLVED
+  REFUNDED
+}
+
+model Dissatisfaction {
+  id            Int                   @id @default(autoincrement())
+  orderId       Int
+  tableNumber   Int
+  itemName      String
+  reason        String
+  status        DissatisfactionStatus @default(PENDING)
+  resolution    String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+}
+
+// =======================
+// BAR RETURN MODEL (Bar Issues)
+// =======================
+
+enum BarReturnStatus {
+  PENDING
+  REMADE
+  RESOLVED
+  REFUNDED
+}
+
+model BarReturn {
+  id            Int              @id @default(autoincrement())
+  orderId       Int
+  tableNumber   Int
+  itemName      String
+  reason        String
+  status        BarReturnStatus @default(PENDING)
+  resolution    String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+// =======================
+// STAFF/EMPLOYEE MODEL
+// =======================
+
+model Staff {
+  id                Int               @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  email             String?           @unique
+  phone             String?
+  role              String
+  department        Departments
+  position          String?
+  hireDate          DateTime          @default(now())
+  salary            Float?
+  status            String            @default("ACTIVE")
+  imageUrl          String?
+  address           String?
+  emergencyContact  String?
+  notes             String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }
 

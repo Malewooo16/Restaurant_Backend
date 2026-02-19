@@ -781,14 +781,13 @@ const swaggerDefinition = {
 // Options for the swagger docs
 const options = {
   swaggerDefinition,
-  apis: ['./src/modules/**/*.ts', './src/modules/**/*.js'],
+  apis: ['./src/modules/**/*.ts', './dist/src/modules/**/*.js'],
 };
 
 // Initialize swagger-jsdoc
 const swaggerSpec = swaggerJSDoc(options);
 
 // Setup swagger UI
-router.use('/', swaggerUi.serve);
-router.get('/', swaggerUi.setup(swaggerSpec));
+router.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export default router;

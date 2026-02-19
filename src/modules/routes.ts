@@ -20,6 +20,9 @@ import expenseCategoryRoutes from './expense/expense-category.routes';
 import tableRoutes from './table/table.routes';
 import reservationRoutes from './reservation/reservation.routes';
 import paymentRoutes from './payment/payment.routes';
+import staffRoutes from './staff/staff.routes';
+import dissatisfactionRoutes from './dissatisfaction/dissatisfaction.routes';
+import barReturnRoutes from './bar-return/bar-return.routes';
 
 const router = Router();
 
@@ -42,5 +45,8 @@ router.use('/payments', paymentRoutes);
 router.use('/settings', settingRoutes);
 router.use('/adjustment-reasons', adjustmentReasonRoutes);
 router.use('/inventory-adjustments', inventoryAdjustmentRoutes);
+router.use('/staff', staffRoutes);
+router.use('/dissatisfactions', dissatisfactionRoutes);
+router.use('/bar-returns', barReturnRoutes);
 
 export default router;
