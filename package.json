@@ -13,12 +13,15 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed-inventory": "tsx prisma/seed-inventory.ts"
+    "prisma:seed-inventory": "tsx prisma/seed-inventory.ts",
+    "prisma:seed-staff": "tsx prisma/seed-staff.ts",
+    "prisma:seed-users": "tsx prisma/seed-users.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/multer-s3": "^3.0.3",
     "@types/node": "^25.0.8",
@@ -37,6 +40,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "aws-sdk": "^2.1693.0",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",

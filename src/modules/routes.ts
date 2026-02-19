@@ -23,6 +23,11 @@ import paymentRoutes from './payment/payment.routes';
 import staffRoutes from './staff/staff.routes';
 import dissatisfactionRoutes from './dissatisfaction/dissatisfaction.routes';
 import barReturnRoutes from './bar-return/bar-return.routes';
+import departmentRoutes from './department/department.routes';
+import staffRoleRoutes from './staff-role/staff-role.routes';
+import permissionRoutes from './permission/permission.routes';
+import userGroupRoutes from './user-group/user-group.routes';
+import userRoutes from './user/user.routes';
 
 const router = Router();
 
@@ -48,5 +53,10 @@ router.use('/inventory-adjustments', inventoryAdjustmentRoutes);
 router.use('/staff', staffRoutes);
 router.use('/dissatisfactions', dissatisfactionRoutes);
 router.use('/bar-returns', barReturnRoutes);
+router.use('/departments', departmentRoutes);
+router.use('/staff-roles', staffRoleRoutes);
+router.use('/permissions', permissionRoutes);
+router.use('/user-groups', userGroupRoutes);
+router.use('/users', userRoutes);
 
 export default router;

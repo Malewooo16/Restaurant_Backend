@@ -720,6 +720,39 @@ model BarReturn {
 }
 
 // =======================
+// DEPARTMENT MODEL
+// =======================
+
+model Department {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  staffRoles  StaffRole[]
+  staff       Staff[]
+}
+
+// =======================
+// STAFF ROLE MODEL
+// =======================
+
+model StaffRole {
+  id            Int         @id @default(autoincrement())
+  name          String      @unique
+  description   String?
+  departmentId  Int?
+  department    Department? @relation(fields: [departmentId], references: [id])
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  staff         Staff[]
+}
+
+// =======================
 // STAFF/EMPLOYEE MODEL
 // =======================
 
@@ -729,11 +762,11 @@ model Staff {
   lastName          String
   email             String?           @unique
   phone             String?
-  role              String
-  department        Departments
-  position          String?
+  roleId            Int?
+  role              StaffRole?        @relation(fields: [roleId], references: [id])
+  departmentId      Int?
+  department        Department?       @relation(fields: [departmentId], references: [id])
   hireDate          DateTime          @default(now())
-  salary            Float?
   status            String            @default("ACTIVE")
   imageUrl          String?
   address           String?
@@ -741,5 +774,89 @@ model Staff {
   notes             String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  // Relation to User (one staff can have one user account)
+  user              User?
+}
+
+// =======================
+// PERMISSION MODEL
+// =======================
+
+model Permission {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // e.g., "orders.create", "inventory.view", "staff.manage"
+  description String?
+  category    String    // e.g., "orders", "inventory", "staff", "reports", "settings"
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userGroups           UserGroupPermission[]
+  permissionOverrides UserPermissionOverride[]
+}
+
+// =======================
+// USER GROUP MODEL
+// =======================
+
+model UserGroup {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // e.g., "Admin", "Manager", "Waiter"
+  description String?
+  isDefault   Boolean   @default(false) // Default group for new users
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  users       User[]
+  permissions UserGroupPermission[]
+}
+
+// =======================
+// USER GROUP PERMISSION (Junction Table)
+// =======================
+
+model UserGroupPermission {
+  id            Int        @id @default(autoincrement())
+  userGroupId   Int
+  permissionId  Int
+  userGroup     UserGroup  @relation(fields: [userGroupId], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userGroupId, permissionId])
+}
+
+// =======================
+// USER MODEL
+// =======================
+
+model User {
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  email           String?   @unique
+  passwordHash    String
+  staffId         Int?      @unique // Link to Staff (optional)
+  staff           Staff?    @relation(fields: [staffId], references: [id])
+  userGroupId     Int?
+  userGroup       UserGroup? @relation(fields: [userGroupId], references: [id])
+  isActive        Boolean   @default(true)
+  lastLogin       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Manual permission overrides (these take precedence over userGroup permissions)
+  permissionOverrides UserPermissionOverride[]
+}
+
+model UserPermissionOverride {
+  id            Int        @id @default(autoincrement())
+  userId        Int
+  permissionId  Int
+  allowed       Boolean    // true = grant, false = deny
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
 }
 

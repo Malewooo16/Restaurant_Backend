@@ -3,6 +3,14 @@ import { prisma } from "../../../lib/prisma";
 
 export const getAllStaff = async () => {
   return prisma.staff.findMany({
+    include: {
+      role: {
+        include: {
+          department: true,
+        },
+      },
+      department: true,
+    },
     orderBy: {
       firstName: 'asc',
     },
@@ -12,6 +20,14 @@ export const getAllStaff = async () => {
 export const getStaffById = async (id: number) => {
   return prisma.staff.findUnique({
     where: { id },
+    include: {
+      role: {
+        include: {
+          department: true,
+        },
+      },
+      department: true,
+    },
   });
 };
 
@@ -27,6 +43,14 @@ export const createStaff = async (data: Prisma.StaffCreateInput) => {
 
   return prisma.staff.create({
     data,
+    include: {
+      role: {
+        include: {
+          department: true,
+        },
+      },
+      department: true,
+    },
   });
 };
 
@@ -55,6 +79,14 @@ export const updateStaff = async (id: number, data: Prisma.StaffUpdateInput) => 
   return prisma.staff.update({
     where: { id },
     data,
+    include: {
+      role: {
+        include: {
+          department: true,
+        },
+      },
+      department: true,
+    },
   });
 };
 
