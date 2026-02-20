@@ -28,6 +28,7 @@ import staffRoleRoutes from './staff-role/staff-role.routes';
 import permissionRoutes from './permission/permission.routes';
 import userGroupRoutes from './user-group/user-group.routes';
 import userRoutes from './user/user.routes';
+import accountingRoutes from './accounting/accounting.routes';
 
 const router = Router();
 
@@ -58,5 +59,6 @@ router.use('/staff-roles', staffRoleRoutes);
 router.use('/permissions', permissionRoutes);
 router.use('/user-groups', userGroupRoutes);
 router.use('/users', userRoutes);
+router.use('/accounting', accountingRoutes);
 
 export default router;
