@@ -22,6 +22,7 @@ import {
   deleteMenuCategory,
 } from './menu.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import {
   createMenuItemSchema,
   updateMenuItemSchema,
@@ -34,6 +35,12 @@ import {
 } from './menu.validation';
 
 const router = Router();
+
+// Permission middleware for menu routes
+const viewMenu = requirePermission('menu.view');
+const createMenu = requirePermission('menu.create');
+const editMenu = requirePermission('menu.edit');
+const deleteMenu = requirePermission('menu.delete');
 
 /**
  * @swagger
@@ -51,7 +58,7 @@ const router = Router();
  *               items:
  *                 $ref: '#/components/schemas/MenuItem'
  */
-router.get('/menu-items', getAllMenuItems);
+router.get('/menu-items', viewMenu, getAllMenuItems);
 
 /**
  * @swagger
@@ -73,7 +80,7 @@ router.get('/menu-items', getAllMenuItems);
  *             schema:
  *               $ref: '#/components/schemas/MenuItem'
  */
-router.get('/menu-items/:id', getMenuItemById);
+router.get('/menu-items/:id', viewMenu, getMenuItemById);
 
 /**
  * @swagger
@@ -95,7 +102,7 @@ router.get('/menu-items/:id', getMenuItemById);
  *             schema:
  *               $ref: '#/components/schemas/MenuItem'
  */
-router.post('/menu-items', validate(createMenuItemSchema), createMenuItem);
+router.post('/menu-items', createMenu, validate(createMenuItemSchema), createMenuItem);
 
 /**
  * @swagger
@@ -123,7 +130,7 @@ router.post('/menu-items', validate(createMenuItemSchema), createMenuItem);
  *             schema:
  *               $ref: '#/components/schemas/MenuItem'
  */
-router.put('/menu-items/:id', validate(updateMenuItemSchema), updateMenuItem);
+router.put('/menu-items/:id', editMenu, validate(updateMenuItemSchema), updateMenuItem);
 
 /**
  * @swagger
@@ -141,7 +148,7 @@ router.put('/menu-items/:id', validate(updateMenuItemSchema), updateMenuItem);
  *       204:
  *         description: No content
  */
-router.delete('/menu-items/:id', deleteMenuItem);
+router.delete('/menu-items/:id', deleteMenu, deleteMenuItem);
 
 /**
  * @swagger
@@ -168,7 +175,7 @@ router.delete('/menu-items/:id', deleteMenuItem);
  *       200:
  *         description: The updated menu item.
  */
-router.patch('/menu-items/:id', updateMenuItem);
+router.patch('/menu-items/:id', editMenu, updateMenuItem);
 
 // MenuAddon Routes
 /**
@@ -191,7 +198,7 @@ router.patch('/menu-items/:id', updateMenuItem);
  *             schema:
  *               $ref: '#/components/schemas/MenuAddon'
  */
-router.post('/addons', validate(createMenuAddonSchema), createMenuAddon);
+router.post('/addons', createMenu, validate(createMenuAddonSchema), createMenuAddon);
 
 /**
  * @swagger
@@ -209,7 +216,7 @@ router.post('/addons', validate(createMenuAddonSchema), createMenuAddon);
  *               items:
  *                 $ref: '#/components/schemas/MenuAddon'
  */
-router.get('/addons', getAllMenuAddons);
+router.get('/addons', viewMenu, getAllMenuAddons);
 
 /**
  * @swagger
@@ -231,7 +238,7 @@ router.get('/addons', getAllMenuAddons);
  *             schema:
  *               $ref: '#/components/schemas/MenuAddon'
  */
-router.get('/addons/:id', getMenuAddonById);
+router.get('/addons/:id', viewMenu, getMenuAddonById);
 
 /**
  * @swagger
@@ -259,7 +266,7 @@ router.get('/addons/:id', getMenuAddonById);
  *             schema:
  *               $ref: '#/components/schemas/MenuAddon'
  */
-router.put('/addons/:id', validate(updateMenuAddonSchema), updateMenuAddon);
+router.put('/addons/:id', editMenu, validate(updateMenuAddonSchema), updateMenuAddon);
 
 /**
  * @swagger
@@ -277,7 +284,7 @@ router.put('/addons/:id', validate(updateMenuAddonSchema), updateMenuAddon);
  *       204:
  *         description: No content
  */
-router.delete('/addons/:id', deleteMenuAddon);
+router.delete('/addons/:id', deleteMenu, deleteMenuAddon);
 
 /**
  * @swagger
@@ -304,7 +311,7 @@ router.delete('/addons/:id', deleteMenuAddon);
  *       200:
  *         description: The updated menu addon.
  */
-router.patch('/addons/:id', updateMenuAddon);
+router.patch('/addons/:id', editMenu, updateMenuAddon);
 
 // MenuSideDish Routes
 /**
@@ -327,7 +334,7 @@ router.patch('/addons/:id', updateMenuAddon);
  *             schema:
  *               $ref: '#/components/schemas/MenuSideDish'
  */
-router.post('/side-dishes', validate(createMenuSideDishSchema), createMenuSideDish);
+router.post('/side-dishes', createMenu, validate(createMenuSideDishSchema), createMenuSideDish);
 
 /**
  * @swagger
@@ -345,7 +352,7 @@ router.post('/side-dishes', validate(createMenuSideDishSchema), createMenuSideDi
  *               items:
  *                 $ref: '#/components/schemas/MenuSideDish'
  */
-router.get('/side-dishes', getAllMenuSideDishes);
+router.get('/side-dishes', viewMenu, getAllMenuSideDishes);
 
 /**
  * @swagger
@@ -367,7 +374,7 @@ router.get('/side-dishes', getAllMenuSideDishes);
  *             schema:
  *               $ref: '#/components/schemas/MenuSideDish'
  */
-router.get('/side-dishes/:id', getMenuSideDishById);
+router.get('/side-dishes/:id', viewMenu, getMenuSideDishById);
 
 /**
  * @swagger
@@ -395,7 +402,7 @@ router.get('/side-dishes/:id', getMenuSideDishById);
  *             schema:
  *               $ref: '#/components/schemas/MenuSideDish'
  */
-router.put('/side-dishes/:id', validate(updateMenuSideDishSchema), updateMenuSideDish);
+router.put('/side-dishes/:id', editMenu, validate(updateMenuSideDishSchema), updateMenuSideDish);
 
 /**
  * @swagger
@@ -413,7 +420,7 @@ router.put('/side-dishes/:id', validate(updateMenuSideDishSchema), updateMenuSid
  *       204:
  *         description: No content
  */
-router.delete('/side-dishes/:id', deleteMenuSideDish);
+router.delete('/side-dishes/:id', deleteMenu, deleteMenuSideDish);
 
 /**
  * @swagger
@@ -440,7 +447,7 @@ router.delete('/side-dishes/:id', deleteMenuSideDish);
  *       200:
  *         description: The updated menu side dish.
  */
-router.patch('/side-dishes/:id', updateMenuSideDish);
+router.patch('/side-dishes/:id', editMenu, updateMenuSideDish);
 
 // MenuCategory Routes
 /**
@@ -463,7 +470,7 @@ router.patch('/side-dishes/:id', updateMenuSideDish);
  *             schema:
  *               $ref: '#/components/schemas/MenuCategory'
  */
-router.post('/categories', validate(createMenuCategorySchema), createMenuCategory);
+router.post('/categories', createMenu, validate(createMenuCategorySchema), createMenuCategory);
 
 /**
  * @swagger
@@ -481,7 +488,7 @@ router.post('/categories', validate(createMenuCategorySchema), createMenuCategor
  *               items:
  *                 $ref: '#/components/schemas/MenuCategory'
  */
-router.get('/categories', getAllMenuCategories);
+router.get('/categories', viewMenu, getAllMenuCategories);
 
 /**
  * @swagger
@@ -503,7 +510,7 @@ router.get('/categories', getAllMenuCategories);
  *             schema:
  *               $ref: '#/components/schemas/MenuCategory'
  */
-router.get('/categories/:id', getMenuCategoryById);
+router.get('/categories/:id', viewMenu, getMenuCategoryById);
 
 /**
  * @swagger
@@ -531,7 +538,7 @@ router.get('/categories/:id', getMenuCategoryById);
  *             schema:
  *               $ref: '#/components/schemas/MenuCategory'
  */
-router.put('/categories/:id', validate(updateMenuCategorySchema), updateMenuCategory);
+router.put('/categories/:id', editMenu, validate(updateMenuCategorySchema), updateMenuCategory);
 
 /**
  * @swagger
@@ -549,7 +556,7 @@ router.put('/categories/:id', validate(updateMenuCategorySchema), updateMenuCate
  *       204:
  *         description: No content
  */
-router.delete('/categories/:id', deleteMenuCategory);
+router.delete('/categories/:id', deleteMenu, deleteMenuCategory);
 
 
 export default router;

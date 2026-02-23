@@ -6,8 +6,13 @@ import {
   updateSettings,
   deleteSetting,
 } from './setting.controller';
+import { requirePermission } from '../../middleware/permissions';
 
 const router = Router();
+
+// Permission middleware for settings routes
+const viewSettings = requirePermission('settings.view');
+const manageSettings = requirePermission('settings.manage');
 
 /**
  * @swagger
@@ -19,7 +24,7 @@ const router = Router();
  *       200:
  *         description: All settings
  */
-router.get('/', getAllSettings);
+router.get('/', viewSettings, getAllSettings);
 
 /**
  * @swagger
@@ -37,7 +42,7 @@ router.get('/', getAllSettings);
  *       200:
  *         description: A single setting
  */
-router.get('/:key', getSetting);
+router.get('/:key', viewSettings, getSetting);
 
 /**
  * @swagger
@@ -66,7 +71,7 @@ router.get('/:key', getSetting);
  *       200:
  *         description: The updated setting
  */
-router.put('/:key', updateSetting);
+router.put('/:key', manageSettings, updateSetting);
 
 /**
  * @swagger
@@ -86,7 +91,7 @@ router.put('/:key', updateSetting);
  *       200:
  *         description: Updated settings
  */
-router.put('/', updateSettings);
+router.put('/', manageSettings, updateSettings);
 
 /**
  * @swagger
@@ -104,6 +109,6 @@ router.put('/', updateSettings);
  *       204:
  *         description: No content
  */
-router.delete('/:key', deleteSetting);
+router.delete('/:key', manageSettings, deleteSetting);
 
 export default router;

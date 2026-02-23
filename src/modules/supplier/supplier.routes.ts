@@ -1,9 +1,16 @@
 import { Router } from 'express';
 import * as supplierController from './supplier.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as supplierValidation from './supplier.validation';
 
 const router = Router();
+
+// Permission middleware for supplier routes
+const viewSuppliers = requirePermission('suppliers.view');
+const createSuppliers = requirePermission('suppliers.create');
+const editSuppliers = requirePermission('suppliers.edit');
+const deleteSuppliers = requirePermission('suppliers.delete');
 
 /**
  * @swagger
@@ -51,6 +58,7 @@ const router = Router();
  */
 router.post(
   '/',
+  createSuppliers,
   validate(supplierValidation.createSupplierSchema),
   supplierController.createSupplier
 );
@@ -101,7 +109,7 @@ router.post(
  *                         description:
  *                           type: string
  */
-router.get('/', supplierController.getAllSuppliers);
+router.get('/', viewSuppliers, supplierController.getAllSuppliers);
 
 /**
  * @swagger
@@ -125,7 +133,7 @@ router.get('/', supplierController.getAllSuppliers);
  *       404:
  *         description: Supplier not found.
  */
-router.get('/:id', supplierController.getSupplierById);
+router.get('/:id', viewSuppliers, supplierController.getSupplierById);
 
 /**
  * @swagger
@@ -179,6 +187,7 @@ router.get('/:id', supplierController.getSupplierById);
  */
 router.patch(
   '/:id',
+  editSuppliers,
   validate(supplierValidation.updateSupplierSchema),
   supplierController.updateSupplier
 );
@@ -201,6 +210,6 @@ router.patch(
  *       404:
  *         description: Supplier not found.
  */
-router.delete('/:id', supplierController.deleteSupplier);
+router.delete('/:id', deleteSuppliers, supplierController.deleteSupplier);
 
 export default router;

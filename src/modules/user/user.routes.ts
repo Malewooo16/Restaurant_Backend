@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as userController from './user.controller';
+import { requirePermission } from '../../middleware/permissions';
 
 /**
  * User routes
@@ -9,6 +10,15 @@ import * as userController from './user.controller';
  *   - name: Users
  *     description: User management endpoints
  */
+
+const router = Router();
+
+// Permission middleware for user routes
+const viewUsers = requirePermission('users.view');
+const createUsers = requirePermission('users.create');
+const editUsers = requirePermission('users.edit');
+const deleteUsers = requirePermission('users.delete');
+const managePermissions = requirePermission('users.manage_permissions');
 
 /**
  * @swagger
@@ -43,9 +53,7 @@ import * as userController from './user.controller';
  *               $ref: '#/components/schemas/User'
  */
 
-const router = Router();
-
-router.get('/', userController.getAllUsers);
+router.get('/', viewUsers, userController.getAllUsers);
 
 /**
  * @swagger
@@ -106,9 +114,9 @@ router.get('/', userController.getAllUsers);
  *         description: User deleted successfully
  */
 
-router.get('/:id', userController.getUserById);
-router.put('/:id', userController.updateUser);
-router.delete('/:id', userController.deleteUser);
+router.get('/:id', viewUsers, userController.getUserById);
+router.put('/:id', editUsers, userController.updateUser);
+router.delete('/:id', deleteUsers, userController.deleteUser);
 
 /**
  * @swagger
@@ -133,7 +141,7 @@ router.delete('/:id', userController.deleteUser);
  *         description: Password changed successfully
  */
 
-router.post('/:id/change-password', userController.changePassword);
+router.post('/:id/change-password', editUsers, userController.changePassword);
 
 /**
  * @swagger
@@ -158,7 +166,7 @@ router.post('/:id/change-password', userController.changePassword);
  *                 type: string
  */
 
-router.get('/:id/permissions', userController.getEffectivePermissions);
+router.get('/:id/permissions', managePermissions, userController.getEffectivePermissions);
 
 /**
  * @swagger
@@ -188,7 +196,7 @@ router.get('/:id/permissions', userController.getEffectivePermissions);
  *         description: Permission updated successfully
  */
 
-router.put('/:id/permissions/:permissionId', userController.updateUserPermission);
-router.post('/', userController.createUser);
+router.put('/:id/permissions/:permissionId', managePermissions, userController.updateUserPermission);
+router.post('/', createUsers, userController.createUser);
 
 export default router;

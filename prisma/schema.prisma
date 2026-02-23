@@ -836,6 +836,7 @@ model User {
   username        String    @unique
   email           String?   @unique
   passwordHash    String
+  refreshToken    String?   // Store refresh token for session management
   staffId         Int?      @unique // Link to Staff (optional)
   staff           Staff?    @relation(fields: [staffId], references: [id])
   userGroupId     Int?

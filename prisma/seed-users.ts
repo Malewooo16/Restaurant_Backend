@@ -3,6 +3,8 @@ import { prisma } from "../lib/prisma";
 async function main() {
   console.log('Seeding permissions and user groups...');
 
+  // Delete Permissions
+  await prisma.permission.deleteMany()
   // Create Permissions
   await prisma.permission.createMany({
     data: [
@@ -11,7 +13,7 @@ async function main() {
       { name: 'orders.create', description: 'Create new orders', category: 'orders' },
       { name: 'orders.edit', description: 'Edit existing orders', category: 'orders' },
       { name: 'orders.cancel', description: 'Cancel orders', category: 'orders' },
-      { name: 'orders.pay', description: 'Process payments for orders', category: 'orders' },
+      
 
       // Menu permissions
       { name: 'menu.view', description: 'View menu items', category: 'menu' },
@@ -32,6 +34,18 @@ async function main() {
       { name: 'purchases.create', description: 'Create purchase orders', category: 'purchases' },
       { name: 'purchases.approve', description: 'Approve purchase orders', category: 'purchases' },
       { name: 'purchases.receive', description: 'Receive goods', category: 'purchases' },
+
+      // Suppliers permissions
+      { name: 'suppliers.view', description: 'View suppliers', category: 'purchases' },
+      { name: 'suppliers.create', description: 'Create suppliers', category: 'purchases' },
+      { name: 'suppliers.edit', description: 'Edit suppliers', category: 'purchases' },
+      { name: 'suppliers.delete', description: 'Delete suppliers', category: 'purchases' },
+
+      // Goods Receiving permissions
+      { name: 'goods_receiving.view', description: 'View goods receiving records', category: 'purchases' },
+      { name: 'goods_receiving.create', description: 'Create goods receiving records', category: 'purchases' },
+      { name: 'goods_receiving.edit', description: 'Edit goods receiving records', category: 'purchases' },
+      { name: 'goods_receiving.delete', description: 'Delete goods receiving records', category: 'purchases' },
 
       // Staff permissions
       { name: 'staff.view', description: 'View staff', category: 'staff' },
@@ -92,6 +106,11 @@ async function main() {
       // Accounting permissions
       { name: 'accounting.view', description: 'View accounting', category: 'accounting' },
       { name: 'accounting.expenses', description: 'Manage expenses', category: 'accounting' },
+
+      // Payment permissions
+      { name: 'payments.view', description: 'View payments', category: 'orders' },
+      { name: 'payments.create', description: 'Create/process payments', category: 'orders' },
+      { name: 'payments.refund', description: 'Refund payments', category: 'orders' },
     ],
     skipDuplicates: true,
   });
@@ -101,9 +120,15 @@ async function main() {
   const allPermissions = await prisma.permission.findMany();
   const allPermissionIds = allPermissions.map(p => ({ permissionId: p.id }));
 
-  // Create Admin group - gets ALL permissions
-  await prisma.userGroup.create({
-    data: {
+  // Create or update Admin group - gets ALL permissions
+  await prisma.userGroup.upsert({
+    where: { name: 'Admin' },
+    update: {
+      description: 'Full system access',
+      isDefault: false,
+      isActive: true,
+    },
+    create: {
       name: 'Admin',
       description: 'Full system access',
       isDefault: false,
@@ -114,12 +139,24 @@ async function main() {
     },
   });
 
+  // Get Admin group and update its permissions
+  const adminGroup = await prisma.userGroup.findUnique({ where: { name: 'Admin' } });
+  if (adminGroup) {
+    // Remove old permissions and add new ones
+    await prisma.userGroupPermission.deleteMany({ where: { userGroupId: adminGroup.id } });
+    await prisma.userGroupPermission.createMany({
+      data: allPermissionIds.map(p => ({ ...p, userGroupId: adminGroup.id }))
+    });
+  }
+
   // Create Manager group - specific permissions
   const managerPermissions = [
-    'orders.view', 'orders.create', 'orders.edit', 'orders.cancel', 'orders.pay',
+    'orders.view', 'orders.create', 'orders.edit', 'orders.cancel',
     'menu.view', 'menu.create', 'menu.edit',
     'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.adjust',
     'purchases.view', 'purchases.create', 'purchases.approve', 'purchases.receive',
+    'suppliers.view', 'suppliers.create', 'suppliers.edit',
+    'goods_receiving.view', 'goods_receiving.create', 'goods_receiving.edit',
     'staff.view', 'staff.create', 'staff.edit',
     'users.view', 'users.create', 'users.edit',
     'reports.view', 'reports.export',
@@ -134,8 +171,14 @@ async function main() {
     where: { name: { in: managerPermissions } }
   });
 
-  await prisma.userGroup.create({
-    data: {
+  await prisma.userGroup.upsert({
+    where: { name: 'Manager' },
+    update: {
+      description: 'Management access - can manage day-to-day operations',
+      isDefault: false,
+      isActive: true,
+    },
+    create: {
       name: 'Manager',
       description: 'Management access - can manage day-to-day operations',
       isDefault: false,
@@ -146,21 +189,37 @@ async function main() {
     },
   });
 
+  // Update Manager group permissions
+  const managerGroup = await prisma.userGroup.findUnique({ where: { name: 'Manager' } });
+  if (managerGroup) {
+    await prisma.userGroupPermission.deleteMany({ where: { userGroupId: managerGroup.id } });
+    await prisma.userGroupPermission.createMany({
+      data: managerPerms.map(p => ({ permissionId: p.id, userGroupId: managerGroup.id }))
+    });
+  }
+
   // Create Waiter group
   const waiterPermissions = [
     'orders.view', 'orders.create',
     'menu.view',
     'inventory.view',
     'tables.view',
-    'reservations.view', 'reservations.create'
+    'reservations.view', 'reservations.create',
+    'payments.view', 'payments.create'
   ];
   
   const waiterPerms = await prisma.permission.findMany({
     where: { name: { in: waiterPermissions } }
   });
 
-  await prisma.userGroup.create({
-    data: {
+  await prisma.userGroup.upsert({
+    where: { name: 'Waiter' },
+    update: {
+      description: 'Front of house staff - can take orders and view menu',
+      isDefault: true,
+      isActive: true,
+    },
+    create: {
       name: 'Waiter',
       description: 'Front of house staff - can take orders and view menu',
       isDefault: true,
@@ -171,19 +230,35 @@ async function main() {
     },
   });
 
+  // Update Waiter group permissions
+  const waiterGroup = await prisma.userGroup.findUnique({ where: { name: 'Waiter' } });
+  if (waiterGroup) {
+    await prisma.userGroupPermission.deleteMany({ where: { userGroupId: waiterGroup.id } });
+    await prisma.userGroupPermission.createMany({
+      data: waiterPerms.map(p => ({ permissionId: p.id, userGroupId: waiterGroup.id }))
+    });
+  }
+
   // Create Bartender group
   const bartenderPermissions = [
     'orders.view', 'orders.create',
     'menu.view',
-    'inventory.view'
+    'inventory.view',
+    'payments.view', 'payments.create'
   ];
   
   const bartenderPerms = await prisma.permission.findMany({
     where: { name: { in: bartenderPermissions } }
   });
 
-  await prisma.userGroup.create({
-    data: {
+  await prisma.userGroup.upsert({
+    where: { name: 'Bartender' },
+    update: {
+      description: 'Bar staff - can view bar orders and menu',
+      isDefault: false,
+      isActive: true,
+    },
+    create: {
       name: 'Bartender',
       description: 'Bar staff - can view bar orders and menu',
       isDefault: false,
@@ -193,6 +268,15 @@ async function main() {
       },
     },
   });
+
+  // Update Bartender group permissions
+  const bartenderGroup = await prisma.userGroup.findUnique({ where: { name: 'Bartender' } });
+  if (bartenderGroup) {
+    await prisma.userGroupPermission.deleteMany({ where: { userGroupId: bartenderGroup.id } });
+    await prisma.userGroupPermission.createMany({
+      data: bartenderPerms.map(p => ({ permissionId: p.id, userGroupId: bartenderGroup.id }))
+    });
+  }
 
   // Create Kitchen group
   const kitchenPermissions = [
@@ -205,8 +289,14 @@ async function main() {
     where: { name: { in: kitchenPermissions } }
   });
 
-  await prisma.userGroup.create({
-    data: {
+  await prisma.userGroup.upsert({
+    where: { name: 'Kitchen' },
+    update: {
+      description: 'Kitchen staff - can view kitchen orders and inventory',
+      isDefault: false,
+      isActive: true,
+    },
+    create: {
       name: 'Kitchen',
       description: 'Kitchen staff - can view kitchen orders and inventory',
       isDefault: false,
@@ -216,6 +306,15 @@ async function main() {
       },
     },
   });
+
+  // Update Kitchen group permissions
+  const kitchenGroup = await prisma.userGroup.findUnique({ where: { name: 'Kitchen' } });
+  if (kitchenGroup) {
+    await prisma.userGroupPermission.deleteMany({ where: { userGroupId: kitchenGroup.id } });
+    await prisma.userGroupPermission.createMany({
+      data: kitchenPerms.map(p => ({ permissionId: p.id, userGroupId: kitchenGroup.id }))
+    });
+  }
 
   console.log('Created user groups');
   console.log('Seeding completed successfully!');

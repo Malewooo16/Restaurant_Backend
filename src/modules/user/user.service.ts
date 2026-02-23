@@ -218,3 +218,43 @@ export const updateUserPermission = async (userId: number, permissionId: number,
     });
   }
 };
+
+/**
+ * Store refresh token for a user
+ */
+export const storeRefreshToken = async (userId: number, refreshToken: string): Promise<void> => {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { refreshToken },
+  });
+};
+
+/**
+ * Validate refresh token for a user
+ */
+export const validateRefreshToken = async (userId: number, refreshToken: string): Promise<boolean> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { refreshToken: true },
+  });
+  
+  return user?.refreshToken === refreshToken;
+};
+
+/**
+ * Clear all refresh tokens for a user (logout)
+ */
+export const clearRefreshTokens = async (userId: number): Promise<void> => {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { refreshToken: null },
+  });
+};
+
+// Update user's last login timestamp
+export const updateLastLogin = async (userId: number) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { lastLogin: new Date() },
+  });
+};

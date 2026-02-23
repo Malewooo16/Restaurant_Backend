@@ -1,9 +1,17 @@
 import { Router } from 'express';
 import * as orderController from './order.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as orderValidation from './order.validation';
 
 const router = Router();
+
+// Permission middleware for order routes
+const viewOrders = requirePermission('orders.view');
+const createOrders = requirePermission('orders.create');
+const editOrders = requirePermission('orders.edit');
+const cancelOrders = requirePermission('orders.cancel');
+const payOrders = requirePermission('orders.pay');
 
 /**
  * @swagger
@@ -28,6 +36,7 @@ const router = Router();
  */
 router.post(
   '/',
+  createOrders,
   validate(orderValidation.createOrderSchema),
   orderController.createOrder
 );
@@ -48,7 +57,7 @@ router.post(
  *               items:
  *                 $ref: '#/components/schemas/Order'
  */
-router.get('/', orderController.getAllOrders);
+router.get('/', viewOrders, orderController.getAllOrders);
 
 /**
  * @swagger
@@ -66,7 +75,7 @@ router.get('/', orderController.getAllOrders);
  *               items:
  *                 $ref: '#/components/schemas/Order'
  */
-router.get('/recent', orderController.getRecentOrders);
+router.get('/recent', viewOrders, orderController.getRecentOrders);
 
 /**
  * @swagger
@@ -84,7 +93,7 @@ router.get('/recent', orderController.getRecentOrders);
  *               items:
  *                 $ref: '#/components/schemas/KitchenOrder'
  */
-router.get('/kitchen-orders', orderController.getAllKitchenOrders);
+router.get('/kitchen-orders', viewOrders, orderController.getAllKitchenOrders);
 
 /**
  * @swagger
@@ -102,7 +111,7 @@ router.get('/kitchen-orders', orderController.getAllKitchenOrders);
  *               items:
  *                 $ref: '#/components/schemas/KitchenOrderWithDetails'
  */
-router.get('/kitchen-orders-with-details', orderController.getAllKitchenOrdersWithDetails);
+router.get('/kitchen-orders-with-details', viewOrders, orderController.getAllKitchenOrdersWithDetails);
 
 /**
  * @swagger
@@ -120,7 +129,7 @@ router.get('/kitchen-orders-with-details', orderController.getAllKitchenOrdersWi
  *               items:
  *                 $ref: '#/components/schemas/BarOrder'
  */
-router.get('/bar-orders', orderController.getAllBarOrders);
+router.get('/bar-orders', viewOrders, orderController.getAllBarOrders);
 
 /**
  * @swagger
@@ -142,7 +151,7 @@ router.get('/bar-orders', orderController.getAllBarOrders);
  *             schema:
  *               $ref: '#/components/schemas/KitchenOrder'
  */
-router.get('/kitchen-orders/:id', orderController.getKitchenOrderById);
+router.get('/kitchen-orders/:id', viewOrders, orderController.getKitchenOrderById);
 
 /**
  * @swagger
@@ -164,7 +173,7 @@ router.get('/kitchen-orders/:id', orderController.getKitchenOrderById);
  *             schema:
  *               $ref: '#/components/schemas/BarOrder'
  */
-router.get('/bar-orders/:id', orderController.getBarOrderById);
+router.get('/bar-orders/:id', viewOrders, orderController.getBarOrderById);
 
 /**
  * @swagger
@@ -194,6 +203,7 @@ router.get('/bar-orders/:id', orderController.getBarOrderById);
  */
 router.patch(
   '/kitchen-orders/:id',
+  editOrders,
   validate(orderValidation.updateKitchenOrderStatusSchema),
   orderController.updateKitchenOrderStatus
 );
@@ -226,6 +236,7 @@ router.patch(
  */
 router.patch(
   '/bar-orders/:id',
+  editOrders,
   validate(orderValidation.updateBarOrderStatusSchema),
   orderController.updateBarOrderStatus
 );
@@ -258,6 +269,7 @@ router.patch(
  */
 router.patch(
   '/order-items/:id',
+  editOrders,
   validate(orderValidation.updateOrderItemStatusSchema),
   orderController.updateOrderItemStatus
 );
@@ -282,7 +294,7 @@ router.patch(
  *             schema:
  *               $ref: '#/components/schemas/Order'
  */
-router.get('/:id', orderController.getOrderById);
+router.get('/:id', viewOrders, orderController.getOrderById);
 
 /**
  * @swagger
@@ -313,6 +325,7 @@ router.get('/:id', orderController.getOrderById);
  */
 router.patch(
   '/:id',
+  editOrders,
   validate(orderValidation.updateOrderSchema),
   orderController.updateOrder
 );
@@ -333,7 +346,7 @@ router.patch(
  *       204:
  *         description: No content
  */
-router.delete('/:id', orderController.deleteOrder);
+router.delete('/:id', cancelOrders, orderController.deleteOrder);
 
 
 export default router;

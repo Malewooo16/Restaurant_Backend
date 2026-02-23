@@ -1,9 +1,15 @@
 import { Router } from 'express';
 import * as paymentController from './payment.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as paymentValidation from './payment.validation';
 
 const router = Router();
+
+// Permission middleware for payment routes
+const viewPayments = requirePermission('payments.view');
+const createPayments = requirePermission('payments.create');
+const refundPayments = requirePermission('payments.refund');
 
 /**
  * @swagger
@@ -27,6 +33,7 @@ const router = Router();
  */
 router.post(
   '/',
+  createPayments,
   validate(paymentValidation.createPaymentSchema),
   paymentController.createPayment
 );
@@ -64,6 +71,7 @@ router.post(
  */
 router.post(
   '/split',
+  createPayments,
   validate(paymentValidation.createSplitPaymentSchema),
   paymentController.processSplitPayment
 );
@@ -84,7 +92,7 @@ router.post(
  *       200:
  *         description: Payment summary for the order
  */
-router.get('/order/:orderId/summary', paymentController.getOrderPaymentSummary);
+router.get('/order/:orderId/summary', viewPayments, paymentController.getOrderPaymentSummary);
 
 /**
  * @swagger
@@ -102,7 +110,7 @@ router.get('/order/:orderId/summary', paymentController.getOrderPaymentSummary);
  *       200:
  *         description: List of payments for the order
  */
-router.get('/order/:orderId', paymentController.getPaymentsByOrderId);
+router.get('/order/:orderId', viewPayments, paymentController.getPaymentsByOrderId);
 
 /**
  * @swagger
@@ -120,7 +128,7 @@ router.get('/order/:orderId', paymentController.getPaymentsByOrderId);
  *               items:
  *                 $ref: '#/components/schemas/Payment'
  */
-router.get('/', paymentController.getAllPayments);
+router.get('/', viewPayments, paymentController.getAllPayments);
 
 /**
  * @swagger
@@ -142,7 +150,7 @@ router.get('/', paymentController.getAllPayments);
  *             schema:
  *               $ref: '#/components/schemas/Payment'
  */
-router.get('/:id', paymentController.getPaymentById);
+router.get('/:id', viewPayments, paymentController.getPaymentById);
 
 /**
  * @swagger
@@ -160,6 +168,6 @@ router.get('/:id', paymentController.getPaymentById);
  *       200:
  *         description: Refunded payment
  */
-router.post('/:id/refund', paymentController.refundPayment);
+router.post('/:id/refund', refundPayments, paymentController.refundPayment);
 
 export default router;

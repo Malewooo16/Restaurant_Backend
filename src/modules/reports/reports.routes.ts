@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import * as reportsController from './reports.controller';
+import { requirePermission } from '../../middleware/permissions';
 
 const router = Router();
+
+// Permission middleware for reports routes
+const viewReports = requirePermission('reports.view');
+const exportReports = requirePermission('reports.export');
 
 /**
  * @swagger
@@ -24,7 +29,7 @@ const router = Router();
  *       200:
  *         description: Order summary report
  */
-router.get('/orders/summary', reportsController.getOrderSummaryReport);
+router.get('/orders/summary', viewReports, reportsController.getOrderSummaryReport);
 
 /**
  * @swagger
@@ -47,7 +52,7 @@ router.get('/orders/summary', reportsController.getOrderSummaryReport);
  *       200:
  *         description: Order detailed report
  */
-router.get('/orders/detailed', reportsController.getOrderDetailedReport);
+router.get('/orders/detailed', viewReports, reportsController.getOrderDetailedReport);
 
 /**
  * @swagger
@@ -70,7 +75,7 @@ router.get('/orders/detailed', reportsController.getOrderDetailedReport);
  *       200:
  *         description: Payments report
  */
-router.get('/orders/payments', reportsController.getPaymentsReport);
+router.get('/orders/payments', viewReports, reportsController.getPaymentsReport);
 
 /**
  * @swagger
@@ -93,6 +98,6 @@ router.get('/orders/payments', reportsController.getPaymentsReport);
  *       200:
  *         description: Refunds report
  */
-router.get('/orders/refunds', reportsController.getRefundsReport);
+router.get('/orders/refunds', viewReports, reportsController.getRefundsReport);
 
 export default router;

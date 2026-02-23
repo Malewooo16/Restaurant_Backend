@@ -1,9 +1,16 @@
 import { Router } from 'express';
 import * as purchaseOrderController from './purchase-order.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as purchaseOrderValidation from './purchase-order.validation';
 
 const router = Router();
+
+// Permission middleware for purchases routes
+const viewPurchases = requirePermission('purchases.view');
+const createPurchases = requirePermission('purchases.create');
+const approvePurchases = requirePermission('purchases.approve');
+const receivePurchases = requirePermission('purchases.receive');
 
 /**
  * @swagger
@@ -27,6 +34,7 @@ const router = Router();
  */
 router.post(
   '/',
+  createPurchases,
   validate(purchaseOrderValidation.createPurchaseOrderSchema),
   purchaseOrderController.createPurchaseOrder
 );
@@ -47,7 +55,7 @@ router.post(
  *               items:
  *                 $ref: '#/components/schemas/PurchaseOrder'
  */
-router.get('/', purchaseOrderController.getAllPurchaseOrders);
+router.get('/', viewPurchases, purchaseOrderController.getAllPurchaseOrders);
 
 /**
  * @swagger
@@ -71,7 +79,7 @@ router.get('/', purchaseOrderController.getAllPurchaseOrders);
  *       404:
  *         description: Purchase order not found.
  */
-router.get('/:id', purchaseOrderController.getPurchaseOrderById);
+router.get('/:id', viewPurchases, purchaseOrderController.getPurchaseOrderById);
 
 /**
  * @swagger
@@ -103,6 +111,7 @@ router.get('/:id', purchaseOrderController.getPurchaseOrderById);
  */
 router.patch(
   '/:id',
+  createPurchases,
   validate(purchaseOrderValidation.updatePurchaseOrderSchema),
   purchaseOrderController.updatePurchaseOrder
 );
@@ -125,7 +134,7 @@ router.patch(
  *       404:
  *         description: Purchase order not found.
  */
-router.delete('/:id', purchaseOrderController.deletePurchaseOrder);
+router.delete('/:id', createPurchases, purchaseOrderController.deletePurchaseOrder);
 
 /**
  * @swagger
@@ -143,7 +152,7 @@ router.delete('/:id', purchaseOrderController.deletePurchaseOrder);
  *       200:
  *         description: Purchase order approved successfully.
  */
-router.post('/:id/approve', purchaseOrderController.approvePurchaseOrder);
+router.post('/:id/approve', approvePurchases, purchaseOrderController.approvePurchaseOrder);
 
 /**
  * @swagger
@@ -171,7 +180,7 @@ router.post('/:id/approve', purchaseOrderController.approvePurchaseOrder);
  *       200:
  *         description: Purchase order rejected successfully.
  */
-router.post('/:id/reject', purchaseOrderController.rejectPurchaseOrder);
+router.post('/:id/reject', approvePurchases, purchaseOrderController.rejectPurchaseOrder);
 
 /**
  * @swagger
@@ -189,7 +198,7 @@ router.post('/:id/reject', purchaseOrderController.rejectPurchaseOrder);
  *       200:
  *         description: Purchase order marked as partially received.
  */
-router.post('/:id/partially-received', purchaseOrderController.markPartiallyReceived);
+router.post('/:id/partially-received', receivePurchases, purchaseOrderController.markPartiallyReceived);
 
 /**
  * @swagger
@@ -207,6 +216,6 @@ router.post('/:id/partially-received', purchaseOrderController.markPartiallyRece
  *       200:
  *         description: Purchase order marked as completed.
  */
-router.post('/:id/complete', purchaseOrderController.markCompleted);
+router.post('/:id/complete', receivePurchases, purchaseOrderController.markCompleted);
 
 export default router;

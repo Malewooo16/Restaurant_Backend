@@ -7,9 +7,16 @@ import {
   deleteStaff,
   uploadStaffImage,
 } from './staff.controller';
+import { requirePermission } from '../../middleware/permissions';
 import upload from '../../config/multer';
 
 const router = Router();
+
+// Permission middleware for staff routes
+const viewStaff = requirePermission('staff.view');
+const createStaffPerm = requirePermission('staff.create');
+const editStaff = requirePermission('staff.edit');
+const deleteStaffPerm = requirePermission('staff.delete');
 
 /**
  * @swagger
@@ -27,7 +34,7 @@ const router = Router();
  *               items:
  *                 $ref: '#/components/schemas/Staff'
  */
-router.get('/', getAllStaff);
+router.get('/', viewStaff, getAllStaff);
 
 /**
  * @swagger
@@ -49,7 +56,7 @@ router.get('/', getAllStaff);
  *             schema:
  *               $ref: '#/components/schemas/Staff'
  */
-router.get('/:id', getStaffById);
+router.get('/:id', viewStaff, getStaffById);
 
 /**
  * @swagger
@@ -71,7 +78,7 @@ router.get('/:id', getStaffById);
  *             schema:
  *               $ref: '#/components/schemas/Staff'
  */
-router.post('/', createStaff);
+router.post('/', createStaffPerm, createStaff);
 
 /**
  * @swagger
@@ -99,7 +106,7 @@ router.post('/', createStaff);
  *             schema:
  *               $ref: '#/components/schemas/Staff'
  */
-router.put('/:id', updateStaff);
+router.put('/:id', editStaff, updateStaff);
 
 /**
  * @swagger
@@ -117,7 +124,7 @@ router.put('/:id', updateStaff);
  *       204:
  *         description: No content
  */
-router.delete('/:id', deleteStaff);
+router.delete('/:id', deleteStaffPerm, deleteStaff);
 
 /**
  * @swagger
@@ -146,6 +153,6 @@ router.delete('/:id', deleteStaff);
  *                 imageUrl:
  *                   type: string
  */
-router.post('/upload', upload.single('image'), uploadStaffImage);
+router.post('/upload', editStaff, upload.single('image'), uploadStaffImage);
 
 export default router;

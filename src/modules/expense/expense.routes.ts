@@ -2,10 +2,15 @@ import { Router } from 'express';
 import * as expenseController from './expense.controller';
 import * as expenseCategoryController from './expense-category.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as expenseValidation from './expense.validation';
 import * as expenseCategoryValidation from './expense-category.validation';
 
 const router = Router();
+
+// Permission middleware for accounting/expense routes
+const viewAccounting = requirePermission('accounting.view');
+const manageExpenses = requirePermission('accounting.expenses');
 
 /**
  * @swagger
@@ -29,6 +34,7 @@ const router = Router();
  */
 router.post(
   '/',
+  manageExpenses,
   validate(expenseValidation.createExpenseSchema),
   expenseController.createExpense
 );
@@ -65,7 +71,7 @@ router.post(
  *               items:
  *                 $ref: '#/components/schemas/Expense'
  */
-router.get('/', expenseController.getAllExpenses);
+router.get('/', viewAccounting, expenseController.getAllExpenses);
 
 /**
  * @swagger
@@ -87,7 +93,7 @@ router.get('/', expenseController.getAllExpenses);
  *             schema:
  *               $ref: '#/components/schemas/Expense'
  */
-router.get('/:id', expenseController.getExpenseById);
+router.get('/:id', viewAccounting, expenseController.getExpenseById);
 
 /**
  * @swagger
@@ -117,6 +123,7 @@ router.get('/:id', expenseController.getExpenseById);
  */
 router.patch(
   '/:id',
+  manageExpenses,
   validate(expenseValidation.updateExpenseSchema),
   expenseController.updateExpense
 );
@@ -137,6 +144,6 @@ router.patch(
  *       204:
  *         description: No content
  */
-router.delete('/:id', expenseController.deleteExpense);
+router.delete('/:id', manageExpenses, expenseController.deleteExpense);
 
 export default router;

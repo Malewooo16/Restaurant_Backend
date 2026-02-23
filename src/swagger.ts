@@ -23,6 +23,13 @@ const swaggerDefinition = {
 
   ],
   components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
     schemas: {
       // ==== CORE ORDER MODELS ====
       Order: {
@@ -965,6 +972,108 @@ const swaggerDefinition = {
     },
   },
   paths: {
+    // ==== AUTH PATHS ====
+    '/auth/login': {
+      post: {
+        summary: 'User login',
+        tags: ['Auth'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['username', 'password'],
+                properties: {
+                  username: { type: 'string' },
+                  password: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Login successful',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    accessToken: { type: 'string' },
+                    refreshToken: { type: 'string' },
+                    user: { $ref: '#/components/schemas/User' },
+                    permissions: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Invalid credentials',
+          },
+        },
+      },
+    },
+    '/auth/refresh': {
+      post: {
+        summary: 'Refresh access token',
+        tags: ['Auth'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['refreshToken'],
+                properties: {
+                  refreshToken: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Token refreshed successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    accessToken: { type: 'string' },
+                    user: { $ref: '#/components/schemas/User' },
+                    permissions: {
+                      type: 'array',
+                      items: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Invalid or expired refresh token',
+          },
+        },
+      },
+    },
+    '/auth/logout': {
+      post: {
+        summary: 'User logout',
+        tags: ['Auth'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Logged out successfully',
+          },
+        },
+      },
+    },
+
     '/users': {
       get: {
         summary: 'Get all users',

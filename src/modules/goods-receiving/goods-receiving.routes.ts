@@ -1,9 +1,16 @@
 import { Router } from 'express';
 import * as goodsReceivingController from './goods-receiving.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as goodsReceivingValidation from './goods-receiving.validation';
 
 const router = Router();
+
+// Permission middleware for goods receiving routes
+const viewGoodsReceiving = requirePermission('goods_receiving.view');
+const createGoodsReceiving = requirePermission('goods_receiving.create');
+const editGoodsReceiving = requirePermission('goods_receiving.edit');
+const deleteGoodsReceiving = requirePermission('goods_receiving.delete');
 
 /**
  * @swagger
@@ -27,6 +34,7 @@ const router = Router();
  */
 router.post(
   '/',
+  createGoodsReceiving,
   validate(goodsReceivingValidation.createGoodsReceivingSchema),
   goodsReceivingController.createGoodsReceiving
 );
@@ -47,7 +55,7 @@ router.post(
  *               items:
  *                 $ref: '#/components/schemas/GoodsReceiving'
  */
-router.get('/', goodsReceivingController.getAllGoodsReceiving);
+router.get('/', viewGoodsReceiving, goodsReceivingController.getAllGoodsReceiving);
 
 /**
  * @swagger
@@ -65,7 +73,7 @@ router.get('/', goodsReceivingController.getAllGoodsReceiving);
  *       200:
  *         description: A list of goods receiving records for the PO.
  */
-router.get('/po/:purchaseOrderId', goodsReceivingController.getGoodsReceivingByPurchaseOrderId);
+router.get('/po/:purchaseOrderId', viewGoodsReceiving, goodsReceivingController.getGoodsReceivingByPurchaseOrderId);
 
 /**
  * @swagger
@@ -89,7 +97,7 @@ router.get('/po/:purchaseOrderId', goodsReceivingController.getGoodsReceivingByP
  *       404:
  *         description: Goods receiving record not found.
  */
-router.get('/:id', goodsReceivingController.getGoodsReceivingById);
+router.get('/:id', viewGoodsReceiving, goodsReceivingController.getGoodsReceivingById);
 
 /**
  * @swagger
@@ -121,6 +129,7 @@ router.get('/:id', goodsReceivingController.getGoodsReceivingById);
  */
 router.patch(
   '/:id',
+  editGoodsReceiving,
   validate(goodsReceivingValidation.updateGoodsReceivingSchema),
   goodsReceivingController.updateGoodsReceiving
 );
@@ -143,6 +152,6 @@ router.patch(
  *       404:
  *         description: Goods receiving record not found.
  */
-router.delete('/:id', goodsReceivingController.deleteGoodsReceiving);
+router.delete('/:id', deleteGoodsReceiving, goodsReceivingController.deleteGoodsReceiving);
 
 export default router;

@@ -1,9 +1,16 @@
 import { Router } from 'express';
 import * as inventoryItemController from './inventory-item.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as inventoryItemValidation from './inventory-item.validation';
 
 const router = Router();
+
+// Permission middleware for inventory routes
+const viewInventory = requirePermission('inventory.view');
+const createInventory = requirePermission('inventory.create');
+const editInventory = requirePermission('inventory.edit');
+const deleteInventory = requirePermission('inventory.delete');
 
 /**
  * @swagger
@@ -80,6 +87,7 @@ const router = Router();
  */
 router.post(
   '/',
+  createInventory,
   validate(inventoryItemValidation.createInventoryItemSchema),
   inventoryItemController.createInventoryItem
 );
@@ -151,6 +159,7 @@ router.post(
  */
 router.get(
   '/',
+  viewInventory,
   validate(inventoryItemValidation.getInventoryItemSchema),
   inventoryItemController.getAllInventoryItems
 );
@@ -223,6 +232,7 @@ router.get(
  */
 router.get(
   '/:id',
+  viewInventory,
   validate(inventoryItemValidation.updateInventoryItemSchema.pick({ params: true })),
   inventoryItemController.getInventoryItemById
 );
@@ -308,6 +318,7 @@ router.get(
  */
 router.patch(
   '/:id',
+  editInventory,
   validate(inventoryItemValidation.updateInventoryItemSchema),
   inventoryItemController.updateInventoryItem
 );
@@ -328,6 +339,6 @@ router.patch(
  *       204:
  *         description: No content
  */
-router.delete('/:id', inventoryItemController.deleteInventoryItem);
+router.delete('/:id', deleteInventory, inventoryItemController.deleteInventoryItem);
 
 export default router;

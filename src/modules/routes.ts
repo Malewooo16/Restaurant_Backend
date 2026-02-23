@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
 import stockRequestRoutes from './stock-request/stock-request.routes';
 import reportsRoutes from './reports/reports.routes';
 import menuRoutes from './menu/menu.routes';
@@ -30,9 +31,25 @@ import permissionRoutes from './permission/permission.routes';
 import userGroupRoutes from './user-group/user-group.routes';
 import userRoutes from './user/user.routes';
 import accountingRoutes from './accounting/accounting.routes';
+import authRoutes from './auth/auth.routes';
 
 const router = Router();
 
+// =====================================================
+// PUBLIC ROUTES (no authentication required)
+// =====================================================
+
+// Auth routes - public (login, refresh, logout)
+router.use('/auth', authRoutes);
+
+// =====================================================
+// PROTECTED ROUTES (authentication required)
+// =====================================================
+
+// Apply authentication middleware to all protected routes
+router.use(authenticate);
+
+// Menu routes - require authentication
 router.use('/menu', menuRoutes);
 router.use('/order', orderRoutes);
 router.use('/inventory-category', inventoryCategoryRoutes);
