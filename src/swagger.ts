@@ -774,6 +774,816 @@ const swaggerDefinition = {
           transactionId: { type: 'string' },
         },
       },
+
+      // ==== USER MODELS ====
+      User: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          username: { type: 'string' },
+          email: { type: 'string', nullable: true },
+          staffId: { type: 'integer', nullable: true },
+          userGroupId: { type: 'integer', nullable: true },
+          isActive: { type: 'boolean' },
+          lastLogin: { type: 'string', format: 'date-time', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          staff: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer' },
+              firstName: { type: 'string' },
+              lastName: { type: 'string' }
+            },
+            nullable: true
+          },
+          userGroup: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer' },
+              name: { type: 'string' }
+            },
+            nullable: true
+          },
+        },
+      },
+      CreateUser: {
+        type: 'object',
+        required: ['username', 'password'],
+        properties: {
+          username: { type: 'string', description: 'Unique username for the user' },
+          email: { type: 'string', description: 'Email address (optional)' },
+          password: { type: 'string', description: 'User password' },
+          staffId: { type: 'integer', description: 'Associated staff member ID (optional)' },
+          userGroupId: { type: 'integer', description: 'User group/role ID' },
+        },
+      },
+      UpdateUser: {
+        type: 'object',
+        properties: {
+          username: { type: 'string' },
+          email: { type: 'string' },
+          password: { type: 'string' },
+          staffId: { type: 'integer', nullable: true },
+          userGroupId: { type: 'integer', nullable: true },
+          isActive: { type: 'boolean' },
+          permissionOverrides: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                permissionId: { type: 'integer' },
+                allowed: { type: 'boolean' }
+              }
+            }
+          },
+        },
+      },
+      ChangePassword: {
+        type: 'object',
+        required: ['newPassword'],
+        properties: {
+          newPassword: { type: 'string', description: 'New password for the user' },
+        },
+      },
+      UpdateUserPermission: {
+        type: 'object',
+        required: ['allowed'],
+        properties: {
+          allowed: { type: 'boolean', description: 'Whether the permission is granted' },
+        },
+      },
+
+      // ==== STAFF MODELS ====
+      Staff: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          email: { type: 'string', nullable: true },
+          phone: { type: 'string', nullable: true },
+          address: { type: 'string', nullable: true },
+          roleId: { type: 'integer', nullable: true },
+          role: { $ref: '#/components/schemas/StaffRole', nullable: true },
+          departmentId: { type: 'integer', nullable: true },
+          department: { $ref: '#/components/schemas/Department', nullable: true },
+          hireDate: { type: 'string', format: 'date-time' },
+          status: { type: 'string', enum: ['ACTIVE', 'INACTIVE', 'ON_LEAVE'] },
+          imageUrl: { type: 'string', nullable: true },
+          emergencyContact: { type: 'string', nullable: true },
+          notes: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      CreateStaff: {
+        type: 'object',
+        required: ['firstName', 'lastName', 'hireDate'],
+        properties: {
+          firstName: { type: 'string', description: 'First name of the staff member' },
+          lastName: { type: 'string', description: 'Last name of the staff member' },
+          email: { type: 'string', description: 'Email address (optional)' },
+          phone: { type: 'string', description: 'Phone number (optional)' },
+          address: { type: 'string', description: 'Address (optional)' },
+          roleId: { type: 'integer', description: 'Staff role ID (optional)' },
+          departmentId: { type: 'integer', description: 'Department ID (optional)' },
+          hireDate: { type: 'string', format: 'date', description: 'Hire date (YYYY-MM-DD)' },
+          status: { type: 'string', enum: ['ACTIVE', 'INACTIVE', 'ON_LEAVE'], description: 'Staff status' },
+          imageUrl: { type: 'string', description: 'Profile image URL (optional)' },
+          emergencyContact: { type: 'string', description: 'Emergency contact info (optional)' },
+          notes: { type: 'string', description: 'Additional notes (optional)' },
+        },
+      },
+      UpdateStaff: {
+        type: 'object',
+        properties: {
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          email: { type: 'string' },
+          phone: { type: 'string' },
+          address: { type: 'string' },
+          roleId: { type: 'integer', nullable: true },
+          departmentId: { type: 'integer', nullable: true },
+          hireDate: { type: 'string', format: 'date' },
+          status: { type: 'string', enum: ['ACTIVE', 'INACTIVE', 'ON_LEAVE'] },
+          imageUrl: { type: 'string' },
+          emergencyContact: { type: 'string' },
+          notes: { type: 'string' },
+        },
+      },
+      StaffRole: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          departmentId: { type: 'integer', nullable: true },
+          department: { $ref: '#/components/schemas/Department', nullable: true },
+        },
+      },
+      CreateStaffRole: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          name: { type: 'string', description: 'Name of the staff role' },
+          description: { type: 'string', description: 'Role description (optional)' },
+          departmentId: { type: 'integer', description: 'Department ID (optional)' },
+        },
+      },
+      UpdateStaffRole: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          description: { type: 'string' },
+          departmentId: { type: 'integer', nullable: true },
+        },
+      },
+      Department: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+        },
+      },
+      CreateDepartment: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          name: { type: 'string', description: 'Name of the department' },
+          description: { type: 'string', description: 'Department description (optional)' },
+        },
+      },
+      UpdateDepartment: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          description: { type: 'string' },
+        },
+      },
+    },
+  },
+  paths: {
+    '/users': {
+      get: {
+        summary: 'Get all users',
+        tags: ['Users'],
+        responses: {
+          200: {
+            description: 'List of all users',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/User' },
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Create a new user',
+        tags: ['Users'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateUser' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'User created successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/User' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/{id}': {
+      get: {
+        summary: 'Get user by ID',
+        tags: ['Users'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'User found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/User' },
+              },
+            },
+          },
+          404: {
+            description: 'User not found',
+          },
+        },
+      },
+      put: {
+        summary: 'Update user',
+        tags: ['Users'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateUser' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'User updated successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/User' },
+              },
+            },
+          },
+          404: {
+            description: 'User not found',
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete user',
+        tags: ['Users'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'User deleted successfully',
+          },
+        },
+      },
+    },
+    '/users/{id}/change-password': {
+      post: {
+        summary: 'Change user password',
+        tags: ['Users'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ChangePassword' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Password changed successfully',
+          },
+        },
+      },
+    },
+    '/users/{id}/permissions': {
+      get: {
+        summary: 'Get effective permissions for user',
+        tags: ['Users'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'List of permission strings',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/users/{id}/permissions/{permissionId}': {
+      put: {
+        summary: 'Update a specific permission for user',
+        tags: ['Users'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+          {
+            name: 'permissionId',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateUserPermission' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Permission updated successfully',
+          },
+        },
+      },
+    },
+
+    // ==== STAFF PATHS ====
+    '/staff': {
+      get: {
+        summary: 'Get all staff members',
+        tags: ['Staff'],
+        responses: {
+          200: {
+            description: 'List of all staff members',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Staff' },
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Create a new staff member',
+        tags: ['Staff'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateStaff' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Staff member created successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Staff' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/staff/{id}': {
+      get: {
+        summary: 'Get staff member by ID',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Staff member ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Staff member found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Staff' },
+              },
+            },
+          },
+          404: {
+            description: 'Staff member not found',
+          },
+        },
+      },
+      put: {
+        summary: 'Update staff member',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Staff member ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateStaff' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Staff member updated successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Staff' },
+              },
+            },
+          },
+          404: {
+            description: 'Staff member not found',
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete staff member',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Staff member ID',
+          },
+        ],
+        responses: {
+          204: {
+            description: 'Staff member deleted successfully',
+          },
+          404: {
+            description: 'Staff member not found',
+          },
+        },
+      },
+    },
+    '/staff/upload': {
+      post: {
+        summary: 'Upload staff member image',
+        tags: ['Staff'],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                properties: {
+                  image: {
+                    type: 'string',
+                    format: 'binary',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Image uploaded successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    imageUrl: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
+    // ==== STAFF ROLE PATHS ====
+    '/staff-roles': {
+      get: {
+        summary: 'Get all staff roles',
+        tags: ['Staff'],
+        responses: {
+          200: {
+            description: 'List of all staff roles',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/StaffRole' },
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Create a new staff role',
+        tags: ['Staff'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateStaffRole' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Staff role created successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/StaffRole' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/staff-roles/{id}': {
+      get: {
+        summary: 'Get staff role by ID',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Staff role ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Staff role found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/StaffRole' },
+              },
+            },
+          },
+          404: {
+            description: 'Staff role not found',
+          },
+        },
+      },
+      put: {
+        summary: 'Update staff role',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Staff role ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateStaffRole' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Staff role updated successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/StaffRole' },
+              },
+            },
+          },
+          404: {
+            description: 'Staff role not found',
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete staff role',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Staff role ID',
+          },
+        ],
+        responses: {
+          204: {
+            description: 'Staff role deleted successfully',
+          },
+          404: {
+            description: 'Staff role not found',
+          },
+        },
+      },
+    },
+
+    // ==== DEPARTMENT PATHS ====
+    '/departments': {
+      get: {
+        summary: 'Get all departments',
+        tags: ['Staff'],
+        responses: {
+          200: {
+            description: 'List of all departments',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Department' },
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Create a new department',
+        tags: ['Staff'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateDepartment' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Department created successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Department' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/departments/{id}': {
+      get: {
+        summary: 'Get department by ID',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Department ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Department found',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Department' },
+              },
+            },
+          },
+          404: {
+            description: 'Department not found',
+          },
+        },
+      },
+      put: {
+        summary: 'Update department',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Department ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateDepartment' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Department updated successfully',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Department' },
+              },
+            },
+          },
+          404: {
+            description: 'Department not found',
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete department',
+        tags: ['Staff'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Department ID',
+          },
+        ],
+        responses: {
+          204: {
+            description: 'Department deleted successfully',
+          },
+          404: {
+            description: 'Department not found',
+          },
+        },
+      },
     },
   },
 };
