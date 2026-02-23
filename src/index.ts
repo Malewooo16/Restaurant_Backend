@@ -37,7 +37,7 @@ app.use(
 
 app.use(express.json());
 
-// Swagger UI - disable caching for fresh content
+
 app.use("/api-docs", swaggerRoutes);
 
 app.use("/api", routes);
