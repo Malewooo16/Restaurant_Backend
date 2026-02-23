@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import stockRequestRoutes from './stock-request/stock-request.routes';
+import reportsRoutes from './reports/reports.routes';
 import menuRoutes from './menu/menu.routes';
 import orderRoutes from './order/order.routes';
 import inventoryCategoryRoutes from './inventory-category/inventory-category.routes';
@@ -60,5 +61,6 @@ router.use('/permissions', permissionRoutes);
 router.use('/user-groups', userGroupRoutes);
 router.use('/users', userRoutes);
 router.use('/accounting', accountingRoutes);
+router.use('/reports', reportsRoutes);
 
 export default router;
