@@ -2,15 +2,6 @@ import { Router } from 'express';
 import * as userController from './user.controller';
 import { requirePermission } from '../../middleware/permissions';
 
-/**
- * User routes
- *
- * @swagger
- * tags:
- *   - name: Users
- *     description: User management endpoints
- */
-
 const router = Router();
 
 // Permission middleware for user routes
@@ -22,19 +13,25 @@ const managePermissions = requirePermission('users.manage_permissions');
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   get:
- *     summary: Get all users
+ *     summary: Retrieve a list of all users
  *     tags: [Users]
  *     responses:
  *       200:
- *         description: List of all users
+ *         description: A list of users
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/User'
+ */
+router.get('/', viewUsers, userController.getAllUsers);
+
+/**
+ * @swagger
+ * /api/users:
  *   post:
  *     summary: Create a new user
  *     tags: [Users]
@@ -46,20 +43,19 @@ const managePermissions = requirePermission('users.manage_permissions');
  *             $ref: '#/components/schemas/CreateUser'
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: The created user
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
  */
-
-router.get('/', viewUsers, userController.getAllUsers);
+router.post('/', createUsers, userController.createUser);
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   get:
- *     summary: Get user by ID
+ *     summary: Retrieve a single user
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -69,15 +65,21 @@ router.get('/', viewUsers, userController.getAllUsers);
  *           type: integer
  *     responses:
  *       200:
- *         description: User found
+ *         description: A single user
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       404:
  *         description: User not found
+ */
+router.get('/:id', viewUsers, userController.getUserById);
+
+/**
+ * @swagger
+ * /api/users/{id}:
  *   put:
- *     summary: Update user
+ *     summary: Update a user
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -93,15 +95,21 @@ router.get('/', viewUsers, userController.getAllUsers);
  *             $ref: '#/components/schemas/UpdateUser'
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: The updated user
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       404:
  *         description: User not found
+ */
+router.put('/:id', editUsers, userController.updateUser);
+
+/**
+ * @swagger
+ * /api/users/{id}:
  *   delete:
- *     summary: Delete user
+ *     summary: Delete a user
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -110,17 +118,14 @@ router.get('/', viewUsers, userController.getAllUsers);
  *         schema:
  *           type: integer
  *     responses:
- *       200:
- *         description: User deleted successfully
+ *       204:
+ *         description: No content
  */
-
-router.get('/:id', viewUsers, userController.getUserById);
-router.put('/:id', editUsers, userController.updateUser);
 router.delete('/:id', deleteUsers, userController.deleteUser);
 
 /**
  * @swagger
- * /users/{id}/change-password:
+ * /api/users/{id}/change-password:
  *   post:
  *     summary: Change user password
  *     tags: [Users]
@@ -140,12 +145,11 @@ router.delete('/:id', deleteUsers, userController.deleteUser);
  *       200:
  *         description: Password changed successfully
  */
-
 router.post('/:id/change-password', editUsers, userController.changePassword);
 
 /**
  * @swagger
- * /users/{id}/permissions:
+ * /api/users/{id}/permissions:
  *   get:
  *     summary: Get effective permissions for user
  *     tags: [Users]
@@ -165,12 +169,11 @@ router.post('/:id/change-password', editUsers, userController.changePassword);
  *               items:
  *                 type: string
  */
-
 router.get('/:id/permissions', managePermissions, userController.getEffectivePermissions);
 
 /**
  * @swagger
- * /users/{id}/permissions/{permissionId}:
+ * /api/users/{id}/permissions/{permissionId}:
  *   put:
  *     summary: Update a specific permission for user
  *     tags: [Users]
@@ -195,8 +198,6 @@ router.get('/:id/permissions', managePermissions, userController.getEffectivePer
  *       200:
  *         description: Permission updated successfully
  */
-
 router.put('/:id/permissions/:permissionId', managePermissions, userController.updateUserPermission);
-router.post('/', createUsers, userController.createUser);
 
 export default router;

@@ -38,12 +38,7 @@ app.use(
 app.use(express.json());
 
 // Swagger UI - disable caching for fresh content
-app.use("/api-docs", (req, res, next) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  next();
-}, swaggerRoutes);
+app.use("/api-docs", swaggerRoutes);
 
 app.use("/api", routes);
 

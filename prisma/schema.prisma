@@ -608,6 +608,7 @@ model Expense {
   amount          Float
   date            DateTime
   description     String?
+  paymentMethod   String @default("CASH")
   categoryId      Int
   category        ExpenseCategory  @relation(fields: [categoryId], references: [id])
   createdAt       DateTime         @default(now())

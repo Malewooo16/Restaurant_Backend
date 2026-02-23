@@ -782,6 +782,68 @@ const swaggerDefinition = {
         },
       },
 
+      // ==== EXPENSE MODELS ====
+      ExpenseCategory: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          name: { type: 'string' },
+          description: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      CreateExpenseCategory: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          name: { type: 'string', description: 'Name of the expense category' },
+          description: { type: 'string', description: 'Category description (optional)' },
+        },
+      },
+      UpdateExpenseCategory: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          description: { type: 'string' },
+        },
+      },
+      Expense: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', format: 'int64' },
+          amount: { type: 'number' },
+          date: { type: 'string', format: 'date-time' },
+          description: { type: 'string', nullable: true },
+          paymentMethod: { type: 'string', default: 'CASH' },
+          categoryId: { type: 'integer' },
+          category: { $ref: '#/components/schemas/ExpenseCategory' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      CreateExpense: {
+        type: 'object',
+        required: ['amount', 'date', 'categoryId'],
+        properties: {
+          amount: { type: 'number', description: 'Expense amount' },
+          date: { type: 'string', format: 'date-time', description: 'Expense date' },
+          description: { type: 'string', description: 'Expense description (optional)' },
+          paymentMethod: { type: 'string', description: 'Payment method (default: CASH)' },
+          categoryId: { type: 'integer', description: 'Expense category ID' },
+        },
+      },
+      UpdateExpense: {
+        type: 'object',
+        properties: {
+          amount: { type: 'number' },
+          date: { type: 'string', format: 'date-time' },
+          description: { type: 'string' },
+          paymentMethod: { type: 'string' },
+          categoryId: { type: 'integer' },
+        },
+      },
+
       // ==== USER MODELS ====
       User: {
         type: 'object',
@@ -973,7 +1035,7 @@ const swaggerDefinition = {
   },
   paths: {
     // ==== AUTH PATHS ====
-    '/auth/login': {
+    '/api/auth/login': {
       post: {
         summary: 'User login',
         tags: ['Auth'],
@@ -1018,7 +1080,7 @@ const swaggerDefinition = {
         },
       },
     },
-    '/auth/refresh': {
+    '/api/auth/refresh': {
       post: {
         summary: 'Refresh access token',
         tags: ['Auth'],
@@ -1061,7 +1123,7 @@ const swaggerDefinition = {
         },
       },
     },
-    '/auth/logout': {
+    '/api/auth/logout': {
       post: {
         summary: 'User logout',
         tags: ['Auth'],
@@ -1074,214 +1136,8 @@ const swaggerDefinition = {
       },
     },
 
-    '/users': {
-      get: {
-        summary: 'Get all users',
-        tags: ['Users'],
-        responses: {
-          200: {
-            description: 'List of all users',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/User' },
-                },
-              },
-            },
-          },
-        },
-      },
-      post: {
-        summary: 'Create a new user',
-        tags: ['Users'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/CreateUser' },
-            },
-          },
-        },
-        responses: {
-          201: {
-            description: 'User created successfully',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/User' },
-              },
-            },
-          },
-        },
-      },
-    },
-    '/users/{id}': {
-      get: {
-        summary: 'Get user by ID',
-        tags: ['Users'],
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'integer' },
-          },
-        ],
-        responses: {
-          200: {
-            description: 'User found',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/User' },
-              },
-            },
-          },
-          404: {
-            description: 'User not found',
-          },
-        },
-      },
-      put: {
-        summary: 'Update user',
-        tags: ['Users'],
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'integer' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/UpdateUser' },
-            },
-          },
-        },
-        responses: {
-          200: {
-            description: 'User updated successfully',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/User' },
-              },
-            },
-          },
-          404: {
-            description: 'User not found',
-          },
-        },
-      },
-      delete: {
-        summary: 'Delete user',
-        tags: ['Users'],
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'integer' },
-          },
-        ],
-        responses: {
-          200: {
-            description: 'User deleted successfully',
-          },
-        },
-      },
-    },
-    '/users/{id}/change-password': {
-      post: {
-        summary: 'Change user password',
-        tags: ['Users'],
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'integer' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/ChangePassword' },
-            },
-          },
-        },
-        responses: {
-          200: {
-            description: 'Password changed successfully',
-          },
-        },
-      },
-    },
-    '/users/{id}/permissions': {
-      get: {
-        summary: 'Get effective permissions for user',
-        tags: ['Users'],
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'integer' },
-          },
-        ],
-        responses: {
-          200: {
-            description: 'List of permission strings',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    '/users/{id}/permissions/{permissionId}': {
-      put: {
-        summary: 'Update a specific permission for user',
-        tags: ['Users'],
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'integer' },
-          },
-          {
-            name: 'permissionId',
-            in: 'path',
-            required: true,
-            schema: { type: 'integer' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/UpdateUserPermission' },
-            },
-          },
-        },
-        responses: {
-          200: {
-            description: 'Permission updated successfully',
-          },
-        },
-      },
-    },
-
     // ==== STAFF PATHS ====
-    '/staff': {
+    '/api/staff': {
       get: {
         summary: 'Get all staff members',
         tags: ['Staff'],
@@ -1322,7 +1178,7 @@ const swaggerDefinition = {
         },
       },
     },
-    '/staff/{id}': {
+    '/api/staff/{id}': {
       get: {
         summary: 'Get staff member by ID',
         tags: ['Staff'],
@@ -1405,7 +1261,7 @@ const swaggerDefinition = {
         },
       },
     },
-    '/staff/upload': {
+    '/api/staff/upload': {
       post: {
         summary: 'Upload staff member image',
         tags: ['Staff'],
@@ -1444,7 +1300,7 @@ const swaggerDefinition = {
     },
 
     // ==== STAFF ROLE PATHS ====
-    '/staff-roles': {
+    '/api/staff-roles': {
       get: {
         summary: 'Get all staff roles',
         tags: ['Staff'],
@@ -1485,7 +1341,7 @@ const swaggerDefinition = {
         },
       },
     },
-    '/staff-roles/{id}': {
+    '/api/staff-roles/{id}': {
       get: {
         summary: 'Get staff role by ID',
         tags: ['Staff'],
@@ -1570,7 +1426,7 @@ const swaggerDefinition = {
     },
 
     // ==== DEPARTMENT PATHS ====
-    '/departments': {
+    '/api/departments': {
       get: {
         summary: 'Get all departments',
         tags: ['Staff'],
@@ -1611,7 +1467,7 @@ const swaggerDefinition = {
         },
       },
     },
-    '/departments/{id}': {
+    '/api/departments/{id}': {
       get: {
         summary: 'Get department by ID',
         tags: ['Staff'],
