@@ -19,7 +19,9 @@ export const getAllUsers = async () => {
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy:{staff:{
+      firstName:"asc"
+    }}
   });
 };
 
@@ -46,9 +48,9 @@ export const getUserById = async (id: number) => {
   });
 };
 
-export const getUserByUsername = async (username: string) => {
+export const getUserByEmail = async (email: string) => {
   return prisma.user.findUnique({
-    where: { username },
+    where: { email },
     include: {
       staff: true,
       userGroup: {
