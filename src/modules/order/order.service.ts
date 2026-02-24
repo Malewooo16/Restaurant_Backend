@@ -612,22 +612,35 @@ export const updateBarOrderStatus = (
           item.status === OrderItemStatus.PREPARING
       );
 
-      // Special case: If cancelling an item and remaining items are SERVED, complete the order
+      // Special case: If cancelling an item, check if ALL items are now cancelled
       if (isCancelled) {
-        // Check if remaining items (excluding cancelled) are all SERVED
-        const remainingItems = allOrderItems.filter(
-          (item) => item.status !== OrderItemStatus.CANCELLED
+        // Check if all items (including the one being cancelled) are CANCELLED
+        const allItemsCancelled = allOrderItems.every(
+          (item) => item.status === OrderItemStatus.CANCELLED
         );
         
-        const allRemainingServed = remainingItems.length > 0 && remainingItems.every(
-          (item) => item.status === OrderItemStatus.READY
-        );
-        
-        if (allRemainingServed && orderItem.order.status !== OrderStatus.COMPLETED) {
+        if (allItemsCancelled && orderItem.order.status !== OrderStatus.CANCELLED) {
+          // Update the entire order to CANCELLED
           await tx.order.update({
             where: { id: orderItem.order.id },
-            data: { status: OrderStatus.COMPLETED },
+            data: { status: OrderStatus.CANCELLED },
           });
+        } else {
+          // Check if remaining items (excluding cancelled) are all SERVED/READY
+          const remainingItems = allOrderItems.filter(
+            (item) => item.status !== OrderItemStatus.CANCELLED
+          );
+          
+          const allRemainingServed = remainingItems.length > 0 && remainingItems.every(
+            (item) => item.status === OrderItemStatus.READY
+          );
+          
+          if (allRemainingServed && orderItem.order.status !== OrderStatus.COMPLETED) {
+            await tx.order.update({
+              where: { id: orderItem.order.id },
+              data: { status: OrderStatus.COMPLETED },
+            });
+          }
         }
       } else if (allItemsReadyOrServedOrCancelled && !hasPendingItems && orderItem.order.status !== OrderStatus.COMPLETED) {
         await tx.order.update({

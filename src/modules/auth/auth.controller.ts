@@ -3,6 +3,15 @@ import * as userService from '../user/user.service';
 import { generateToken, generateRefreshToken, verifyRefreshToken, verifyToken } from '../../middleware/auth';
 import bcrypt from 'bcrypt';
 
+// Cookie options
+const REFRESH_TOKEN_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+  path: '/',
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -62,15 +71,24 @@ export const login = async (req: Request, res: Response) => {
     // Update last login
     await userService.updateLastLogin(user.id);
 
+    // Set refresh token as HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
+    // Return response without refreshToken in body (it's in the cookie now)
     res.json({
       accessToken,
-      refreshToken,
       user: {
         id: user.id,
         username: user.username,
         email: user.email,
         userGroupId: user.userGroupId,
+        userGroupName: user.userGroup?.name,
         staffId: user.staffId,
+        staff: user.staff ? {
+          firstName: user.staff.firstName,
+          lastName: user.staff.lastName,
+          imageUrl: user.staff.imageUrl || undefined,
+        } : undefined,
       },
       permissions,
     });
@@ -82,7 +100,8 @@ export const login = async (req: Request, res: Response) => {
 
 export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    // Get refresh token from cookie or body (for backward compatibility)
+    let refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!refreshToken) {
       return res.status(400).json({ message: 'Refresh token is required' });
@@ -110,6 +129,19 @@ export const refreshToken = async (req: Request, res: Response) => {
     const permissions = await userService.getEffectivePermissions(user.id);
 
     // Generate new access token
+    const newRefreshToken = generateRefreshToken({
+      id: user.id,
+      username: user.username,
+      userGroupId: user.userGroupId || undefined,
+    });
+
+    // Store new refresh token and invalidate old one
+    await userService.storeRefreshToken(user.id, newRefreshToken);
+
+    // Set new refresh token as HTTP-only cookie
+    res.cookie('refreshToken', newRefreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
+    // Generate new access token
     const accessToken = generateToken({
       id: user.id,
       username: user.username,
@@ -123,7 +155,13 @@ export const refreshToken = async (req: Request, res: Response) => {
         username: user.username,
         email: user.email,
         userGroupId: user.userGroupId,
+        userGroupName: user.userGroup?.name,
         staffId: user.staffId,
+        staff: user.staff ? {
+          firstName: user.staff.firstName,
+          lastName: user.staff.lastName,
+          imageUrl: user.staff.imageUrl || undefined,
+        } : undefined,
       },
       permissions,
     });
@@ -150,6 +188,14 @@ export const logout = async (req: Request, res: Response) => {
         await userService.clearRefreshTokens(decoded.id);
       }
     }
+
+    // Clear the refresh token cookie
+    res.clearCookie('refreshToken', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
 
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
