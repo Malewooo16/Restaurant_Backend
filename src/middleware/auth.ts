@@ -8,15 +8,15 @@ export interface AuthRequest extends Request {
     username: string;
     userGroupId?: number;
     permissions: string[];
+    isOverride?: boolean; // Indicates if this is a token override (POS/waiter)
   };
 }
 
 // JWT secret from environment
 const JWT_SECRET = process.env.JWT_SECRET || 'apotek-restaurant-jwt-secret-key-2024';
 
-// Override token for frontend development (bypasses JWT verification)
-// This can be removed once frontend implementation is complete
-const DEV_OVERRIDE_TOKEN = process.env.DEV_OVERRIDE_TOKEN || 'dev-override-token-12345';
+// Override token for POS/waiter bypass (bypasses JWT verification)
+const POS_OVERRIDE_TOKEN = process.env.POS_OVERRIDE_TOKEN || '';
 
 /**
  * Load user permissions from database
@@ -78,24 +78,36 @@ const loadUserPermissions = async (userId: number): Promise<string[]> => {
 /**
  * Authentication middleware
  * Verifies JWT token and attaches user info (including permissions) to request
- * 
- * Special override: If header 'x-dev-override' is set to the dev token,
- * it will bypass JWT verification for frontend development
+ *
+ * Special override: If header 'x-dev-override' is set to the POS override token,
+ * it will bypass JWT verification using user ID 1
+ *
+ * Format: "POS_OVERRIDE_TOKEN" - uses user ID 1
  */
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  // Check for dev override token
-  const devOverride = req.headers['x-dev-override'] as string || "99658";
-  
-  if (devOverride === "99658") {
-    // Bypass JWT verification for development
-    // Load permissions from DB for dev user (user ID 1 = Admin)
-    const permissions = await loadUserPermissions(1);
+  // Check for POS/waiter override token
+  const devOverride = req.headers['x-pos-override'] as string | undefined;
+   
+  if (devOverride && POS_OVERRIDE_TOKEN && devOverride === POS_OVERRIDE_TOKEN) {
+    // Use user ID 1 by default (admin)
+    const userId = 1;
+    let username = 'pos-override';
+    
+    // Load permissions for the specified user
+    const permissions = await loadUserPermissions(userId);
+    
+    // Get the actual user for proper username
+    const actualUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true, userGroupId: true }
+    });
     
     req.user = {
-      id: 1,
-      username: 'dev-admin',
-      userGroupId: 1,
-      permissions: permissions.length > 0 ? permissions : ['*'], // Full permissions if no DB permissions
+      id: userId,
+      username: actualUser?.username || username,
+      userGroupId: actualUser?.userGroupId ?? undefined,
+      permissions: permissions.length > 0 ? permissions : ['*'],
+      isOverride: true, // Mark as override user
     };
     return next();
   }
