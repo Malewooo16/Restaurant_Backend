@@ -2,7 +2,8 @@ import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
 export const createInventoryCategory = async (
-  data: Prisma.InventoryCategoryCreateInput
+  data: { name: string; description?: string; supplierId?: number },
+  userId: number
 ) => {
   const nameExists = await prisma.inventoryCategory.findFirst({
     where: { name: data.name },
@@ -11,7 +12,13 @@ export const createInventoryCategory = async (
     throw new Error('Inventory category with this name already exists');
   }
   return prisma.inventoryCategory.create({
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      supplierId: data.supplierId,
+      createdById: userId,
+      updatedById: userId,
+    },
   });
 };
 
@@ -27,9 +34,10 @@ export const getInventoryCategoryById = (id: number) => {
 
 export const updateInventoryCategory = async (
   id: number,
-  data: Prisma.InventoryCategoryUpdateInput
+  data: { name?: string; description?: string; supplierId?: number; isActive?: boolean },
+  userId: number
 ) => {
-  if (typeof data.name === 'string') {
+  if (data.name) {
     const nameExists = await prisma.inventoryCategory.findFirst({
       where: {
         name: data.name,
@@ -44,7 +52,13 @@ export const updateInventoryCategory = async (
   }
   return prisma.inventoryCategory.update({
     where: { id },
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      supplierId: data.supplierId,
+      isActive: data.isActive,
+      updatedById: userId,
+    },
   });
 };
 

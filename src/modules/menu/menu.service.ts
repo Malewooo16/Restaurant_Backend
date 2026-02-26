@@ -32,7 +32,8 @@ export const getMenuItemById = async (id: number) => {
 };
 
 export const createMenuItem = async (
-  data: Prisma.MenuItemCreateInput & { addonIds?: number[]; sideDishIds?: number[]; categoryId: number }
+  data: Prisma.MenuItemCreateInput & { addonIds?: number[]; sideDishIds?: number[]; categoryId: number },
+  userId: number
 ) => {
   const { addonIds, sideDishIds, categoryId, ...menuItemData } = data;
 
@@ -46,6 +47,8 @@ export const createMenuItem = async (
   return prisma.menuItem.create({
     data: {
       ...menuItemData,
+      createdBy: { connect: { id: userId } },
+      updatedBy: { connect: { id: userId } },
       menuCategory: {
         connect: { id: categoryId },
       },
@@ -66,7 +69,8 @@ export const createMenuItem = async (
 
 export const updateMenuItem = async (
   id: number,
-  data: Prisma.MenuItemUpdateInput & { addonIds?: number[]; sideDishIds?: number[]; categoryId?: number }
+  data: Prisma.MenuItemUpdateInput & { addonIds?: number[]; sideDishIds?: number[]; categoryId?: number },
+  userId: number
 ) => {
   const { addonIds, sideDishIds, categoryId, ...menuItemData } = data;
 
@@ -92,6 +96,7 @@ export const updateMenuItem = async (
     where: { id },
     data: {
       ...menuItemData,
+      updatedBy: { connect: { id: userId } },
       menuCategory: categoryId ? { connect: { id: categoryId } } : undefined,
       addons: {
         ...disconnectAddons,
@@ -117,14 +122,20 @@ export const deleteMenuItem = async (id: number) => {
 };
 
 // MenuAddon Services
-export const createMenuAddon = async (data: Prisma.MenuAddonCreateInput) => {
+export const createMenuAddon = async (data: Prisma.MenuAddonCreateInput, userId: number) => {
   const nameExists = await prisma.menuAddon.findFirst({
     where: { name: data.name },
   });
   if (nameExists) {
     throw new Error('Menu addon with this name already exists');
   }
-  return prisma.menuAddon.create({ data });
+  return prisma.menuAddon.create({
+    data: {
+      ...data,
+      createdBy: { connect: { id: userId } },
+      updatedBy: { connect: { id: userId } },
+    },
+  });
 };
 
 export const getAllMenuAddons = async () => {
@@ -137,7 +148,8 @@ export const getMenuAddonById = async (id: number) => {
 
 export const updateMenuAddon = async (
   id: number,
-  data: Prisma.MenuAddonUpdateInput
+  data: Prisma.MenuAddonUpdateInput,
+  userId: number
 ) => {
   if (typeof data.name === 'string') {
     const nameExists = await prisma.menuAddon.findFirst({
@@ -150,7 +162,13 @@ export const updateMenuAddon = async (
       throw new Error('Menu addon with this name already exists');
     }
   }
-  return prisma.menuAddon.update({ where: { id }, data });
+  return prisma.menuAddon.update({
+    where: { id },
+    data: {
+      ...data,
+      updatedBy: { connect: { id: userId } },
+    },
+  });
 };
 
 export const deleteMenuAddon = async (id: number) => {
@@ -158,14 +176,20 @@ export const deleteMenuAddon = async (id: number) => {
 };
 
 // MenuSideDish Services
-export const createMenuSideDish = async (data: Prisma.MenuSideDishCreateInput) => {
+export const createMenuSideDish = async (data: Prisma.MenuSideDishCreateInput, userId: number) => {
   const nameExists = await prisma.menuSideDish.findFirst({
     where: { name: data.name },
   });
   if (nameExists) {
     throw new Error('Menu side dish with this name already exists');
   }
-  return prisma.menuSideDish.create({ data });
+  return prisma.menuSideDish.create({
+    data: {
+      ...data,
+      createdBy: { connect: { id: userId } },
+      updatedBy: { connect: { id: userId } },
+    },
+  });
 };
 
 export const getAllMenuSideDishes = async () => {
@@ -178,7 +202,8 @@ export const getMenuSideDishById = async (id: number) => {
 
 export const updateMenuSideDish = async (
   id: number,
-  data: Prisma.MenuSideDishUpdateInput
+  data: Prisma.MenuSideDishUpdateInput,
+  userId: number
 ) => {
   if (typeof data.name === 'string') {
     const nameExists = await prisma.menuSideDish.findFirst({
@@ -191,7 +216,13 @@ export const updateMenuSideDish = async (
       throw new Error('Menu side dish with this name already exists');
     }
   }
-  return prisma.menuSideDish.update({ where: { id }, data });
+  return prisma.menuSideDish.update({
+    where: { id },
+    data: {
+      ...data,
+      updatedBy: { connect: { id: userId } },
+    },
+  });
 };
 
 export const deleteMenuSideDish = async (id: number) => {
@@ -199,14 +230,20 @@ export const deleteMenuSideDish = async (id: number) => {
 };
 
 // MenuCategory Services
-export const createMenuCategory = async (data: Prisma.MenuCategoryCreateInput) => {
+export const createMenuCategory = async (data: Prisma.MenuCategoryCreateInput, userId: number) => {
   const nameExists = await prisma.menuCategory.findFirst({
     where: { name: data.name },
   });
   if (nameExists) {
     throw new Error('Menu category with this name already exists');
   }
-  return prisma.menuCategory.create({ data });
+  return prisma.menuCategory.create({
+    data: {
+      ...data,
+      createdBy: { connect: { id: userId } },
+      updatedBy: { connect: { id: userId } },
+    },
+  });
 };
 
 export const getAllMenuCategories = async () => {
@@ -219,7 +256,8 @@ export const getMenuCategoryById = async (id: number) => {
 
 export const updateMenuCategory = async (
   id: number,
-  data: Prisma.MenuCategoryUpdateInput
+  data: Prisma.MenuCategoryUpdateInput,
+  userId: number
 ) => {
   if (typeof data.name === 'string') {
     const nameExists = await prisma.menuCategory.findFirst({
@@ -232,7 +270,13 @@ export const updateMenuCategory = async (
       throw new Error('Menu category with this name already exists');
     }
   }
-  return prisma.menuCategory.update({ where: { id }, data });
+  return prisma.menuCategory.update({
+    where: { id },
+    data: {
+      ...data,
+      updatedBy: { connect: { id: userId } },
+    },
+  });
 };
 
 export const deleteMenuCategory = async (id: number) => {

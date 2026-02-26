@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import * as inventoryCategoryService from './inventory-category.service';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createInventoryCategory = async (req: Request, res: Response) => {
+export const createInventoryCategory = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const inventoryCategory = await inventoryCategoryService.createInventoryCategory(
-      req.body
+      req.body,
+      userId!
     );
     res.status(201).json(inventoryCategory);
   } catch (error: any) {
@@ -47,15 +50,17 @@ export const getInventoryCategoryById = async (
 };
 
 export const updateInventoryCategory = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const inventoryCategory =
       await inventoryCategoryService.updateInventoryCategory(
         parseInt(id as string),
-        req.body
+        req.body,
+        userId!
       );
     res.status(200).json(inventoryCategory);
   } catch (error: any) {

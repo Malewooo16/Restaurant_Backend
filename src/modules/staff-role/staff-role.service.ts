@@ -36,7 +36,7 @@ export const getStaffRolesByDepartment = async (departmentId: number) => {
   });
 };
 
-export const createStaffRole = async (data: Prisma.StaffRoleCreateInput) => {
+export const createStaffRole = async (data: { name: string; description?: string; departmentId?: number }, userId: number) => {
   const nameExists = await prisma.staffRole.findFirst({
     where: { name: data.name },
   });
@@ -44,20 +44,26 @@ export const createStaffRole = async (data: Prisma.StaffRoleCreateInput) => {
     throw new Error('Staff role with this name already exists');
   }
   return prisma.staffRole.create({
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      departmentId: data.departmentId,
+      createdById: userId,
+      updatedById: userId,
+    },
     include: {
       department: true,
     },
   });
 };
 
-export const updateStaffRole = async (id: number, data: Prisma.StaffRoleUpdateInput) => {
+export const updateStaffRole = async (id: number, data: { name?: string; description?: string; departmentId?: number; isActive?: boolean }, userId: number) => {
   const existing = await prisma.staffRole.findUnique({ where: { id } });
   if (!existing) {
     throw new Error('Staff role not found');
   }
 
-  if (typeof data.name === 'string') {
+  if (data.name) {
     const nameExists = await prisma.staffRole.findFirst({
       where: {
         name: data.name,
@@ -71,7 +77,13 @@ export const updateStaffRole = async (id: number, data: Prisma.StaffRoleUpdateIn
 
   return prisma.staffRole.update({
     where: { id },
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      departmentId: data.departmentId,
+      isActive: data.isActive,
+      updatedById: userId,
+    },
     include: {
       department: true,
     },

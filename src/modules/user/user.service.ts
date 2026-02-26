@@ -2,6 +2,9 @@ import { prisma } from "../../../lib/prisma";
 
 export const getAllUsers = async () => {
   return prisma.user.findMany({
+    where:{
+      username:{mode:"insensitive"}
+    },
     include: {
       staff: true,
       userGroup: {
@@ -19,9 +22,9 @@ export const getAllUsers = async () => {
         },
       },
     },
-    orderBy:{staff:{
-      firstName:"asc"
-    }}
+   orderBy:{
+    username:"asc"
+   }
   });
 };
 
@@ -71,16 +74,16 @@ export const getUserByEmail = async (email: string) => {
   });
 };
 
-export const createUser = async (data: { 
-  username: string; 
-  email?: string; 
-  password: string; 
-  staffId?: number; 
+export const createUser = async (data: {
+  username: string;
+  email?: string;
+  password: string;
+  staffId?: number;
   userGroupId?: number;
 }) => {
   // Simple password hashing - in production use bcrypt
   const passwordHash = data.password;
-  
+   
   return prisma.user.create({
     data: {
       username: data.username,
@@ -96,11 +99,11 @@ export const createUser = async (data: {
   });
 };
 
-export const updateUser = async (id: number, data: { 
-  username?: string; 
-  email?: string; 
+export const updateUser = async (id: number, data: {
+  username?: string;
+  email?: string;
   password?: string;
-  staffId?: number | null; 
+  staffId?: number | null;
   userGroupId?: number | null;
   isActive?: boolean;
   permissionOverrides?: { permissionId: number; allowed: boolean }[];

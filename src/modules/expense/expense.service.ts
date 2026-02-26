@@ -2,10 +2,25 @@ import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
 export const createExpense = async (
-  data: Prisma.ExpenseCreateInput
+  data: {
+    amount: number;
+    date: string | Date;
+    description?: string;
+    paymentMethod: string;
+    categoryId: number;
+  },
+  userId: number
 ) => {
   return prisma.expense.create({
-    data,
+    data: {
+      amount: data.amount,
+      date: new Date(data.date),
+      description: data.description,
+      paymentMethod: data.paymentMethod as any,
+      categoryId:data.categoryId,
+      createdById:userId,
+      updatedById:userId
+    },
   });
 };
 
@@ -35,6 +50,8 @@ export const getAllExpenses = (params?: GetAllExpensesParams) => {
     where,
     include: {
       category: true,
+      createdBy: true,
+      updatedBy: true,
     },
     orderBy: {
       date: 'desc',
@@ -47,17 +64,33 @@ export const getExpenseById = (id: number) => {
     where: { id },
     include: {
       category: true,
+      createdBy: true,
+      updatedBy: true,
     },
   });
 };
 
 export const updateExpense = async (
   id: number,
-  data: Prisma.ExpenseUpdateInput
+  data: {
+    amount?: number;
+    date?: string | Date;
+    description?: string;
+    paymentMethod?: string;
+    categoryId?: number;
+  },
+  userId: number
 ) => {
   return prisma.expense.update({
     where: { id },
-    data,
+    data: {
+      ...(data.amount !== undefined && { amount: data.amount }),
+      ...(data.date !== undefined && { date: new Date(data.date) }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.paymentMethod !== undefined && { paymentMethod: data.paymentMethod as any }),
+      ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
+      updatedById: userId,
+    },
   });
 };
 

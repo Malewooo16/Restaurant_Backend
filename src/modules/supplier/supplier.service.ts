@@ -1,14 +1,17 @@
 import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
-export const createSupplier = async (data: { 
-  name: string; 
-  contactPerson?: string; 
-  email?: string; 
-  phone?: string; 
-  address?: string; 
-  categories?: number[] 
-}) => {
+export const createSupplier = async (
+  data: {
+    name: string;
+    contactPerson?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    categories?: number[]
+  },
+  userId: number
+) => {
   try {
     const { categories, ...supplierData } = data;
 
@@ -26,10 +29,12 @@ export const createSupplier = async (data: {
       throw new Error('Supplier with the same name or email already exists.');
     }
 
-    // 2. Create the supplier
+    // 2. Create the supplier with createdBy
     return await prisma.supplier.create({
       data: {
         ...supplierData,
+        createdById: userId,
+        updatedById: userId,
         ...(categories && categories.length > 0 && {
           inventoryCategories: {
             connect: categories.map((id) => ({ id })),
@@ -71,13 +76,18 @@ export const getSupplierById = async (id: number) => {
   });
 };
 
-export const updateSupplier = async (id: number, data: { name?: string; contactPerson?: string; email?: string; phone?: string; address?: string; categories?: number[] }) => {
+export const updateSupplier = async (
+  id: number,
+  data: { name?: string; contactPerson?: string; email?: string; phone?: string; address?: string; categories?: number[] },
+  userId: number
+) => {
   const { categories, ...supplierData } = data;
   
   return prisma.supplier.update({
     where: { id },
     data: {
       ...supplierData,
+      updatedById: userId,
       ...(categories && {
         inventoryCategories: {
           set: categories.map((catId) => ({ id: catId })),

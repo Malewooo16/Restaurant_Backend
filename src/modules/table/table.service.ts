@@ -2,7 +2,8 @@ import { Prisma, TableStatus } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
 export const createTable = async (
-  data: Prisma.TableCreateInput
+  data: { number: number; capacity: number; status?: TableStatus },
+  userId: number
 ) => {
   const numberExists = await prisma.table.findFirst({
     where: { number: data.number },
@@ -11,7 +12,13 @@ export const createTable = async (
     throw new Error('Table with this number already exists');
   }
   return prisma.table.create({
-    data,
+    data: {
+      number: data.number,
+      capacity: data.capacity,
+      status: data.status,
+      createdById: userId,
+      updatedById: userId,
+    },
   });
 };
 
@@ -144,9 +151,10 @@ export const getTableById = (id: number) => {
 
 export const updateTable = async (
   id: number,
-  data: Prisma.TableUpdateInput
+  data: { number?: number; capacity?: number; status?: TableStatus },
+  userId: number
 ) => {
-  if (typeof data.number === 'number') {
+  if (data.number) {
     const numberExists = await prisma.table.findFirst({
       where: {
         number: data.number,
@@ -161,7 +169,12 @@ export const updateTable = async (
   }
   return prisma.table.update({
     where: { id },
-    data,
+    data: {
+      number: data.number,
+      capacity: data.capacity,
+      status: data.status,
+      updatedById: userId,
+    },
   });
 };
 

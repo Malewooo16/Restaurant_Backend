@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import * as goodsReceivingService from './goods-receiving.service';
-import { validateGoodsReceivingItems } from './goods-receiving.validation'; 
+import { validateGoodsReceivingItems } from './goods-receiving.validation';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createGoodsReceiving = async (req: Request, res: Response) => {
+export const createGoodsReceiving = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const { receivedItems, ...goodsReceivingData } = req.body;
     await validateGoodsReceivingItems.parseAsync(receivedItems);
-    const goodsReceiving = await goodsReceivingService.createGoodsReceiving(goodsReceivingData, receivedItems);
+    const goodsReceiving = await goodsReceivingService.createGoodsReceiving(goodsReceivingData, receivedItems, userId!);
     res.status(201).json(goodsReceiving);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -50,15 +52,17 @@ export const getGoodsReceivingById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateGoodsReceiving = async (req: Request, res: Response) => {
+export const updateGoodsReceiving = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const { receivedItems, ...goodsReceivingData } = req.body;
     await validateGoodsReceivingItems.parseAsync(receivedItems);
     const goodsReceiving = await goodsReceivingService.updateGoodsReceiving(
       parseInt(id as string),
       goodsReceivingData,
-      receivedItems
+      receivedItems,
+      userId!
     );
     res.status(200).json(goodsReceiving);
   } catch (error: any) {

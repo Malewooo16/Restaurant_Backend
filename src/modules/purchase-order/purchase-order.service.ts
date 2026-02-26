@@ -10,7 +10,7 @@ interface PurchaseOrderItemInput {
 // Helper function to generate unique PO number
 async function generatePONumber(tx: Prisma.TransactionClient): Promise<string> {
   const timestamp = Date.now().toString(36).toUpperCase().replace(/^0+/, '');
-  const prefix = 'GRN';
+  const prefix = 'PO';
   const candidate = `${prefix}-${timestamp}`;
   // Check if it exists, if so, generate a new one
   const existing = await tx.purchaseOrder.findFirst({
@@ -26,7 +26,8 @@ async function generatePONumber(tx: Prisma.TransactionClient): Promise<string> {
 
 export const createPurchaseOrder = async (
   data: Omit<Prisma.PurchaseOrderCreateInput, 'items' | 'poNumber'>, // Exclude 'items' and 'poNumber' as we handle them separately
-  items: PurchaseOrderItemInput[]
+  items: PurchaseOrderItemInput[],
+  userId: number
 ) => {
   return prisma.$transaction(async (tx) => {
     // Auto-generate PO number if not provided
@@ -34,16 +35,20 @@ export const createPurchaseOrder = async (
     
     const purchaseOrder = await tx.purchaseOrder.create({
       data: {
-        ...data,
+        ...(data as any),
         poNumber,
+        createdById: userId,
+        updatedById: userId,
         items: {
           create: items.map(item => ({
-            inventoryItem: { connect: { id: item.inventoryItemId } },
+            inventoryItemId: item.inventoryItemId,
             quantityOrdered: item.quantityOrdered,
             unitPrice: item.unitPrice,
+            createdById: userId,
+            updatedById: userId,
           })),
         },
-      },
+      } as any,
       include: {
         items: true,
       },
@@ -122,7 +127,8 @@ export const getPurchaseOrderById = async (id: number) => {
 export const updatePurchaseOrder = async (
   id: number,
   data: Omit<Prisma.PurchaseOrderUpdateInput, 'items'>, // Exclude 'items' from data as we handle them separately
-  items: PurchaseOrderItemInput[]
+  items: PurchaseOrderItemInput[],
+  userId: number
 ) => {
   return prisma.$transaction(async (tx) => {
     // Delete existing purchase order items
@@ -133,15 +139,18 @@ export const updatePurchaseOrder = async (
     const purchaseOrder = await tx.purchaseOrder.update({
       where: { id },
       data: {
-        ...data,
+        ...(data as any),
+        updatedById: userId,
         items: {
           create: items.map(item => ({
-            inventoryItem: { connect: { id: item.inventoryItemId } },
+            inventoryItemId: item.inventoryItemId,
             quantityOrdered: item.quantityOrdered,
             unitPrice: item.unitPrice,
+            createdById: userId,
+            updatedById: userId,
           })),
         },
-      },
+      } as any,
       include: {
         items: true,
       },
@@ -156,11 +165,12 @@ export const deletePurchaseOrder = async (id: number) => {
   });
 };
 
-export const approvePurchaseOrder = async (id: number) => {
+export const approvePurchaseOrder = async (id: number, userId: number) => {
   return prisma.purchaseOrder.update({
     where: { id },
     data: {
       status: 'APPROVED',
+      updatedById: userId,
     },
     include: {
       supplier: true,
@@ -173,12 +183,13 @@ export const approvePurchaseOrder = async (id: number) => {
   });
 };
 
-export const rejectPurchaseOrder = async (id: number, reason?: string) => {
+export const rejectPurchaseOrder = async (id: number, reason?: string, userId?: number) => {
   return prisma.purchaseOrder.update({
     where: { id },
     data: {
       status: 'CANCELLED',
       notes: reason ? `${reason}` : undefined,
+      ...(userId && { updatedById: userId }),
     },
     include: {
       supplier: true,
@@ -191,11 +202,12 @@ export const rejectPurchaseOrder = async (id: number, reason?: string) => {
   });
 };
 
-export const markPartiallyReceived = async (id: number) => {
+export const markPartiallyReceived = async (id: number, userId: number) => {
   return prisma.purchaseOrder.update({
     where: { id },
     data: {
       status: 'PARTIALLY_RECEIVED',
+      updatedById: userId,
     },
     include: {
       supplier: true,
@@ -208,11 +220,12 @@ export const markPartiallyReceived = async (id: number) => {
   });
 };
 
-export const markCompleted = async (id: number) => {
+export const markCompleted = async (id: number, userId: number) => {
   return prisma.purchaseOrder.update({
     where: { id },
     data: {
       status: 'COMPLETED',
+      updatedById: userId,
     },
     include: {
       supplier: true,

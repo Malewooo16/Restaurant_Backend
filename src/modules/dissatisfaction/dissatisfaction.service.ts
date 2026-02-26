@@ -15,13 +15,20 @@ export const getDissatisfactionById = async (id: number) => {
   });
 };
 
-export const createDissatisfaction = async (data: Prisma.DissatisfactionCreateInput) => {
+export const createDissatisfaction = async (data: { orderId: number; tableNumber: number; itemName: string; reason: string }, userId: number) => {
   return prisma.dissatisfaction.create({
-    data,
+    data: {
+      orderId: data.orderId,
+      tableNumber: data.tableNumber,
+      itemName: data.itemName,
+      reason: data.reason,
+      createdById: userId,
+      updatedById: userId,
+    },
   });
 };
 
-export const updateDissatisfaction = async (id: number, data: Prisma.DissatisfactionUpdateInput) => {
+export const updateDissatisfaction = async (id: number, data: { status?: string; resolution?: string }, userId: number) => {
   const existingDissatisfaction = await prisma.dissatisfaction.findUnique({
     where: { id },
   });
@@ -31,11 +38,15 @@ export const updateDissatisfaction = async (id: number, data: Prisma.Dissatisfac
 
   return prisma.dissatisfaction.update({
     where: { id },
-    data,
+    data: {
+      status: data.status as any,
+      resolution: data.resolution,
+      updatedById: userId,
+    },
   });
 };
 
-export const updateDissatisfactionStatus = async (id: number, status: string, resolution?: string) => {
+export const updateDissatisfactionStatus = async (id: number, status: string, resolution: string | undefined, userId: number) => {
   const existingDissatisfaction = await prisma.dissatisfaction.findUnique({
     where: { id },
   });
@@ -48,6 +59,7 @@ export const updateDissatisfactionStatus = async (id: number, status: string, re
     data: {
       status: status as any,
       resolution,
+      updatedById: userId,
     },
   });
 };

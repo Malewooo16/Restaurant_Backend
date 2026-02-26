@@ -1,15 +1,17 @@
 import { Request, Response } from 'express';
 import * as purchaseOrderService from './purchase-order.service';
 import { validatePurchaseOrderItems } from './purchase-order.validation';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createPurchaseOrder = async (req: Request, res: Response) => {
+export const createPurchaseOrder = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     // The validation middleware already validated req.body, so data is in req.body
     const { items, ...purchaseOrderData } = req.body;
     
     // Validate items
     await validatePurchaseOrderItems.parseAsync(items);
-    const purchaseOrder = await purchaseOrderService.createPurchaseOrder(purchaseOrderData, items);
+    const purchaseOrder = await purchaseOrderService.createPurchaseOrder(purchaseOrderData, items, userId!);
     res.status(201).json(purchaseOrder);
   } catch (error: any) {
     console.error('Create Purchase Order Error:', error);
@@ -50,15 +52,17 @@ export const getPurchaseOrderById = async (req: Request, res: Response) => {
   }
 };
 
-export const updatePurchaseOrder = async (req: Request, res: Response) => {
+export const updatePurchaseOrder = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const { items, ...purchaseOrderData } = req.body;
     await validatePurchaseOrderItems.parseAsync(items);
     const purchaseOrder = await purchaseOrderService.updatePurchaseOrder(
       parseInt(id as string),
       purchaseOrderData,
-      items
+      items,
+      userId!
     );
     res.status(200).json(purchaseOrder);
   } catch (error: any) {
@@ -76,41 +80,45 @@ export const deletePurchaseOrder = async (req: Request, res: Response) => {
   }
 };
 
-export const approvePurchaseOrder = async (req: Request, res: Response) => {
+export const approvePurchaseOrder = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const purchaseOrder = await purchaseOrderService.approvePurchaseOrder(parseInt(id as string));
+    const userId = req.user?.id;
+    const purchaseOrder = await purchaseOrderService.approvePurchaseOrder(parseInt(id as string), userId!);
     res.status(200).json(purchaseOrder);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const rejectPurchaseOrder = async (req: Request, res: Response) => {
+export const rejectPurchaseOrder = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
-    const purchaseOrder = await purchaseOrderService.rejectPurchaseOrder(parseInt(id as string), reason);
+    const userId = req.user?.id;
+    const purchaseOrder = await purchaseOrderService.rejectPurchaseOrder(parseInt(id as string), reason, userId);
     res.status(200).json(purchaseOrder);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const markPartiallyReceived = async (req: Request, res: Response) => {
+export const markPartiallyReceived = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const purchaseOrder = await purchaseOrderService.markPartiallyReceived(parseInt(id as string));
+    const userId = req.user?.id;
+    const purchaseOrder = await purchaseOrderService.markPartiallyReceived(parseInt(id as string), userId!);
     res.status(200).json(purchaseOrder);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const markCompleted = async (req: Request, res: Response) => {
+export const markCompleted = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const purchaseOrder = await purchaseOrderService.markCompleted(parseInt(id as string));
+    const userId = req.user?.id;
+    const purchaseOrder = await purchaseOrderService.markCompleted(parseInt(id as string), userId!);
     res.status(200).json(purchaseOrder);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

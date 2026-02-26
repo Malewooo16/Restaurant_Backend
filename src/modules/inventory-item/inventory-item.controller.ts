@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import * as inventoryItemService from './inventory-item.service';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createInventoryItem = async (req: Request, res: Response) => {
+export const createInventoryItem = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     // Transform flat input to nested Prisma input
     const { categoryId, ...rest } = req.body;
     const data = {
@@ -10,7 +12,8 @@ export const createInventoryItem = async (req: Request, res: Response) => {
       category: categoryId ? { connect: { id: categoryId } } : undefined,
     };
     const inventoryItem = await inventoryItemService.createInventoryItem(
-      data
+      data,
+      userId!
     );
     res.status(201).json(inventoryItem);
   } catch (error: any) {
@@ -49,11 +52,12 @@ export const getInventoryItemById = async (
 };
 
 export const updateInventoryItem = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     // Transform flat input to nested Prisma input
     const { categoryId, ...rest } = req.body;
     const data = {
@@ -62,7 +66,8 @@ export const updateInventoryItem = async (
     };
     const inventoryItem = await inventoryItemService.updateInventoryItem(
       parseInt(id as string),
-      data
+      data,
+      userId!
     );
     res.status(200).json(inventoryItem);
   } catch (error: any) {

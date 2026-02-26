@@ -19,18 +19,19 @@ export const getAllSettings = async () => {
 export const upsertSetting = async (
   key: string,
   value: string | null,
-  description?: string
+  description?: string,
+  userId?: number
 ) => {
   return prisma.setting.upsert({
     where: { key },
-    update: { value, description },
-    create: { key, value, description },
+    update: { value, description, updatedById: userId },
+    create: { key, value, description, createdById: userId, updatedById: userId },
   });
 };
 
-export const upsertSettings = async (data: Record<string, string | null>) => {
+export const upsertSettings = async (data: Record<string, string | null>, userId?: number) => {
   const results = await Promise.all(
-    Object.entries(data).map(([key, value]) => upsertSetting(key, value))
+    Object.entries(data).map(([key, value]) => upsertSetting(key, value, undefined, userId))
   );
   return results;
 };

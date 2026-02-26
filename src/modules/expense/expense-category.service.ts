@@ -2,7 +2,8 @@ import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
 export const createExpenseCategory = async (
-  data: Prisma.ExpenseCategoryCreateInput
+  data: { name: string; description?: string },
+  userId: number
 ) => {
   const nameExists = await prisma.expenseCategory.findFirst({
     where: { name: data.name },
@@ -11,7 +12,12 @@ export const createExpenseCategory = async (
     throw new Error('Expense category with this name already exists');
   }
   return prisma.expenseCategory.create({
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      createdById: userId,
+      updatedById: userId,
+    },
   });
 };
 
@@ -27,9 +33,10 @@ export const getExpenseCategoryById = (id: number) => {
 
 export const updateExpenseCategory = async (
   id: number,
-  data: Prisma.ExpenseCategoryUpdateInput
+  data: { name?: string; description?: string },
+  userId: number
 ) => {
-  if (typeof data.name === 'string') {
+  if (data.name) {
     const nameExists = await prisma.expenseCategory.findFirst({
       where: {
         name: data.name,
@@ -44,7 +51,11 @@ export const updateExpenseCategory = async (
   }
   return prisma.expenseCategory.update({
     where: { id },
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      updatedById: userId,
+    },
   });
 };
 

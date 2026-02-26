@@ -55,7 +55,7 @@ export const getAllStockRequests = async (
   });
 };
 
-export const createStockRequest = async (data: any) => {
+export const createStockRequest = async (data: any, userId: number) => {
   const { requestItems, ...rest } = data;
   const requestId = `SR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   
@@ -67,6 +67,8 @@ export const createStockRequest = async (data: any) => {
       ...rest,
       requestId,
       status,
+      createdById: userId,
+      updatedById: userId,
       requestItems: {
         create: requestItems,
       },
@@ -77,7 +79,7 @@ export const createStockRequest = async (data: any) => {
   });
 };
 
-export const updateStockRequestStatus = async (id: number, status: string) => {
+export const updateStockRequestStatus = async (id: number, status: string, userId: number) => {
   const stockRequest = await prisma.stockRequest.findUnique({
     where: { id },
     include: {
@@ -128,7 +130,7 @@ export const updateStockRequestStatus = async (id: number, status: string) => {
       // Update the StockRequest status to approved
       await tx.stockRequest.update({
         where: { id },
-        data: { status: 'approved', approvedAt: new Date() },
+        data: { status: 'approved', approvedAt: new Date(), updatedById: userId },
       });
 
       // Process each item
@@ -168,7 +170,7 @@ export const updateStockRequestStatus = async (id: number, status: string) => {
     // After successful transaction, set stock request status to 'fulfilled'
     return prisma.stockRequest.update({
       where: { id },
-      data: { status: 'fulfilled', fulfilledAt: new Date() },
+      data: { status: 'fulfilled', fulfilledAt: new Date(), updatedById: userId },
       include: {
         requestItems: {
           include: {
@@ -181,7 +183,7 @@ export const updateStockRequestStatus = async (id: number, status: string) => {
   } else if (status === 'rejected') {
     return prisma.stockRequest.update({
       where: { id },
-      data: { status: 'rejected' },
+      data: { status: 'rejected', updatedById: userId },
       include: {
         requestItems: {
           include: {
@@ -194,7 +196,7 @@ export const updateStockRequestStatus = async (id: number, status: string) => {
     // If status is neither approved nor rejected, just update the status as provided.
     return prisma.stockRequest.update({
       where: { id },
-      data: { status: status },
+      data: { status: status, updatedById: userId },
       include: {
         requestItems: {
           include: {

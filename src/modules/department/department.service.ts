@@ -28,7 +28,7 @@ export const getDepartmentById = async (id: number) => {
   });
 };
 
-export const createDepartment = async (data: Prisma.DepartmentCreateInput) => {
+export const createDepartment = async (data: { name: string; description?: string }, userId: number) => {
   const nameExists = await prisma.department.findFirst({
     where: { name: data.name },
   });
@@ -36,20 +36,25 @@ export const createDepartment = async (data: Prisma.DepartmentCreateInput) => {
     throw new Error('Department with this name already exists');
   }
   return prisma.department.create({
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      createdById: userId,
+      updatedById: userId,
+    },
     include: {
       staffRoles: true,
     },
   });
 };
 
-export const updateDepartment = async (id: number, data: Prisma.DepartmentUpdateInput) => {
+export const updateDepartment = async (id: number, data: { name?: string; description?: string; isActive?: boolean }, userId: number) => {
   const existing = await prisma.department.findUnique({ where: { id } });
   if (!existing) {
     throw new Error('Department not found');
   }
 
-  if (typeof data.name === 'string') {
+  if (data.name) {
     const nameExists = await prisma.department.findFirst({
       where: {
         name: data.name,
@@ -63,7 +68,12 @@ export const updateDepartment = async (id: number, data: Prisma.DepartmentUpdate
 
   return prisma.department.update({
     where: { id },
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      isActive: data.isActive,
+      updatedById: userId,
+    },
     include: {
       staffRoles: true,
     },

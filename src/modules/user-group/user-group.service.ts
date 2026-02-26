@@ -32,7 +32,7 @@ export const getUserGroupById = async (id: number) => {
 
 export const createUserGroup = async (data: { name: string; description?: string; isDefault?: boolean; permissionIds?: number[] }) => {
   const { permissionIds, ...groupData } = data;
-  
+   
   return prisma.userGroup.create({
     data: {
       ...groupData,

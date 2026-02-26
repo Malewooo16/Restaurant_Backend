@@ -109,7 +109,15 @@ model InventoryCategory {
   supplierId  Int? // New foreign key
   supplier    Supplier? @relation(fields: [supplierId], references: [id]) // New relation
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("InventoryCategoryCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("InventoryCategoryUpdatedBy", fields: [updatedById], references: [id])
+
   inventoryItems InventoryItem[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model InventoryUnit {
@@ -122,7 +130,13 @@ model InventoryUnit {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
- 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("InventoryUnitCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("InventoryUnitUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -141,6 +155,14 @@ model MenuAddon {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("MenuAddonCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("MenuAddonUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
+
   /// Additional items that can be added to menu items (e.g., extra cheese, bacon, etc.)
   /// Stored as reference data to avoid duplication in order items
 }
@@ -156,6 +178,14 @@ model MenuSideDish {
   menuItems   MenuItem[] @relation("MenuItemSideDishes")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("MenuSideDishCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("MenuSideDishUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 
   /// Side dishes that can be selected with menu items (e.g., fries, salad, etc.)
   /// Stored as reference data to avoid duplication in order items
@@ -175,7 +205,15 @@ model MenuCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("MenuCategoryCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("MenuCategoryUpdatedBy", fields: [updatedById], references: [id])
+
   menuItems   MenuItem[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -219,9 +257,17 @@ model MenuItem {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("MenuItemCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("MenuItemUpdatedBy", fields: [updatedById], references: [id])
+
   orderItems  OrderItem[]
 
   menuCategory MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -375,6 +421,11 @@ model InventoryItem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("InventoryItemCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("InventoryItemUpdatedBy", fields: [updatedById], references: [id])
+
   // Relationships
   transactions       InventoryTransaction[]
   stockRequests      StockRequestItem[]
@@ -383,6 +434,9 @@ model InventoryItem {
   batches            Batch[]
   departmentInventories DepartmentInventory[]
   adjustments        InventoryAdjustment[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model DepartmentInventory {
@@ -394,7 +448,14 @@ model DepartmentInventory {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("DepartmentInventoryCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("DepartmentInventoryUpdatedBy", fields: [updatedById], references: [id])
+
   @@unique([inventoryItemId, department]) // An item can only have one entry per department
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // Inventory transaction model for tracking movements
@@ -407,7 +468,12 @@ model InventoryTransaction {
   notes       String?
   createdAt   DateTime @default(now())
 
+  createdById Int?
+  createdBy   User? @relation("InventoryTransactionCreatedBy", fields: [createdById], references: [id])
+
   item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
 }
 
 // Stock request model for inventory requests
@@ -421,8 +487,16 @@ model StockRequest {
   approvedAt  DateTime?
   fulfilledAt DateTime?
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("StockRequestCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("StockRequestUpdatedBy", fields: [updatedById], references: [id])
+
   // Relationship to inventory items (many-to-many)
   requestItems StockRequestItem[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // Stock request items (junction table)
@@ -466,13 +540,21 @@ model Supplier {
   email            String?          @unique
   phone            String?
   address          String?
-  status           SupplierStatus         @default(ACTIVE) // active, inactive, blacklisted  
+  status           SupplierStatus         @default(ACTIVE) // active, inactive, blacklisted
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("SupplierUpdatedBy", fields: [updatedById], references: [id])
 
   purchaseOrders     PurchaseOrder[]
   goodsReceivings    GoodsReceiving[]
   inventoryCategories InventoryCategory[] // New relation
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -490,8 +572,16 @@ model PurchaseOrder {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("PurchaseOrderCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("PurchaseOrderUpdatedBy", fields: [updatedById], references: [id])
+
   items              PurchaseOrderItem[]
   goodsReceivings    GoodsReceiving[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model PurchaseOrderItem {
@@ -505,6 +595,14 @@ model PurchaseOrderItem {
   unitPrice          Float
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("PurchaseOrderItemCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("PurchaseOrderItemUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -522,7 +620,15 @@ model GoodsReceiving {
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("GoodsReceivingCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("GoodsReceivingUpdatedBy", fields: [updatedById], references: [id])
+
   receivedItems   GoodsReceivingItem[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model GoodsReceivingItem {
@@ -536,6 +642,14 @@ model GoodsReceivingItem {
   batch              Batch?       @relation(fields: [batchId], references: [id]) // Connects to a specific batch
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("GoodsReceivingItemCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("GoodsReceivingItemUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -552,8 +666,16 @@ model Batch {
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("BatchCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("BatchUpdatedBy", fields: [updatedById], references: [id])
+
   goodsReceivingItem   GoodsReceivingItem[] // Batches can be linked to multiple GRN items (e.g. partial receipts)
   adjustments          InventoryAdjustment[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -569,7 +691,15 @@ model AdjustmentReason {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("AdjustmentReasonCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("AdjustmentReasonUpdatedBy", fields: [updatedById], references: [id])
+
   adjustments InventoryAdjustment[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model InventoryAdjustment {
@@ -590,8 +720,15 @@ model InventoryAdjustment {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("InventoryAdjustmentCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("InventoryAdjustmentUpdatedBy", fields: [updatedById], references: [id])
+
   @@index([inventoryItemId])
   @@index([batchId])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model ExpenseCategory {
@@ -600,7 +737,16 @@ model ExpenseCategory {
   description String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("ExpenseCategoryCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("ExpenseCategoryUpdatedBy", fields: [updatedById], references: [id])
+
   expenses    Expense[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model Expense {
@@ -613,6 +759,14 @@ model Expense {
   category        ExpenseCategory  @relation(fields: [categoryId], references: [id])
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("ExpenseCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("ExpenseUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 enum TableStatus {
@@ -635,7 +789,16 @@ model Table {
   status       TableStatus        @default(AVAILABLE)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("TableCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("TableUpdatedBy", fields: [updatedById], references: [id])
+
   reservations ReservationTable[] // Updated relationship
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model Reservation {
@@ -649,7 +812,16 @@ model Reservation {
   notes         String?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("ReservationCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("ReservationUpdatedBy", fields: [updatedById], references: [id])
+
   tables        ReservationTable[] // New relationship
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // New join table
@@ -672,6 +844,14 @@ model Setting {
   description       String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("SettingCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("SettingUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -695,6 +875,14 @@ model Dissatisfaction {
   resolution    String?
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("DissatisfactionCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("DissatisfactionUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -718,6 +906,14 @@ model BarReturn {
   resolution    String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("BarReturnCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("BarReturnUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -732,8 +928,16 @@ model Department {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("DepartmentCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("DepartmentUpdatedBy", fields: [updatedById], references: [id])
+
   staffRoles  StaffRole[]
   staff       Staff[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -750,7 +954,15 @@ model StaffRole {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("StaffRoleCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("StaffRoleUpdatedBy", fields: [updatedById], references: [id])
+
   staff         Staff[]
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -776,8 +988,16 @@ model Staff {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
+  createdById Int?
+  updatedById Int?
+  createdBy   User? @relation("StaffCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("StaffUpdatedBy", fields: [updatedById], references: [id])
+
   // Relation to User (one staff can have one user account)
   user              User?
+
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 // =======================
@@ -849,6 +1069,63 @@ model User {
 
   // Manual permission overrides (these take precedence over userGroup permissions)
   permissionOverrides UserPermissionOverride[]
+
+  // Relations for tracking who created/updated records
+  inventoryCategoriesCreated InventoryCategory[] @relation("InventoryCategoryCreatedBy")
+  inventoryCategoriesUpdated InventoryCategory[] @relation("InventoryCategoryUpdatedBy")
+  inventoryUnitsCreated      InventoryUnit[]      @relation("InventoryUnitCreatedBy")
+  inventoryUnitsUpdated      InventoryUnit[]      @relation("InventoryUnitUpdatedBy")
+  menuAddonsCreated         MenuAddon[]          @relation("MenuAddonCreatedBy")
+  menuAddonsUpdated         MenuAddon[]          @relation("MenuAddonUpdatedBy")
+  menuSideDishesCreated     MenuSideDish[]        @relation("MenuSideDishCreatedBy")
+  menuSideDishesUpdated     MenuSideDish[]        @relation("MenuSideDishUpdatedBy")
+  menuCategoriesCreated     MenuCategory[]        @relation("MenuCategoryCreatedBy")
+  menuCategoriesUpdated     MenuCategory[]        @relation("MenuCategoryUpdatedBy")
+  menuItemsCreated          MenuItem[]            @relation("MenuItemCreatedBy")
+  menuItemsUpdated          MenuItem[]            @relation("MenuItemUpdatedBy")
+  inventoryItemsCreated     InventoryItem[]       @relation("InventoryItemCreatedBy")
+  inventoryItemsUpdated     InventoryItem[]       @relation("InventoryItemUpdatedBy")
+  departmentInventoriesCreated DepartmentInventory[] @relation("DepartmentInventoryCreatedBy")
+  departmentInventoriesUpdated DepartmentInventory[] @relation("DepartmentInventoryUpdatedBy")
+  inventoryTransactionsCreated InventoryTransaction[] @relation("InventoryTransactionCreatedBy")
+  stockRequestsCreated     StockRequest[]         @relation("StockRequestCreatedBy")
+  stockRequestsUpdated     StockRequest[]         @relation("StockRequestUpdatedBy")
+  suppliersCreated         Supplier[]             @relation("SupplierCreatedBy")
+  suppliersUpdated         Supplier[]             @relation("SupplierUpdatedBy")
+  purchaseOrdersCreated    PurchaseOrder[]        @relation("PurchaseOrderCreatedBy")
+  purchaseOrdersUpdated    PurchaseOrder[]        @relation("PurchaseOrderUpdatedBy")
+  purchaseOrderItemsCreated PurchaseOrderItem[]   @relation("PurchaseOrderItemCreatedBy")
+  purchaseOrderItemsUpdated PurchaseOrderItem[]   @relation("PurchaseOrderItemUpdatedBy")
+  goodsReceivingsCreated   GoodsReceiving[]       @relation("GoodsReceivingCreatedBy")
+  goodsReceivingsUpdated   GoodsReceiving[]       @relation("GoodsReceivingUpdatedBy")
+  goodsReceivingItemsCreated GoodsReceivingItem[] @relation("GoodsReceivingItemCreatedBy")
+  goodsReceivingItemsUpdated GoodsReceivingItem[] @relation("GoodsReceivingItemUpdatedBy")
+  batchesCreated          Batch[]                @relation("BatchCreatedBy")
+  batchesUpdated          Batch[]                @relation("BatchUpdatedBy")
+  adjustmentReasonsCreated AdjustmentReason[]     @relation("AdjustmentReasonCreatedBy")
+  adjustmentReasonsUpdated AdjustmentReason[]     @relation("AdjustmentReasonUpdatedBy")
+  inventoryAdjustmentsCreated InventoryAdjustment[] @relation("InventoryAdjustmentCreatedBy")
+  inventoryAdjustmentsUpdated InventoryAdjustment[] @relation("InventoryAdjustmentUpdatedBy")
+  expenseCategoriesCreated ExpenseCategory[]     @relation("ExpenseCategoryCreatedBy")
+  expenseCategoriesUpdated ExpenseCategory[]     @relation("ExpenseCategoryUpdatedBy")
+  expensesCreated         Expense[]               @relation("ExpenseCreatedBy")
+  expensesUpdated         Expense[]               @relation("ExpenseUpdatedBy")
+  tablesCreated           Table[]                 @relation("TableCreatedBy")
+  tablesUpdated           Table[]                 @relation("TableUpdatedBy")
+  reservationsCreated     Reservation[]           @relation("ReservationCreatedBy")
+  reservationsUpdated     Reservation[]           @relation("ReservationUpdatedBy")
+  settingsCreated         Setting[]               @relation("SettingCreatedBy")
+  settingsUpdated         Setting[]               @relation("SettingUpdatedBy")
+  dissatisfactionsCreated Dissatisfaction[]       @relation("DissatisfactionCreatedBy")
+  dissatisfactionsUpdated Dissatisfaction[]       @relation("DissatisfactionUpdatedBy")
+  barReturnsCreated       BarReturn[]             @relation("BarReturnCreatedBy")
+  barReturnsUpdated       BarReturn[]             @relation("BarReturnUpdatedBy")
+  departmentsCreated      Department[]            @relation("DepartmentCreatedBy")
+  departmentsUpdated      Department[]            @relation("DepartmentUpdatedBy")
+  staffRolesCreated       StaffRole[]             @relation("StaffRoleCreatedBy")
+  staffRolesUpdated       StaffRole[]             @relation("StaffRoleUpdatedBy")
+  staffCreated            Staff[]                 @relation("StaffCreatedBy")
+  staffUpdated            Staff[]                 @relation("StaffUpdatedBy")
 }
 
 model UserPermissionOverride {

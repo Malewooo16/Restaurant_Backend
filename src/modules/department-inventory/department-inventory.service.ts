@@ -52,7 +52,8 @@ export const getDepartmentInventoryItems = async (department: Departments) => {
 // Function to update an existing department inventory quantity
 export const updateDepartmentInventoryQuantity = async (
   departmentInventoryId: number,
-  newQuantity: number
+  newQuantity: number,
+  userId: number
 ) => {
   return prisma.$transaction(async (tx) => {
     // 1. Find the existing DepartmentInventory record
@@ -82,6 +83,7 @@ export const updateDepartmentInventoryQuantity = async (
       where: { id: departmentInventoryId },
       data: {
         quantity: newQuantity,
+        updatedBy: { connect: { id: userId } },
       },
     });
 

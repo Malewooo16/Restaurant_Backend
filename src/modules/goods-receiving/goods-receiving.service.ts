@@ -75,35 +75,42 @@ async function generateGRNNumber(tx: Prisma.TransactionClient): Promise<string> 
 
 export const createGoodsReceiving = async (
   data: Omit<Prisma.GoodsReceivingCreateInput, 'receivedItems'>,
-  receivedItems: GoodsReceivingItemInput[]
+  receivedItems: GoodsReceivingItemInput[],
+  userId: number
 ) => {
   return prisma.$transaction(async (tx) => {
     // Auto-generate GRN number if not provided
-    const grnNumber = data.grnNumber || await generateGRNNumber(tx);
+    const grnNumber = (data as any).grnNumber || await generateGRNNumber(tx);
     
     const goodsReceiving = await tx.goodsReceiving.create({
       data: {
-        ...data,
+        ...(data as any),
         grnNumber,
+        createdById: userId,
+        updatedById: userId,
         receivedItems: {
           create: await Promise.all(receivedItems.map(async (item) => {
-            const receivedItemData: Prisma.GoodsReceivingItemCreateWithoutGoodsReceivingInput = {
-              inventoryItem: { connect: { id: item.inventoryItemId } },
+            const receivedItemData: any = {
+              inventoryItemId: item.inventoryItemId,
               quantityReceived: item.quantityReceived,
+              createdById: userId,
+              updatedById: userId,
             };
 
             // If expiryDate is provided, create a new batch and link it
             if (item.expiryDate || item.batchNumber) {
               const newBatch = await tx.batch.create({
                 data: {
-                  inventoryItem: { connect: { id: item.inventoryItemId } },
+                  inventoryItemId: item.inventoryItemId,
                   quantity: item.quantityReceived, // Initial quantity of the batch is what's received
                   batchNumber: item.batchNumber || `BATCH_${Date.now()}`, // Generate if not provided
                   expiryDate: item.expiryDate,
                   receivedAt: (data as any).receivedAt || new Date(),
+                  createdById: userId,
+                  updatedById: userId,
                 },
               });
-              receivedItemData.batch = { connect: { id: newBatch.id } };
+              receivedItemData.batchId = newBatch.id;
             }
 
             // Update inventoryItem quantity
@@ -120,7 +127,7 @@ export const createGoodsReceiving = async (
             return receivedItemData;
           })),
         },
-      },
+      } as any,
       include: {
         receivedItems: true,
       },
@@ -223,7 +230,8 @@ export const getGoodsReceivingById = async (id: number) => {
 export const updateGoodsReceiving = async (
   id: number,
   data: Omit<Prisma.GoodsReceivingUpdateInput, 'receivedItems'>,
-  receivedItems: GoodsReceivingItemInput[]
+  receivedItems: GoodsReceivingItemInput[],
+  userId: number
 ) => {
   return prisma.$transaction(async (tx) => {
     // Before updating, we need to revert previous inventory changes and batch quantities
@@ -245,25 +253,30 @@ export const updateGoodsReceiving = async (
     const goodsReceiving = await tx.goodsReceiving.update({
       where: { id },
       data: {
-        ...data,
+        ...(data as any),
+        updatedById: userId,
         receivedItems: {
           create: await Promise.all(receivedItems.map(async (item) => {
-            const receivedItemData: Prisma.GoodsReceivingItemCreateWithoutGoodsReceivingInput = {
-              inventoryItem: { connect: { id: item.inventoryItemId } },
+            const receivedItemData: any = {
+              inventoryItemId: item.inventoryItemId,
               quantityReceived: item.quantityReceived,
+              createdById: userId,
+              updatedById: userId,
             };
 
             if (item.expiryDate || item.batchNumber) {
               const newBatch = await tx.batch.create({
                 data: {
-                  inventoryItem: { connect: { id: item.inventoryItemId } },
+                  inventoryItemId: item.inventoryItemId,
                   quantity: item.quantityReceived,
                   batchNumber: item.batchNumber || `AUTO_BATCH_${Date.now()}`,
                   expiryDate: item.expiryDate,
                   receivedAt: (data as any).receivedAt || new Date(),
+                  createdById: userId,
+                  updatedById: userId,
                 },
               });
-              receivedItemData.batch = { connect: { id: newBatch.id } };
+              receivedItemData.batchId = newBatch.id;
             }
             
             // Update inventoryItem quantity
@@ -282,7 +295,7 @@ export const updateGoodsReceiving = async (
             return receivedItemData;
           })),
         },
-      },
+      } as any,
       include: {
         receivedItems: true,
       },

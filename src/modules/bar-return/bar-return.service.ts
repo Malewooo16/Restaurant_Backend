@@ -15,13 +15,20 @@ export const getBarReturnById = async (id: number) => {
   });
 };
 
-export const createBarReturn = async (data: Prisma.BarReturnCreateInput) => {
+export const createBarReturn = async (data: { orderId: number; tableNumber: number; itemName: string; reason: string }, userId: number) => {
   return prisma.barReturn.create({
-    data,
+    data: {
+      orderId: data.orderId,
+      tableNumber: data.tableNumber,
+      itemName: data.itemName,
+      reason: data.reason,
+      createdById: userId,
+      updatedById: userId,
+    },
   });
 };
 
-export const updateBarReturn = async (id: number, data: Prisma.BarReturnUpdateInput) => {
+export const updateBarReturn = async (id: number, data: { status?: string; resolution?: string }, userId: number) => {
   const existingBarReturn = await prisma.barReturn.findUnique({
     where: { id },
   });
@@ -31,11 +38,15 @@ export const updateBarReturn = async (id: number, data: Prisma.BarReturnUpdateIn
 
   return prisma.barReturn.update({
     where: { id },
-    data,
+    data: {
+      status: data.status as any,
+      resolution: data.resolution,
+      updatedById: userId,
+    },
   });
 };
 
-export const updateBarReturnStatus = async (id: number, status: string, resolution?: string) => {
+export const updateBarReturnStatus = async (id: number, status: string, resolution: string | undefined, userId: number) => {
   const existingBarReturn = await prisma.barReturn.findUnique({
     where: { id },
   });
@@ -48,6 +59,7 @@ export const updateBarReturnStatus = async (id: number, status: string, resoluti
     data: {
       status: status as any,
       resolution,
+      updatedById: userId,
     },
   });
 };

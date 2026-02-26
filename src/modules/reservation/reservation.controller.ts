@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import * as reservationService from './reservation.service';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createReservation = async (req: Request, res: Response) => {
+export const createReservation = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const reservation = await reservationService.createReservation(
-      req.body
+      req.body,
+      userId!
     );
     res.status(201).json(reservation);
   } catch (error: any) {
@@ -65,15 +68,17 @@ export const getReservationById = async (
 };
 
 export const updateReservation = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const reservation =
       await reservationService.updateReservation(
         parseInt(id as string),
-        req.body
+        req.body,
+        userId!
       );
     res.status(200).json(reservation);
   } catch (error: any) {
@@ -82,14 +87,16 @@ export const updateReservation = async (
 };
 
 export const cancelReservation = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const reservation =
       await reservationService.cancelReservation(
-        parseInt(id as string)
+        parseInt(id as string),
+        userId!
       );
     res.status(200).json(reservation);
   } catch (error: any) {

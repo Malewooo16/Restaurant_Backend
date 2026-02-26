@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as settingService from './setting.service';
+import { AuthRequest } from '../../middleware/auth';
 
 export const getSetting = async (req: Request, res: Response) => {
   try {
@@ -24,22 +25,24 @@ export const getAllSettings = async (req: Request, res: Response) => {
   }
 };
 
-export const updateSetting = async (req: Request, res: Response) => {
+export const updateSetting = async (req: AuthRequest, res: Response) => {
   try {
     const { key } = req.params;
     const keyValue = Array.isArray(key) ? key[0] : key;
     const { value, description } = req.body;
-    const setting = await settingService.upsertSetting(keyValue, value, description);
+    const userId = req.user?.id;
+    const setting = await settingService.upsertSetting(keyValue, value, description, userId);
     res.status(200).json(setting);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateSettings = async (req: Request, res: Response) => {
+export const updateSettings = async (req: AuthRequest, res: Response) => {
   try {
     const data = req.body;
-    const settings = await settingService.upsertSettings(data);
+    const userId = req.user?.id;
+    const settings = await settingService.upsertSettings(data, userId);
     res.status(200).json(settings);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

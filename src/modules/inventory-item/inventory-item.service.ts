@@ -2,7 +2,22 @@ import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
 export const createInventoryItem = async (
-  data: Prisma.InventoryItemCreateInput
+  data: {
+    name: string;
+    description?: string;
+    sku?: string;
+    categoryId?: number;
+    unit: string;
+    department?: string[];
+    quantity?: number;
+    minStock?: number;
+    maxStock?: number;
+    price?: number;
+    supplier?: string;
+    location?: string;
+    storageLocation?: string;
+  },
+  userId: number
 ) => {
   const nameExists = await prisma.inventoryItem.findFirst({
     where: { name: data.name },
@@ -11,7 +26,23 @@ export const createInventoryItem = async (
     throw new Error('Inventory item with this name already exists');
   }
   return prisma.inventoryItem.create({
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      sku: data.sku,
+      categoryId: data.categoryId,
+      unit: data.unit,
+      department: data.department,
+      quantity: data.quantity,
+      minStock: data.minStock,
+      maxStock: data.maxStock,
+      price: data.price,
+      supplier: data.supplier,
+      location: data.location as any,
+      storageLocation: data.storageLocation,
+      createdById: userId,
+      updatedById: userId,
+    },
   });
 };
 
@@ -42,9 +73,25 @@ export const getInventoryItemById = (id: number) => {
 
 export const updateInventoryItem = async (
   id: number,
-  data: Prisma.InventoryItemUpdateInput
+  data: {
+    name?: string;
+    description?: string;
+    sku?: string;
+    categoryId?: number;
+    unit?: string;
+    department?: string[];
+    quantity?: number;
+    minStock?: number;
+    maxStock?: number;
+    price?: number;
+    supplier?: string;
+    location?: string;
+    storageLocation?: string;
+    status?: string;
+  },
+  userId: number
 ) => {
-  if (typeof data.name === 'string') {
+  if (data.name) {
     const nameExists = await prisma.inventoryItem.findFirst({
       where: {
         name: data.name,
@@ -59,7 +106,23 @@ export const updateInventoryItem = async (
   }
   return prisma.inventoryItem.update({
     where: { id },
-    data,
+    data: {
+      name: data.name,
+      description: data.description,
+      sku: data.sku,
+      categoryId: data.categoryId,
+      unit: data.unit,
+      department: data.department,
+      quantity: data.quantity,
+      minStock: data.minStock,
+      maxStock: data.maxStock,
+      price: data.price,
+      supplier: data.supplier,
+      location: data.location as any,
+      storageLocation: data.storageLocation,
+      status: data.status as any,
+      updatedById: userId,
+    },
   });
 };
 

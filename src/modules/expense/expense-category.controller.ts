@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import * as expenseCategoryService from './expense-category.service';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createExpenseCategory = async (req: Request, res: Response) => {
+export const createExpenseCategory = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const expenseCategory = await expenseCategoryService.createExpenseCategory(
-      req.body
+      req.body,
+      userId!
     );
     res.status(201).json(expenseCategory);
   } catch (error: any) {
@@ -47,15 +50,17 @@ export const getExpenseCategoryById = async (
 };
 
 export const updateExpenseCategory = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const expenseCategory =
       await expenseCategoryService.updateExpenseCategory(
         parseInt(id as string),
-        req.body
+        req.body,
+        userId!
       );
     res.status(200).json(expenseCategory);
   } catch (error: any) {

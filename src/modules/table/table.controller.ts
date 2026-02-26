@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import * as tableService from './table.service';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createTable = async (req: Request, res: Response) => {
+export const createTable = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const table = await tableService.createTable(
-      req.body
+      req.body,
+      userId!
     );
     res.status(201).json(table);
   } catch (error: any) {
@@ -61,15 +64,17 @@ export const getTableById = async (
 };
 
 export const updateTable = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const table =
       await tableService.updateTable(
         parseInt(id as string),
-        req.body
+        req.body,
+        userId!
       );
     res.status(200).json(table);
   } catch (error: any) {

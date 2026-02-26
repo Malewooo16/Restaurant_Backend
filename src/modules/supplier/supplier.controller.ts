@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import * as supplierService from './supplier.service';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createSupplier = async (req: Request, res: Response) => {
+export const createSupplier = async (req: AuthRequest, res: Response) => {
   try {
-    const supplier = await supplierService.createSupplier(req.body);
+    const userId = req.user?.id;
+    const supplier = await supplierService.createSupplier(req.body, userId!);
     res.status(201).json(supplier);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -32,12 +34,14 @@ export const getSupplierById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateSupplier = async (req: Request, res: Response) => {
+export const updateSupplier = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const supplier = await supplierService.updateSupplier(
       parseInt(id as string),
-      req.body
+      req.body,
+      userId!
     );
     res.status(200).json(supplier);
   } catch (error: any) {

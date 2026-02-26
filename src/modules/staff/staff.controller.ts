@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as staffService from './staff.service';
+import { AuthRequest } from '../../middleware/auth';
 
 export const getAllStaff = async (req: Request, res: Response) => {
   try {
@@ -24,20 +25,22 @@ export const getStaffById = async (req: Request, res: Response) => {
   }
 };
 
-export const createStaff = async (req: Request, res: Response) => {
+export const createStaff = async (req: AuthRequest, res: Response) => {
   try {
-    const staff = await staffService.createStaff(req.body);
+    const userId = req.user?.id;
+    const staff = await staffService.createStaff(req.body, userId!);
     res.status(201).json(staff);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateStaff = async (req: Request, res: Response) => {
+export const updateStaff = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const staffId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
-    const staff = await staffService.updateStaff(staffId, req.body);
+    const staff = await staffService.updateStaff(staffId, req.body, userId!);
     res.status(200).json(staff);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

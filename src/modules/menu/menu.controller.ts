@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Prisma } from '../../../generated/prisma/client';
 import * as menuService from './menu.service';
+import { AuthRequest } from '../../middleware/auth';
 
 export const getAllMenuItems = async (req: Request, res: Response) => {
   try {
@@ -25,23 +26,25 @@ export const getMenuItemById = async (req: Request, res: Response) => {
   }
 };
 
-export const createMenuItem = async (req: Request, res: Response) => {
+export const createMenuItem = async (req: AuthRequest, res: Response) => {
   try {
-
-    const menuItem = await menuService.createMenuItem(req.body);
+    const userId = req.user?.id;
+    const menuItem = await menuService.createMenuItem(req.body, userId!);
     res.status(201).json(menuItem);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateMenuItem = async (req: Request, res: Response) => {
+export const updateMenuItem = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const menuId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
     const menuItem = await menuService.updateMenuItem(
       menuId,
-      req.body
+      req.body,
+      userId!
     );
     res.status(200).json(menuItem);
   } catch (error: any) {
@@ -61,9 +64,10 @@ export const deleteMenuItem = async (req: Request, res: Response) => {
 };
 
 // MenuAddon Controllers
-export const createMenuAddon = async (req: Request, res: Response) => {
+export const createMenuAddon = async (req: AuthRequest, res: Response) => {
   try {
-    const menuAddon = await menuService.createMenuAddon(req.body);
+    const userId = req.user?.id;
+    const menuAddon = await menuService.createMenuAddon(req.body, userId!);
     res.status(201).json(menuAddon);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -93,13 +97,15 @@ export const getMenuAddonById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateMenuAddon = async (req: Request, res: Response) => {
+export const updateMenuAddon = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const menuAddonId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
     const menuAddon = await menuService.updateMenuAddon(
       menuAddonId,
-      req.body
+      req.body,
+      userId!
     );
     res.status(200).json(menuAddon);
   } catch (error: any) {
@@ -119,9 +125,10 @@ export const deleteMenuAddon = async (req: Request, res: Response) => {
 };
 
 // MenuSideDish Controllers
-export const createMenuSideDish = async (req: Request, res: Response) => {
+export const createMenuSideDish = async (req: AuthRequest, res: Response) => {
   try {
-    const menuSideDish = await menuService.createMenuSideDish(req.body);
+    const userId = req.user?.id;
+    const menuSideDish = await menuService.createMenuSideDish(req.body, userId!);
     res.status(201).json(menuSideDish);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -151,13 +158,15 @@ export const getMenuSideDishById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateMenuSideDish = async (req: Request, res: Response) => {
+export const updateMenuSideDish = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const menuSideDishId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
     const menuSideDish = await menuService.updateMenuSideDish(
       menuSideDishId,
-      req.body
+      req.body,
+      userId!
     );
     res.status(200).json(menuSideDish);
   } catch (error: any) {
@@ -177,9 +186,10 @@ export const deleteMenuSideDish = async (req: Request, res: Response) => {
 };
 
 // MenuCategory Controllers
-export const createMenuCategory = async (req: Request, res: Response) => {
+export const createMenuCategory = async (req: AuthRequest, res: Response) => {
   try {
-    const menuCategory = await menuService.createMenuCategory(req.body);
+    const userId = req.user?.id;
+    const menuCategory = await menuService.createMenuCategory(req.body, userId!);
     res.status(201).json(menuCategory);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -209,13 +219,15 @@ export const getMenuCategoryById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateMenuCategory = async (req: Request, res: Response) => {
+export const updateMenuCategory = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const menuCategoryId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
     const menuCategory = await menuService.updateMenuCategory(
       menuCategoryId,
-      req.body
+      req.body,
+      userId!
     );
     res.status(200).json(menuCategory);
   } catch (error: any) {

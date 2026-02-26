@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import * as expenseService from './expense.service';
+import { AuthRequest } from '../../middleware/auth';
 
-export const createExpense = async (req: Request, res: Response) => {
+export const createExpense = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const expense = await expenseService.createExpense(
-      req.body
+      req.body,
+      userId!
     );
     res.status(201).json(expense);
   } catch (error: any) {
@@ -51,15 +54,17 @@ export const getExpenseById = async (
 };
 
 export const updateExpense = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const expense =
       await expenseService.updateExpense(
         parseInt(id as string),
-        req.body
+        req.body,
+        userId!
       );
     res.status(200).json(expense);
   } catch (error: any) {

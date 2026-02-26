@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as staffRoleService from './staff-role.service';
+import { AuthRequest } from '../../middleware/auth';
 
 export const getAllStaffRoles = async (req: Request, res: Response) => {
   try {
@@ -35,20 +36,22 @@ export const getStaffRolesByDepartment = async (req: Request, res: Response) => 
   }
 };
 
-export const createStaffRole = async (req: Request, res: Response) => {
+export const createStaffRole = async (req: AuthRequest, res: Response) => {
   try {
-    const staffRole = await staffRoleService.createStaffRole(req.body);
+    const userId = req.user?.id;
+    const staffRole = await staffRoleService.createStaffRole(req.body, userId!);
     res.status(201).json(staffRole);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateStaffRole = async (req: Request, res: Response) => {
+export const updateStaffRole = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const roleId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
-    const staffRole = await staffRoleService.updateStaffRole(roleId, req.body);
+    const staffRole = await staffRoleService.updateStaffRole(roleId, req.body, userId!);
     res.status(200).json(staffRole);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

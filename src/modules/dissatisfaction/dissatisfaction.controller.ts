@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as dissatisfactionService from './dissatisfaction.service';
+import { AuthRequest } from '../../middleware/auth';
 
 export const getAllDissatisfactions = async (req: Request, res: Response) => {
   try {
@@ -24,32 +25,35 @@ export const getDissatisfactionById = async (req: Request, res: Response) => {
   }
 };
 
-export const createDissatisfaction = async (req: Request, res: Response) => {
+export const createDissatisfaction = async (req: AuthRequest, res: Response) => {
   try {
-    const dissatisfaction = await dissatisfactionService.createDissatisfaction(req.body);
+    const userId = req.user?.id;
+    const dissatisfaction = await dissatisfactionService.createDissatisfaction(req.body, userId!);
     res.status(201).json(dissatisfaction);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
 
-export const updateDissatisfaction = async (req: Request, res: Response) => {
+export const updateDissatisfaction = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const dissatisfactionId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
-    const dissatisfaction = await dissatisfactionService.updateDissatisfaction(dissatisfactionId, req.body);
+    const dissatisfaction = await dissatisfactionService.updateDissatisfaction(dissatisfactionId, req.body, userId!);
     res.json(dissatisfaction);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
 
-export const updateDissatisfactionStatus = async (req: Request, res: Response) => {
+export const updateDissatisfactionStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const dissatisfactionId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
     const { status, resolution } = req.body;
-    const dissatisfaction = await dissatisfactionService.updateDissatisfactionStatus(dissatisfactionId, status, resolution);
+    const dissatisfaction = await dissatisfactionService.updateDissatisfactionStatus(dissatisfactionId, status, resolution, userId!);
     res.json(dissatisfaction);
   } catch (error: any) {
     res.status(400).json({ message: error.message });

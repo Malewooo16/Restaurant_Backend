@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as barReturnService from './bar-return.service';
+import { AuthRequest } from '../../middleware/auth';
 
 export const getAllBarReturns = async (req: Request, res: Response) => {
   try {
@@ -24,32 +25,35 @@ export const getBarReturnById = async (req: Request, res: Response) => {
   }
 };
 
-export const createBarReturn = async (req: Request, res: Response) => {
+export const createBarReturn = async (req: AuthRequest, res: Response) => {
   try {
-    const barReturn = await barReturnService.createBarReturn(req.body);
+    const userId = req.user?.id;
+    const barReturn = await barReturnService.createBarReturn(req.body, userId!);
     res.status(201).json(barReturn);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
 
-export const updateBarReturn = async (req: Request, res: Response) => {
+export const updateBarReturn = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const barReturnId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
-    const barReturn = await barReturnService.updateBarReturn(barReturnId, req.body);
+    const barReturn = await barReturnService.updateBarReturn(barReturnId, req.body, userId!);
     res.json(barReturn);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
 
-export const updateBarReturnStatus = async (req: Request, res: Response) => {
+export const updateBarReturnStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
     const barReturnId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
     const { status, resolution } = req.body;
-    const barReturn = await barReturnService.updateBarReturnStatus(barReturnId, status, resolution);
+    const barReturn = await barReturnService.updateBarReturnStatus(barReturnId, status, resolution, userId!);
     res.json(barReturn);
   } catch (error: any) {
     res.status(400).json({ message: error.message });

@@ -1,7 +1,7 @@
 import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../../lib/prisma';
 
-export const createReservation = async (data: any) => {
+export const createReservation = async (data: any, userId: number) => {
   const { tableIds, ...reservationData } = data;
 
   if (!tableIds || tableIds.length === 0) {
@@ -22,7 +22,15 @@ export const createReservation = async (data: any) => {
 
   return prisma.reservation.create({
     data: {
-      ...reservationData,
+      customerName: reservationData.customerName,
+      customerPhone: reservationData.customerPhone,
+      customerEmail: reservationData.customerEmail,
+      date: reservationData.date,
+      numberOfGuests: reservationData.numberOfGuests,
+      status: reservationData.status,
+      notes: reservationData.notes,
+      createdById: userId,
+      updatedById: userId,
       tables: {
         create: tableIds.map((tableId: number) => ({
           table: {
@@ -153,7 +161,7 @@ export const getReservationById = (id: number) => {
   });
 };
 
-export const updateReservation = async (id: number, data: any) => {
+export const updateReservation = async (id: number, data: any, userId: number) => {
   const { tableIds, ...reservationData } = data;
 
   // Get current reservation to know old tables
@@ -212,7 +220,14 @@ export const updateReservation = async (id: number, data: any) => {
     return tx.reservation.update({
       where: { id },
       data: {
-        ...reservationData,
+        customerName: reservationData.customerName,
+        customerPhone: reservationData.customerPhone,
+        customerEmail: reservationData.customerEmail,
+        date: reservationData.date,
+        numberOfGuests: reservationData.numberOfGuests,
+        status: reservationData.status,
+        notes: reservationData.notes,
+        updatedById: userId,
         tables: tableIds ? {
           deleteMany: {},
           create: tableIds.map((tableId: number) => ({
@@ -233,7 +248,7 @@ export const updateReservation = async (id: number, data: any) => {
   });
 };
 
-export const cancelReservation = async (id: number) => {
+export const cancelReservation = async (id: number, userId: number) => {
   // Get the reservation with its tables
   const reservation = await prisma.reservation.findUnique({
     where: { id },
@@ -262,7 +277,7 @@ export const cancelReservation = async (id: number) => {
     // Update reservation status
     return tx.reservation.update({
       where: { id },
-      data: { status: 'CANCELLED' },
+      data: { status: 'CANCELLED', updatedById: userId },
       include: {
         tables: {
           include: {
