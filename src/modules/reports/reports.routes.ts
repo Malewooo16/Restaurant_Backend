@@ -1,12 +1,7 @@
 import { Router } from 'express';
 import * as reportsController from './reports.controller';
-import { requirePermission } from '../../middleware/permissions';
 
 const router = Router();
-
-// Permission middleware for reports routes
-const viewReports = requirePermission('reports.view');
-const exportReports = requirePermission('reports.export');
 
 /**
  * @swagger
@@ -29,7 +24,7 @@ const exportReports = requirePermission('reports.export');
  *       200:
  *         description: Order summary report
  */
-router.get('/orders/summary', viewReports, reportsController.getOrderSummaryReport);
+router.get('/orders/summary', reportsController.getOrderSummaryReport);
 
 /**
  * @swagger
@@ -52,7 +47,7 @@ router.get('/orders/summary', viewReports, reportsController.getOrderSummaryRepo
  *       200:
  *         description: Order detailed report
  */
-router.get('/orders/detailed', viewReports, reportsController.getOrderDetailedReport);
+router.get('/orders/detailed', reportsController.getOrderDetailedReport);
 
 /**
  * @swagger
@@ -75,7 +70,7 @@ router.get('/orders/detailed', viewReports, reportsController.getOrderDetailedRe
  *       200:
  *         description: Payments report
  */
-router.get('/orders/payments', viewReports, reportsController.getPaymentsReport);
+router.get('/orders/payments', reportsController.getPaymentsReport);
 
 /**
  * @swagger
@@ -98,6 +93,23 @@ router.get('/orders/payments', viewReports, reportsController.getPaymentsReport)
  *       200:
  *         description: Refunds report
  */
-router.get('/orders/refunds', viewReports, reportsController.getRefundsReport);
+router.get('/orders/refunds', reportsController.getRefundsReport);
+
+// Purchase Reports
+router.get('/purchases/goods-received', reportsController.getGoodsReceivedReport);
+router.get('/purchases/order-detailed', reportsController.getPurchaseOrderDetailedReport);
+router.get('/purchases/order-summary', reportsController.getPurchaseOrderSummaryReport);
+router.get('/purchases/suppliers', reportsController.getSuppliersListReport);
+
+// Inventory Reports
+router.get('/inventory/summary', reportsController.getInventorySummaryReport);
+router.get('/inventory/low-stock', reportsController.getLowStockReport);
+router.get('/inventory/adjustments', reportsController.getInventoryAdjustmentsReport);
+router.get('/inventory/requests', reportsController.getInventoryRequestsReport);
+router.get('/inventory/expiring-batches', reportsController.getExpiringBatchesReport);
+
+// Accounting Reports
+router.get('/accounting/expenses/summary', reportsController.getExpenseSummaryReport);
+router.get('/accounting/expenses/detailed', reportsController.getExpenseDetailedReport);
 
 export default router;

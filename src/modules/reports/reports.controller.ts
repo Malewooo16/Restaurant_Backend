@@ -53,3 +53,140 @@ export const getRefundsReport = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch refunds report' });
   }
 };
+
+// Get Goods Received Report
+export const getGoodsReceivedReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getGoodsReceivedReport({ startDate, endDate });
+    res.json({ goodsReceived: data });
+  } catch (error) {
+    console.error('Error fetching goods received report:', error);
+    res.status(500).json({ error: 'Failed to fetch goods received report' });
+  }
+};
+
+// Get Purchase Order Detailed Report
+export const getPurchaseOrderDetailedReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getPurchaseOrderDetailedReport({ startDate, endDate });
+    res.json({ purchaseOrders: data });
+  } catch (error) {
+    console.error('Error fetching purchase order detailed report:', error);
+    res.status(500).json({ error: 'Failed to fetch purchase order detailed report' });
+  }
+};
+
+// Get Purchase Order Summary Report
+export const getPurchaseOrderSummaryReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getPurchaseOrderSummaryReport({ startDate, endDate });
+    res.json({ purchaseOrders: data });
+  } catch (error) {
+    console.error('Error fetching purchase order summary report:', error);
+    res.status(500).json({ error: 'Failed to fetch purchase order summary report' });
+  }
+};
+
+// Get Suppliers List Report
+export const getSuppliersListReport = async (req: Request, res: Response) => {
+  try {
+    const data = await reportsService.getSuppliersListReport();
+    res.json({ suppliers: data });
+  } catch (error) {
+    console.error('Error fetching suppliers list report:', error);
+    res.status(500).json({ error: 'Failed to fetch suppliers list report' });
+  }
+};
+
+// =======================
+// INVENTORY REPORTS
+// =======================
+
+// Get Inventory Summary Report
+export const getInventorySummaryReport = async (req: Request, res: Response) => {
+  try {
+    const data = await reportsService.getInventorySummaryReport();
+    res.json({ inventory: data });
+  } catch (error) {
+    console.error('Error fetching inventory summary report:', error);
+    res.status(500).json({ error: 'Failed to fetch inventory summary report' });
+  }
+};
+
+// Get Low Stock Report
+export const getLowStockReport = async (req: Request, res: Response) => {
+  try {
+    const data = await reportsService.getLowStockReport();
+    res.json({ lowStock: data });
+  } catch (error) {
+    console.error('Error fetching low stock report:', error);
+    res.status(500).json({ error: 'Failed to fetch low stock report' });
+  }
+};
+
+// Get Inventory Adjustments Report
+export const getInventoryAdjustmentsReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getInventoryAdjustmentsReport({ startDate, endDate });
+    res.json({ adjustments: data });
+  } catch (error) {
+    console.error('Error fetching inventory adjustments report:', error);
+    res.status(500).json({ error: 'Failed to fetch inventory adjustments report' });
+  }
+};
+
+// Get Inventory Requests Report
+export const getInventoryRequestsReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getInventoryRequestsReport({ startDate, endDate });
+    res.json({ requests: data });
+  } catch (error) {
+    console.error('Error fetching inventory requests report:', error);
+    res.status(500).json({ error: 'Failed to fetch inventory requests report' });
+  }
+};
+
+// Get Expiring Batches Report
+export const getExpiringBatchesReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getExpiringBatchesReport({ startDate, endDate });
+    res.json({ batches: data });
+  } catch (error) {
+    console.error('Error fetching expiring batches report:', error);
+    res.status(500).json({ error: 'Failed to fetch expiring batches report' });
+  }
+};
+
+// =======================
+// ACCOUNTING REPORTS
+// =======================
+
+// Get Expense Summary Report
+export const getExpenseSummaryReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getExpenseSummaryReport({ startDate, endDate });
+    res.json({ expenses: data });
+  } catch (error) {
+    console.error('Error fetching expense summary report:', error);
+    res.status(500).json({ error: 'Failed to fetch expense summary report' });
+  }
+};
+
+// Get Expense Detailed Report
+export const getExpenseDetailedReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getExpenseDetailedReport({ startDate, endDate });
+    res.json({ expenses: data });
+  } catch (error) {
+    console.error('Error fetching expense detailed report:', error);
+    res.status(500).json({ error: 'Failed to fetch expense detailed report' });
+  }
+};

@@ -73,6 +73,22 @@ async function generateGRNNumber(tx: Prisma.TransactionClient): Promise<string> 
   return candidate;
 }
 
+async function generateBatchNumber(tx: Prisma.TransactionClient): Promise<string> {
+    const timestamp = Date.now().toString(36).toUpperCase().replace(/^0+/, '');
+    const prefix = 'BATCH';
+    const candidate = `${prefix}-${timestamp}`;
+  
+  // Check if it exists, if so, append a random suffix
+  const existing = await tx.batch.findFirst({
+    where: { batchNumber: candidate },
+  });
+  
+  if (existing) {
+    return `${candidate}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+  }
+  return candidate;
+}
+
 export const createGoodsReceiving = async (
   data: Omit<Prisma.GoodsReceivingCreateInput, 'receivedItems'>,
   receivedItems: GoodsReceivingItemInput[],
@@ -103,7 +119,7 @@ export const createGoodsReceiving = async (
                 data: {
                   inventoryItemId: item.inventoryItemId,
                   quantity: item.quantityReceived, // Initial quantity of the batch is what's received
-                  batchNumber: item.batchNumber || `BATCH_${Date.now()}`, // Generate if not provided
+                  batchNumber: item.batchNumber || await generateBatchNumber(tx), // Generate if not provided
                   expiryDate: item.expiryDate,
                   receivedAt: (data as any).receivedAt || new Date(),
                   createdById: userId,
@@ -182,6 +198,12 @@ export const getAllGoodsReceiving = async (
     include: {
       supplier: true,
       purchaseOrder: true,
+      createdBy: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
       receivedItems: {
         include: {
           inventoryItem: true,
@@ -217,6 +239,12 @@ export const getGoodsReceivingById = async (id: number) => {
     include: {
       supplier: true,
       purchaseOrder: true,
+      createdBy: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
       receivedItems: {
         include: {
           inventoryItem: true,
