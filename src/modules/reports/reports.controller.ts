@@ -190,3 +190,39 @@ export const getExpenseDetailedReport = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch expense detailed report' });
   }
 };
+
+// Get Revenue Report
+export const getRevenueReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getRevenueReport({ startDate, endDate });
+    res.json({ revenue: data });
+  } catch (error) {
+    console.error('Error fetching revenue report:', error);
+    res.status(500).json({ error: 'Failed to fetch revenue report' });
+  }
+};
+
+// Get Gross Profit Report
+export const getGrossProfitReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getGrossProfitReport({ startDate, endDate });
+    res.json({ grossProfit: data });
+  } catch (error) {
+    console.error('Error fetching gross profit report:', error);
+    res.status(500).json({ error: 'Failed to fetch gross profit report' });
+  }
+};
+
+// Get Net Profit Report
+export const getNetProfitReport = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query as DateRangeQuery;
+    const data = await reportsService.getNetProfitReport({ startDate, endDate });
+    res.json({ netProfit: data });
+  } catch (error) {
+    console.error('Error fetching net profit report:', error);
+    res.status(500).json({ error: 'Failed to fetch net profit report' });
+  }
+};

@@ -660,3 +660,193 @@ export const getExpenseDetailedReport = async (params: DateRangeParams) => {
     createdBy: expense.createdBy?.username || 'N/A',
   }));
 };
+
+// Revenue Report - Daily revenue from paid orders
+export const getRevenueReport = async (params: DateRangeParams) => {
+  const where: any = {
+    status: 'PAID',
+  };
+
+  // Add date range filter
+  if (params.startDate && params.endDate) {
+    const start = new Date(params.startDate);
+    const end = new Date(params.endDate);
+    where.createdAt = {
+      gte: start,
+      lte: end,
+    };
+  }
+
+  const orders = await prisma.order.findMany({
+    where,
+    select: {
+      createdAt: true,
+      total: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  // Group by date (day)
+  const dailyRevenue = new Map();
+  
+  orders.forEach(order => {
+    const dateKey = new Date(order.createdAt).toISOString().split('T')[0];
+    const existing = dailyRevenue.get(dateKey) || { date: dateKey, revenue: 0, orderCount: 0 };
+    existing.revenue += order.total || 0;
+    existing.orderCount += 1;
+    dailyRevenue.set(dateKey, existing);
+  });
+
+  return Array.from(dailyRevenue.values()).sort((a, b) => b.date.localeCompare(a.date));
+};
+
+// Gross Profit Report - Revenue - Purchases (COGS) for each day
+export const getGrossProfitReport = async (params: DateRangeParams) => {
+  const startDate = params.startDate ? new Date(params.startDate) : new Date('1970-01-01');
+  const endDate = params.endDate ? new Date(params.endDate) : new Date();
+
+  // Get paid orders revenue by date
+  const orders = await prisma.order.findMany({
+    where: {
+      status: 'PAID',
+      createdAt: { gte: startDate, lte: endDate },
+    },
+    select: {
+      createdAt: true,
+      total: true,
+    },
+  });
+
+  // Get goods received (purchases/cost of goods) by date
+  const goodsReceived = await prisma.goodsReceiving.findMany({
+    where: {
+      receivedAt: { gte: startDate, lte: endDate },
+    },
+    include: {
+      receivedItems: {
+        include: {
+          inventoryItem: true,
+        },
+      },
+    },
+  });
+
+  // Calculate daily revenue
+  const dailyData = new Map();
+  
+  orders.forEach(order => {
+    const dateKey = new Date(order.createdAt).toISOString().split('T')[0];
+    const existing = dailyData.get(dateKey) || { date: dateKey, revenue: 0, purchases: 0 };
+    existing.revenue += order.total || 0;
+    dailyData.set(dateKey, existing);
+  });
+
+  // Calculate daily purchases (COGS)
+  goodsReceived.forEach(gr => {
+    const dateKey = new Date(gr.receivedAt).toISOString().split('T')[0];
+    const purchaseTotal = gr.receivedItems.reduce((sum, item) => {
+      return sum + (item.quantityReceived * (item.inventoryItem.price || 0));
+    }, 0);
+    
+    const existing = dailyData.get(dateKey) || { date: dateKey, revenue: 0, purchases: 0 };
+    existing.purchases += purchaseTotal;
+    dailyData.set(dateKey, existing);
+  });
+
+  // Calculate gross profit for each day
+  const result = Array.from(dailyData.values()).map(day => ({
+    date: day.date,
+    revenue: day.revenue,
+    purchases: day.purchases,
+    grossProfit: day.revenue - day.purchases,
+  }));
+
+  return result.sort((a, b) => b.date.localeCompare(a.date));
+};
+
+// Net Profit Report - Revenue - (Purchases + Expenses) for each day
+export const getNetProfitReport = async (params: DateRangeParams) => {
+  const startDate = params.startDate ? new Date(params.startDate) : new Date('1970-01-01');
+  const endDate = params.endDate ? new Date(params.endDate) : new Date();
+
+  // Get paid orders revenue by date
+  const orders = await prisma.order.findMany({
+    where: {
+      status: 'PAID',
+      createdAt: { gte: startDate, lte: endDate },
+    },
+    select: {
+      createdAt: true,
+      total: true,
+    },
+  });
+
+  // Get goods received (purchases/cost of goods) by date
+  const goodsReceived = await prisma.goodsReceiving.findMany({
+    where: {
+      receivedAt: { gte: startDate, lte: endDate },
+    },
+    include: {
+      receivedItems: {
+        include: {
+          inventoryItem: true,
+        },
+      },
+    },
+  });
+
+  // Get expenses by date
+  const expenses = await prisma.expense.findMany({
+    where: {
+      date: { gte: startDate, lte: endDate },
+    },
+    select: {
+      date: true,
+      amount: true,
+    },
+  });
+
+  // Calculate daily revenue
+  const dailyData = new Map();
+  
+  orders.forEach(order => {
+    const dateKey = new Date(order.createdAt).toISOString().split('T')[0];
+    const existing = dailyData.get(dateKey) || { date: dateKey, revenue: 0, purchases: 0, expenses: 0 };
+    existing.revenue += order.total || 0;
+    dailyData.set(dateKey, existing);
+  });
+
+  // Calculate daily purchases (COGS)
+  goodsReceived.forEach(gr => {
+    const dateKey = new Date(gr.receivedAt).toISOString().split('T')[0];
+    const purchaseTotal = gr.receivedItems.reduce((sum, item) => {
+      return sum + (item.quantityReceived * (item.inventoryItem.price || 0));
+    }, 0);
+    
+    const existing = dailyData.get(dateKey) || { date: dateKey, revenue: 0, purchases: 0, expenses: 0 };
+    existing.purchases += purchaseTotal;
+    dailyData.set(dateKey, existing);
+  });
+
+  // Calculate daily expenses
+  expenses.forEach(expense => {
+    const dateKey = new Date(expense.date).toISOString().split('T')[0];
+    const existing = dailyData.get(dateKey) || { date: dateKey, revenue: 0, purchases: 0, expenses: 0 };
+    existing.expenses += expense.amount;
+    dailyData.set(dateKey, existing);
+  });
+
+  // Calculate net profit for each day
+  const result = Array.from(dailyData.values()).map(day => ({
+    date: day.date,
+    revenue: day.revenue,
+    purchases: day.purchases,
+    expenses: day.expenses,
+    grossProfit: day.revenue - day.purchases,
+    netProfit: day.revenue - (day.purchases + day.expenses),
+  }));
+
+  return result.sort((a, b) => b.date.localeCompare(a.date));
+};

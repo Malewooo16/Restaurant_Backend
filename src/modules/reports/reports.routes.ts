@@ -112,4 +112,9 @@ router.get('/inventory/expiring-batches', reportsController.getExpiringBatchesRe
 router.get('/accounting/expenses/summary', reportsController.getExpenseSummaryReport);
 router.get('/accounting/expenses/detailed', reportsController.getExpenseDetailedReport);
 
+// Profit & Revenue Reports
+router.get('/accounting/revenue', reportsController.getRevenueReport);
+router.get('/accounting/gross-profit', reportsController.getGrossProfitReport);
+router.get('/accounting/net-profit', reportsController.getNetProfitReport);
+
 export default router;
