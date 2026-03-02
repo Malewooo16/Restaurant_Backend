@@ -2,22 +2,17 @@ import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../../lib/prisma";
 
 export const getAllStaff = async () => {
-  return prisma.staff.findMany({
-    where:{
-      firstName:{mode:"insensitive"}
-    },
+  const staff = await prisma.staff.findMany({
     include: {
-      role: {
-        include: {
-          department: true,
-        },
-      },
+      role: { include: { department: true } },
       department: true,
     },
-    orderBy: {
-      firstName: 'asc',
-    },
   });
+
+  staff.sort((a, b) =>
+    a.firstName.localeCompare(b.firstName, undefined, { sensitivity: "base" })
+  );
+  return staff;
 };
 
 export const getStaffById = async (id: number) => {
@@ -34,26 +29,29 @@ export const getStaffById = async (id: number) => {
   });
 };
 
-export const createStaff = async (data: {
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phone?: string;
-  roleId?: number;
-  departmentId?: number;
-  hireDate?: Date;
-  status?: string;
-  imageUrl?: string;
-  address?: string;
-  emergencyContact?: string;
-  notes?: string;
-}, userId: number) => {
+export const createStaff = async (
+  data: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+    roleId?: number;
+    departmentId?: number;
+    hireDate?: Date;
+    status?: string;
+    imageUrl?: string;
+    address?: string;
+    emergencyContact?: string;
+    notes?: string;
+  },
+  userId: number
+) => {
   if (data.email) {
     const emailExists = await prisma.staff.findFirst({
       where: { email: data.email },
     });
     if (emailExists) {
-      throw new Error('Staff member with this email already exists');
+      throw new Error("Staff member with this email already exists");
     }
   }
 
@@ -85,26 +83,30 @@ export const createStaff = async (data: {
   });
 };
 
-export const updateStaff = async (id: number, data: {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  roleId?: number;
-  departmentId?: number;
-  hireDate?: Date;
-  status?: string;
-  imageUrl?: string;
-  address?: string;
-  emergencyContact?: string;
-  notes?: string;
-}, userId: number) => {
+export const updateStaff = async (
+  id: number,
+  data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    roleId?: number;
+    departmentId?: number;
+    hireDate?: Date;
+    status?: string;
+    imageUrl?: string;
+    address?: string;
+    emergencyContact?: string;
+    notes?: string;
+  },
+  userId: number
+) => {
   // Check if staff exists
   const existingStaff = await prisma.staff.findUnique({
     where: { id },
   });
   if (!existingStaff) {
-    throw new Error('Staff member not found');
+    throw new Error("Staff member not found");
   }
 
   // Check for duplicate email if email is being updated
@@ -116,7 +118,7 @@ export const updateStaff = async (id: number, data: {
       },
     });
     if (emailExists) {
-      throw new Error('Staff member with this email already exists');
+      throw new Error("Staff member with this email already exists");
     }
   }
 
