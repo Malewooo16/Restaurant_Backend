@@ -7,11 +7,11 @@ import * as orderValidation from './order.validation';
 const router = Router();
 
 // Permission middleware for order routes
-const viewOrders = requirePermission('orders.view');
-const createOrders = requirePermission('orders.create');
+const viewOrders = requirePermission('orders.view_current');
+const createOrders = requirePermission('orders.create_new');
 const editOrders = requirePermission('orders.edit');
 const cancelOrders = requirePermission('orders.cancel');
-const payOrders = requirePermission('orders.pay');
+const payOrders = requirePermission('orders.make_payments');
 
 /**
  * @swagger

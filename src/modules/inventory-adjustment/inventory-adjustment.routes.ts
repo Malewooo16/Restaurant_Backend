@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import * as inventoryAdjustmentController from './inventory-adjustment.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as inventoryAdjustmentValidation from './inventory-adjustment.validation';
+
+// Permission middleware for inventory adjustment routes
+const viewAdjustments = requirePermission('inventory.view_adjustments');
+const createAdjustments = requirePermission('inventory.create_adjustments');
 
 const router = Router();
 
@@ -12,7 +17,7 @@ const router = Router();
  *     summary: Get all inventory adjustments
  *     tags: [Inventory Adjustment]
  */
-router.get('/', inventoryAdjustmentController.getAllInventoryAdjustments);
+router.get('/', viewAdjustments, inventoryAdjustmentController.getAllInventoryAdjustments);
 
 /**
  * @swagger
@@ -23,6 +28,7 @@ router.get('/', inventoryAdjustmentController.getAllInventoryAdjustments);
  */
 router.post(
   '/',
+  createAdjustments,
   validate(inventoryAdjustmentValidation.createInventoryAdjustmentSchema),
   inventoryAdjustmentController.createInventoryAdjustment
 );

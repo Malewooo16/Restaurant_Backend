@@ -10,7 +10,9 @@ const router = Router();
 
 // Permission middleware for accounting/expense routes
 const viewAccounting = requirePermission('accounting.view');
-const manageExpenses = requirePermission('accounting.expenses');
+const createExpenses = requirePermission('accounting.create_expenses');
+const editExpenses = requirePermission('accounting.edit_expenses');
+const deleteExpenses = requirePermission('accounting.delete_expenses');
 
 /**
  * @swagger
@@ -34,7 +36,7 @@ const manageExpenses = requirePermission('accounting.expenses');
  */
 router.post(
   '/',
-  manageExpenses,
+  createExpenses,
   validate(expenseValidation.createExpenseSchema),
   expenseController.createExpense
 );
@@ -123,7 +125,7 @@ router.get('/:id', viewAccounting, expenseController.getExpenseById);
  */
 router.patch(
   '/:id',
-  manageExpenses,
+  editExpenses,
   validate(expenseValidation.updateExpenseSchema),
   expenseController.updateExpense
 );
@@ -144,6 +146,6 @@ router.patch(
  *       204:
  *         description: No content
  */
-router.delete('/:id', manageExpenses, expenseController.deleteExpense);
+router.delete('/:id', deleteExpenses, expenseController.deleteExpense);
 
 export default router;

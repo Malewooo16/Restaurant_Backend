@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import * as stockRequestController from './stock-request.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as stockRequestValidation from './stock-request.validation';
+
+// Permission middleware for stock request routes
+const viewStockRequests = requirePermission('inventory.view_requests');
+const approveStockRequests = requirePermission('inventory.approve_requests');
 
 const router = Router();
 
@@ -43,6 +48,7 @@ const router = Router();
  */
 router.get(
   '/',
+  viewStockRequests,
   validate(stockRequestValidation.getAllStockRequestsSchema),
   stockRequestController.getAllStockRequests
 );
@@ -69,6 +75,7 @@ router.get(
  */
 router.post(
   '/',
+  viewStockRequests,
   validate(stockRequestValidation.createStockRequestSchema),
   stockRequestController.createStockRequest
 );
@@ -109,6 +116,7 @@ router.post(
  */
 router.patch(
   '/:id/status',
+  approveStockRequests,
   validate(stockRequestValidation.updateStockRequestStatusSchema),
   stockRequestController.updateStockRequestStatus
 );

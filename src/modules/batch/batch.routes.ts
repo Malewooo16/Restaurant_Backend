@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import * as batchController from './batch.controller';
 import { validate } from '../../middleware/validate';
+import { requirePermission } from '../../middleware/permissions';
 import * as batchValidation from './batch.validation';
+
+// Permission middleware for batch routes
+const viewExpiring = requirePermission('inventory.view_expiring');
+const updateExpiring = requirePermission('inventory.update_expiring');
 
 const router = Router();
 
@@ -47,7 +52,7 @@ router.post(
  *               items:
  *                 $ref: '#/components/schemas/Batch'
  */
-router.get('/', batchController.getAllBatches);
+router.get('/', viewExpiring, batchController.getAllBatches);
 
 /**
  * @swagger
@@ -71,7 +76,7 @@ router.get('/', batchController.getAllBatches);
  *               items:
  *                 $ref: '#/components/schemas/Batch'
  */
-router.get('/item/:itemId', batchController.getBatchesByItemId);
+router.get('/item/:itemId', viewExpiring, batchController.getBatchesByItemId);
 
 /**
  * @swagger
@@ -89,7 +94,7 @@ router.get('/item/:itemId', batchController.getBatchesByItemId);
  *               items:
  *                 $ref: '#/components/schemas/Batch'
  */
-router.get('/expiring', batchController.getExpiringBatches);
+router.get('/expiring', viewExpiring, batchController.getExpiringBatches);
 
 /**
  * @swagger
@@ -145,6 +150,7 @@ router.get('/:id', batchController.getBatchById);
  */
 router.patch(
   '/:id',
+  updateExpiring,
   validate(batchValidation.updateBatchSchema),
   batchController.updateBatch
 );
@@ -167,6 +173,6 @@ router.patch(
  *       404:
  *         description: Batch not found.
  */
-router.delete('/:id', batchController.deleteBatch);
+router.delete('/:id', updateExpiring, batchController.deleteBatch);
 
 export default router;

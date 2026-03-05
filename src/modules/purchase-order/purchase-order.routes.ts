@@ -7,10 +7,10 @@ import * as purchaseOrderValidation from './purchase-order.validation';
 const router = Router();
 
 // Permission middleware for purchases routes
-const viewPurchases = requirePermission('purchases.view');
-const createPurchases = requirePermission('purchases.create');
-const approvePurchases = requirePermission('purchases.approve');
-const receivePurchases = requirePermission('purchases.receive');
+const viewPurchases = requirePermission('purchases.view_orders');
+const createPurchases = requirePermission('purchases.create_orders');
+const approvePurchases = requirePermission('purchases.approve_orders');
+const receivePurchases = requirePermission('purchases.receive_goods');
 
 /**
  * @swagger

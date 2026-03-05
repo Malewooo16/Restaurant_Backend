@@ -38,9 +38,33 @@ const router = Router();
 
 // Permission middleware for menu routes
 const viewMenu = requirePermission('menu.view');
-const createMenu = requirePermission('menu.create');
-const editMenu = requirePermission('menu.edit');
-const deleteMenu = requirePermission('menu.delete');
+const createMenu = (req: any, res: any, next: any) => {
+  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.menu_create');
+  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.menu_create');
+  if (hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Insufficient permissions' });
+  }
+};
+const editMenu = (req: any, res: any, next: any) => {
+  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.menu_edit');
+  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.menu_edit');
+  if (hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Insufficient permissions' });
+  }
+};
+const deleteMenu = (req: any, res: any, next: any) => {
+  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.menu_delete');
+  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.menu_delete');
+  if (hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Insufficient permissions' });
+  }
+};
 
 /**
  * @swagger

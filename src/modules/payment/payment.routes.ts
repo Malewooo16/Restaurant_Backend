@@ -7,9 +7,9 @@ import * as paymentValidation from './payment.validation';
 const router = Router();
 
 // Permission middleware for payment routes
-const viewPayments = requirePermission('payments.view');
-const createPayments = requirePermission('payments.create');
-const refundPayments = requirePermission('payments.refund');
+const viewPayments = requirePermission('orders.view_history');
+const createPayments = requirePermission('orders.make_payments');
+const refundPayments = requirePermission('orders.make_payments');
 
 /**
  * @swagger

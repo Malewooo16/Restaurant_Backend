@@ -8,38 +8,64 @@ async function main() {
   // Create Permissions
   await prisma.permission.createMany({
     data: [
-      // Orders permissions
-      { name: 'orders.view', description: 'View orders', category: 'orders' },
-      { name: 'orders.create', description: 'Create new orders', category: 'orders' },
-      { name: 'orders.edit', description: 'Edit existing orders', category: 'orders' },
+      // Orders permissions - Full rewrite for granular control
+      { name: 'orders.create_new', description: 'Create new orders', category: 'orders' },
+      { name: 'orders.view_current', description: 'View current orders', category: 'orders' },
       { name: 'orders.cancel', description: 'Cancel orders', category: 'orders' },
+      { name: 'orders.make_payments', description: 'Make order payments', category: 'orders' },
+      { name: 'orders.view_history', description: 'View order history', category: 'orders' },
+      { name: 'orders.edit', description: 'Edit existing orders', category: 'orders' },
       
 
-      // Menu permissions
+      // Menu permissions (view only)
       { name: 'menu.view', description: 'View menu items', category: 'menu' },
-      { name: 'menu.create', description: 'Create menu items', category: 'menu' },
-      { name: 'menu.edit', description: 'Edit menu items', category: 'menu' },
-      { name: 'menu.delete', description: 'Delete menu items', category: 'menu' },
 
-      // Inventory permissions
-      { name: 'inventory.view', description: 'View inventory', category: 'inventory' },
-      { name: 'inventory.create', description: 'Add inventory items', category: 'inventory' },
-      { name: 'inventory.edit', description: 'Edit inventory items', category: 'inventory' },
-      { name: 'inventory.delete', description: 'Delete inventory items', category: 'inventory' },
-      { name: 'inventory.adjust', description: 'Adjust inventory quantities', category: 'inventory' },
-      { name: 'inventory.transfer', description: 'Transfer inventory between departments', category: 'inventory' },
+      // Kitchen menu permissions
+      { name: 'kitchen.menu_create', description: 'Create kitchen menu items', category: 'kitchen' },
+      { name: 'kitchen.menu_edit', description: 'Edit kitchen menu items', category: 'kitchen' },
+      { name: 'kitchen.menu_delete', description: 'Delete kitchen menu items', category: 'kitchen' },
 
-      // Purchases permissions
-      { name: 'purchases.view', description: 'View purchase orders', category: 'purchases' },
-      { name: 'purchases.create', description: 'Create purchase orders', category: 'purchases' },
-      { name: 'purchases.approve', description: 'Approve purchase orders', category: 'purchases' },
-      { name: 'purchases.receive', description: 'Receive goods', category: 'purchases' },
+      // Kitchen permissions (for sidebar)
+      { name: 'kitchen.manage_orders', description: 'Manage kitchen orders', category: 'kitchen' },
+      { name: 'kitchen.view_inventory', description: 'View kitchen inventory', category: 'kitchen' },
+      { name: 'kitchen.view_requests', description: 'View stock requests', category: 'kitchen' },
+      { name: 'kitchen.view_expiring', description: 'View expiring items', category: 'kitchen' },
+      { name: 'kitchen.dissatisfactions', description: 'View dissatisfactions', category: 'kitchen' },
 
-      // Suppliers permissions
-      { name: 'suppliers.view', description: 'View suppliers', category: 'purchases' },
-      { name: 'suppliers.create', description: 'Create suppliers', category: 'purchases' },
-      { name: 'suppliers.edit', description: 'Edit suppliers', category: 'purchases' },
-      { name: 'suppliers.delete', description: 'Delete suppliers', category: 'purchases' },
+      // Bar menu permissions
+      { name: 'bar.menu_create', description: 'Create bar menu items', category: 'bar' },
+      { name: 'bar.menu_edit', description: 'Edit bar menu items', category: 'bar' },
+      { name: 'bar.menu_delete', description: 'Delete bar menu items', category: 'bar' },
+
+      // Bar permissions (for sidebar)
+      { name: 'bar.manage_orders', description: 'Manage bar orders', category: 'bar' },
+      { name: 'bar.view_inventory', description: 'View bar inventory', category: 'bar' },
+      { name: 'bar.returns', description: 'View bar returns', category: 'bar' },
+
+      // Inventory permissions - Full rewrite for granular control
+      { name: 'inventory.view_current_stock', description: 'View current stock', category: 'inventory' },
+      { name: 'inventory.add_items', description: 'Add inventory items', category: 'inventory' },
+      { name: 'inventory.edit_items', description: 'Edit inventory items', category: 'inventory' },
+      { name: 'inventory.delete_items', description: 'Delete inventory items', category: 'inventory' },
+      { name: 'inventory.view_adjustments', description: 'View stock adjustments', category: 'inventory' },
+      { name: 'inventory.create_adjustments', description: 'Create stock adjustments', category: 'inventory' },
+      { name: 'inventory.view_requests', description: 'View stock requests', category: 'inventory' },
+      { name: 'inventory.approve_requests', description: 'Approve or reject stock requests', category: 'inventory' },
+      { name: 'inventory.view_expiring', description: 'View expiring items', category: 'inventory' },
+     
+
+      // Purchases permissions - Full rewrite for granular control
+      { name: 'purchases.view_orders', description: 'View purchase orders', category: 'purchases' },
+      { name: 'purchases.create_orders', description: 'Create purchase orders', category: 'purchases' },
+      { name: 'purchases.approve_orders', description: 'Approve or reject purchase orders', category: 'purchases' },
+      { name: 'purchases.receive_goods', description: 'Receive goods', category: 'purchases' },
+      { name: 'purchases.view_received', description: 'View goods received', category: 'purchases' },
+
+      // Suppliers permissions (under purchases scope)
+      { name: 'purchases.view_suppliers', description: 'View suppliers', category: 'purchases' },
+      { name: 'purchases.add_suppliers', description: 'Add suppliers', category: 'purchases' },
+      { name: 'purchases.edit_suppliers', description: 'Edit suppliers', category: 'purchases' },
+      { name: 'purchases.delete_suppliers', description: 'Delete suppliers', category: 'purchases' },
 
       // Goods Receiving permissions
       { name: 'goods_receiving.view', description: 'View goods receiving records', category: 'purchases' },
@@ -103,9 +129,11 @@ async function main() {
       { name: 'reservations.edit', description: 'Edit reservations', category: 'reservations' },
       { name: 'reservations.cancel', description: 'Cancel reservations', category: 'reservations' },
 
-      // Accounting permissions
+      // Accounting permissions - Full CRUD for expenses
       { name: 'accounting.view', description: 'View accounting', category: 'accounting' },
-      { name: 'accounting.expenses', description: 'Manage expenses', category: 'accounting' },
+      { name: 'accounting.create_expenses', description: 'Create expenses', category: 'accounting' },
+      { name: 'accounting.edit_expenses', description: 'Edit expenses', category: 'accounting' },
+      { name: 'accounting.delete_expenses', description: 'Delete expenses', category: 'accounting' },
 
       // Payment permissions
       { name: 'payments.view', description: 'View payments', category: 'orders' },
@@ -151,11 +179,12 @@ async function main() {
 
   // Create Manager group - specific permissions
   const managerPermissions = [
-    'orders.view', 'orders.create', 'orders.edit', 'orders.cancel',
-    'menu.view', 'menu.create', 'menu.edit',
-    'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.adjust',
-    'purchases.view', 'purchases.create', 'purchases.approve', 'purchases.receive',
-    'suppliers.view', 'suppliers.create', 'suppliers.edit',
+    'orders.create_new', 'orders.view_current', 'orders.view_history', 'orders.edit', 'orders.cancel', 'orders.make_payments',
+    'menu.view',
+    'inventory.view_current_stock', 'inventory.add_items', 'inventory.edit_items', 'inventory.view_adjustments', 'inventory.create_adjustments',
+    'inventory.view_requests', 'inventory.approve_requests', 'inventory.view_expiring',
+    'purchases.view_orders', 'purchases.create_orders', 'purchases.approve_orders', 'purchases.receive_goods', 'purchases.view_received',
+    'purchases.view_suppliers', 'purchases.add_suppliers', 'purchases.edit_suppliers', 'purchases.delete_suppliers',
     'goods_receiving.view', 'goods_receiving.create', 'goods_receiving.edit',
     'staff.view', 'staff.create', 'staff.edit',
     'users.view', 'users.create', 'users.edit',
@@ -163,7 +192,7 @@ async function main() {
     'settings.view',
     'tables.view', 'tables.manage',
     'reservations.view', 'reservations.create', 'reservations.edit',
-    'accounting.view', 'accounting.expenses',
+    'accounting.view', 'accounting.create_expenses', 'accounting.edit_expenses', 'accounting.delete_expenses',
     'departments.view', 'roles.view'
   ];
   
@@ -200,9 +229,9 @@ async function main() {
 
   // Create Waiter group
   const waiterPermissions = [
-    'orders.view', 'orders.create',
+    'orders.create_new', 'orders.view_current', 'orders.make_payments',
     'menu.view',
-    'inventory.view',
+    'inventory.view_current_stock',
     'tables.view',
     'reservations.view', 'reservations.create',
     'payments.view', 'payments.create'
@@ -241,9 +270,10 @@ async function main() {
 
   // Create Bartender group
   const bartenderPermissions = [
-    'orders.view', 'orders.create',
-    'menu.view',
-    'inventory.view',
+    'orders.create_new', 'orders.view_current', 'orders.make_payments',
+    'menu.view', 'bar.menu_create', 'bar.menu_edit', 'bar.menu_delete',
+    'bar.manage_orders', 'bar.view_inventory', 'bar.returns',
+    'inventory.view_current_stock',
     'payments.view', 'payments.create'
   ];
   
@@ -280,9 +310,11 @@ async function main() {
 
   // Create Kitchen group
   const kitchenPermissions = [
-    'orders.view',
-    'menu.view',
-    'inventory.view', 'inventory.adjust'
+    'orders.view_current',
+    'menu.view', 'kitchen.menu_create', 'kitchen.menu_edit', 'kitchen.menu_delete',
+    'kitchen.manage_orders', 'kitchen.view_inventory', 'kitchen.view_requests', 'kitchen.view_expiring', 'kitchen.dissatisfactions',
+    'inventory.view_current_stock', 'inventory.create_adjustments', 'inventory.view_adjustments',
+    'inventory.view_requests', 'inventory.view_expiring'
   ];
   
   const kitchenPerms = await prisma.permission.findMany({

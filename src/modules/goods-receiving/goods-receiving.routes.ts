@@ -7,10 +7,10 @@ import * as goodsReceivingValidation from './goods-receiving.validation';
 const router = Router();
 
 // Permission middleware for goods receiving routes
-const viewGoodsReceiving = requirePermission('goods_receiving.view');
-const createGoodsReceiving = requirePermission('goods_receiving.create');
-const editGoodsReceiving = requirePermission('goods_receiving.edit');
-const deleteGoodsReceiving = requirePermission('goods_receiving.delete');
+const viewGoodsReceiving = requirePermission('purchases.view_received');
+const createGoodsReceiving = requirePermission('purchases.receive_goods');
+const editGoodsReceiving = requirePermission('purchases.receive_goods');
+const deleteGoodsReceiving = requirePermission('purchases.receive_goods');
 
 /**
  * @swagger

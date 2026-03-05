@@ -7,10 +7,10 @@ import * as supplierValidation from './supplier.validation';
 const router = Router();
 
 // Permission middleware for supplier routes
-const viewSuppliers = requirePermission('suppliers.view');
-const createSuppliers = requirePermission('suppliers.create');
-const editSuppliers = requirePermission('suppliers.edit');
-const deleteSuppliers = requirePermission('suppliers.delete');
+const viewSuppliers = requirePermission('purchases.view_suppliers');
+const createSuppliers = requirePermission('purchases.add_suppliers');
+const editSuppliers = requirePermission('purchases.edit_suppliers');
+const deleteSuppliers = requirePermission('purchases.delete_suppliers');
 
 /**
  * @swagger

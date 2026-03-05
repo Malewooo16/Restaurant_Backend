@@ -7,10 +7,10 @@ import * as inventoryItemValidation from './inventory-item.validation';
 const router = Router();
 
 // Permission middleware for inventory routes
-const viewInventory = requirePermission('inventory.view');
-const createInventory = requirePermission('inventory.create');
-const editInventory = requirePermission('inventory.edit');
-const deleteInventory = requirePermission('inventory.delete');
+const viewInventory = requirePermission('inventory.view_current_stock');
+const createInventory = requirePermission('inventory.add_items');
+const editInventory = requirePermission('inventory.edit_items');
+const deleteInventory = requirePermission('inventory.delete_items');
 
 /**
  * @swagger
