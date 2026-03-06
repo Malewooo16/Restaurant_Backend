@@ -21,6 +21,7 @@ async function main() {
       { name: 'menu.view', description: 'View menu items', category: 'menu' },
 
       // Kitchen menu permissions
+      { name: 'kitchen.view_menu', description: 'View kitchen menu items', category: 'kitchen' },
       { name: 'kitchen.menu_create', description: 'Create kitchen menu items', category: 'kitchen' },
       { name: 'kitchen.menu_edit', description: 'Edit kitchen menu items', category: 'kitchen' },
       { name: 'kitchen.menu_delete', description: 'Delete kitchen menu items', category: 'kitchen' },
@@ -28,11 +29,12 @@ async function main() {
       // Kitchen permissions (for sidebar)
       { name: 'kitchen.manage_orders', description: 'Manage kitchen orders', category: 'kitchen' },
       { name: 'kitchen.view_inventory', description: 'View kitchen inventory', category: 'kitchen' },
-      { name: 'kitchen.view_requests', description: 'View stock requests', category: 'kitchen' },
-      { name: 'kitchen.view_expiring', description: 'View expiring items', category: 'kitchen' },
-      { name: 'kitchen.dissatisfactions', description: 'View dissatisfactions', category: 'kitchen' },
+      { name: 'kitchen.stock_requests', description: 'Manage stock requests', category: 'kitchen' },
+    //  { name: 'kitchen.view_expiring', description: 'View expiring items', category: 'kitchen' },
+      { name: 'kitchen.order_issues', description: 'Manage order issues', category: 'kitchen' },
 
       // Bar menu permissions
+      { name: 'bar.view_menu', description: 'View bar menu items', category: 'bar' },
       { name: 'bar.menu_create', description: 'Create bar menu items', category: 'bar' },
       { name: 'bar.menu_edit', description: 'Edit bar menu items', category: 'bar' },
       { name: 'bar.menu_delete', description: 'Delete bar menu items', category: 'bar' },
@@ -40,7 +42,8 @@ async function main() {
       // Bar permissions (for sidebar)
       { name: 'bar.manage_orders', description: 'Manage bar orders', category: 'bar' },
       { name: 'bar.view_inventory', description: 'View bar inventory', category: 'bar' },
-      { name: 'bar.returns', description: 'View bar returns', category: 'bar' },
+      { name: 'bar.stock_requests', description: 'Manage stock requests', category: 'bar' },
+      { name: 'bar.order_issues', description: 'Manage order issues', category: 'bar' },
 
       // Inventory permissions - Full rewrite for granular control
       { name: 'inventory.view_current_stock', description: 'View current stock', category: 'inventory' },
@@ -103,21 +106,12 @@ async function main() {
       { name: 'reports.export', description: 'Export reports', category: 'reports' },
 
       // Settings permissions
-      { name: 'settings.view', description: 'View settings', category: 'settings' },
-      { name: 'settings.manage', description: 'Manage settings', category: 'settings' },
-      
-      // Settings sub-menus permissions
-      { name: 'settings.restaurant_info', description: 'View and edit restaurant info', category: 'settings' },
-      { name: 'settings.configurations', description: 'Manage configurations', category: 'settings' },
-      { name: 'settings.tables', description: 'Manage tables', category: 'settings' },
-      { name: 'settings.departments', description: 'Manage departments', category: 'settings' },
-      { name: 'settings.staff_roles', description: 'Manage staff roles', category: 'settings' },
-      { name: 'settings.inventory_categories', description: 'Manage inventory categories', category: 'settings' },
-      { name: 'settings.menu_categories', description: 'Manage menu categories', category: 'settings' },
-      { name: 'settings.adjustment_reasons', description: 'Manage adjustment reasons', category: 'settings' },
-      { name: 'settings.expense_categories', description: 'Manage expense categories', category: 'settings' },
-      { name: 'settings.units', description: 'Manage units', category: 'settings' },
-      { name: 'settings.alerts', description: 'Manage alerts', category: 'settings' },
+      { name: 'settings.view_alerts', description: 'View alerts', category: 'settings' },
+      { name: 'settings.edit_alerts', description: 'Edit alerts', category: 'settings' },
+      { name: 'settings.view_business_information', description: 'View business information', category: 'settings' },
+      { name: 'settings.edit_business_information', description: 'Edit business information', category: 'settings' },
+      { name: 'settings.view_configurations', description: 'View configurations', category: 'settings' },
+      { name: 'settings.edit_configurations', description: 'Edit configurations', category: 'settings' },
 
       // Tables permissions
       { name: 'tables.view', description: 'View tables', category: 'reservations' },
@@ -189,7 +183,9 @@ async function main() {
     'staff.view', 'staff.create', 'staff.edit',
     'users.view', 'users.create', 'users.edit',
     'reports.view', 'reports.export',
-    'settings.view',
+    'settings.view_alerts', 'settings.edit_alerts',
+    'settings.view_business_information', 'settings.edit_business_information',
+    'settings.view_configurations', 'settings.edit_configurations',
     'tables.view', 'tables.manage',
     'reservations.view', 'reservations.create', 'reservations.edit',
     'accounting.view', 'accounting.create_expenses', 'accounting.edit_expenses', 'accounting.delete_expenses',
@@ -271,8 +267,8 @@ async function main() {
   // Create Bartender group
   const bartenderPermissions = [
     'orders.create_new', 'orders.view_current', 'orders.make_payments',
-    'menu.view', 'bar.menu_create', 'bar.menu_edit', 'bar.menu_delete',
-    'bar.manage_orders', 'bar.view_inventory', 'bar.returns',
+    'menu.view', 'bar.view_menu', 'bar.menu_create', 'bar.menu_edit', 'bar.menu_delete',
+    'bar.manage_orders', 'bar.view_inventory', 'bar.stock_requests', 'bar.order_issues',
     'inventory.view_current_stock',
     'payments.view', 'payments.create'
   ];
@@ -311,8 +307,8 @@ async function main() {
   // Create Kitchen group
   const kitchenPermissions = [
     'orders.view_current',
-    'menu.view', 'kitchen.menu_create', 'kitchen.menu_edit', 'kitchen.menu_delete',
-    'kitchen.manage_orders', 'kitchen.view_inventory', 'kitchen.view_requests', 'kitchen.view_expiring', 'kitchen.dissatisfactions',
+    'menu.view', 'kitchen.view_menu', 'kitchen.menu_create', 'kitchen.menu_edit', 'kitchen.menu_delete',
+    'kitchen.manage_orders', 'kitchen.view_inventory', 'kitchen.stock_requests', 'kitchen.view_expiring', 'kitchen.order_issues',
     'inventory.view_current_stock', 'inventory.create_adjustments', 'inventory.view_adjustments',
     'inventory.view_requests', 'inventory.view_expiring'
   ];

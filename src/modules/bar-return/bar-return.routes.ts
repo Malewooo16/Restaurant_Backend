@@ -8,12 +8,16 @@ import {
   deleteBarReturn,
   getBarReturnsByStatus,
 } from './bar-return.controller';
+import { requirePermission } from '../../middleware/permissions';
 
 const router = Router();
 
-router.get('/', getAllBarReturns);
-router.get('/status', getBarReturnsByStatus);
-router.get('/:id', getBarReturnById);
+// Permission middleware for bar order issues (returns)
+const viewOrderIssues = requirePermission('bar.order_issues');
+
+router.get('/', viewOrderIssues, getAllBarReturns);
+router.get('/status', viewOrderIssues, getBarReturnsByStatus);
+router.get('/:id', viewOrderIssues, getBarReturnById);
 router.post('/', createBarReturn);
 router.put('/:id', updateBarReturn);
 router.patch('/:id/status', updateBarReturnStatus);

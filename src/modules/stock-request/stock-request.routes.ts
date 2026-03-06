@@ -5,7 +5,17 @@ import { requirePermission } from '../../middleware/permissions';
 import * as stockRequestValidation from './stock-request.validation';
 
 // Permission middleware for stock request routes
-const viewStockRequests = requirePermission('inventory.view_requests');
+// Kitchen and Bar staff can view and create stock requests
+const viewCreateStockRequests = (req: any, res: any, next: any) => {
+  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.stock_requests');
+  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.stock_requests');
+  const hasInventoryView = req.user?.permissions?.some((p: any) => p.name === 'inventory.view_requests');
+  if (hasKitchen || hasBar || hasInventoryView || req.user?.userGroup?.name === 'Admin') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Insufficient permissions' });
+  }
+};
 const approveStockRequests = requirePermission('inventory.approve_requests');
 
 const router = Router();
@@ -48,7 +58,7 @@ const router = Router();
  */
 router.get(
   '/',
-  viewStockRequests,
+  viewCreateStockRequests,
   validate(stockRequestValidation.getAllStockRequestsSchema),
   stockRequestController.getAllStockRequests
 );
@@ -75,7 +85,7 @@ router.get(
  */
 router.post(
   '/',
-  viewStockRequests,
+  viewCreateStockRequests,
   validate(stockRequestValidation.createStockRequestSchema),
   stockRequestController.createStockRequest
 );

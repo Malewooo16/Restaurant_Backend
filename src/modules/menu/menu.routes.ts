@@ -37,7 +37,16 @@ import {
 const router = Router();
 
 // Permission middleware for menu routes
-const viewMenu = requirePermission('menu.view');
+const viewMenu = (req: any, res: any, next: any) => {
+  const hasGeneral = req.user?.permissions?.some((p: any) => p.name === 'menu.view');
+  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.view_menu');
+  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.view_menu');
+  if (hasGeneral || hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Insufficient permissions' });
+  }
+};
 const createMenu = (req: any, res: any, next: any) => {
   const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.menu_create');
   const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.menu_create');
