@@ -56,6 +56,7 @@ const SETTING_PERMISSIONS: Record<string, { view: string; edit: string }> = {
   receipt_header: { view: 'settings.view_configurations', edit: 'settings.edit_configurations' },
   receipt_footer: { view: 'settings.view_configurations', edit: 'settings.edit_configurations' },
   show_logo_on_receipt: { view: 'settings.view_configurations', edit: 'settings.edit_configurations' },
+  paper_size: { view: 'settings.view_configurations', edit: 'settings.edit_configurations' },
 };
 
 // Middleware factory to check permission based on setting key
