@@ -73,21 +73,22 @@ async function generateGRNNumber(tx: Prisma.TransactionClient): Promise<string> 
   return candidate;
 }
 
-async function generateBatchNumber(tx: Prisma.TransactionClient): Promise<string> {
+async function generateBatchNumber(tx: Prisma.TransactionClient, index?: number): Promise<string> {
     const timestamp = Date.now().toString(36).toUpperCase().replace(/^0+/, '');
     const prefix = 'BATCH';
-    const candidate = `${prefix}-${timestamp}`;
+    const suffix = index !== undefined ? `-${index}` : '';
+    const candidate = `${prefix}-${timestamp}${suffix}`;
   
-  // Check if it exists, if so, append a random suffix
-  const existing = await tx.batch.findFirst({
-    where: { batchNumber: candidate },
-  });
-  
-  if (existing) {
-    return `${candidate}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+    // Check if it exists, if so, append a random suffix
+    const existing = await tx.batch.findFirst({
+      where: { batchNumber: candidate },
+    });
+    
+    if (existing) {
+      return `${candidate}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+    }
+    return candidate;
   }
-  return candidate;
-}
 
 export const createGoodsReceiving = async (
   data: Omit<Prisma.GoodsReceivingCreateInput, 'receivedItems'>,
@@ -105,7 +106,7 @@ export const createGoodsReceiving = async (
         createdById: userId,
         updatedById: userId,
         receivedItems: {
-          create: await Promise.all(receivedItems.map(async (item) => {
+          create: await Promise.all(receivedItems.map(async (item, index) => {
             const receivedItemData: any = {
               inventoryItemId: item.inventoryItemId,
               quantityReceived: item.quantityReceived,
@@ -119,7 +120,7 @@ export const createGoodsReceiving = async (
                 data: {
                   inventoryItemId: item.inventoryItemId,
                   quantity: item.quantityReceived, // Initial quantity of the batch is what's received
-                  batchNumber: item.batchNumber || await generateBatchNumber(tx), // Generate if not provided
+                  batchNumber: item.batchNumber || await generateBatchNumber(tx, index), // Generate if not provided
                   expiryDate: item.expiryDate,
                   receivedAt: (data as any).receivedAt || new Date(),
                   createdById: userId,
@@ -278,13 +279,13 @@ export const updateGoodsReceiving = async (
     // TODO: Consider how to handle batches if old items are deleted. Should batches be deleted too?
     // For now, batches created are independent. If GRN item is deleted, batch remains.
 
-    const goodsReceiving = await tx.goodsReceiving.update({
+const goodsReceiving = await tx.goodsReceiving.update({
       where: { id },
       data: {
         ...(data as any),
         updatedById: userId,
         receivedItems: {
-          create: await Promise.all(receivedItems.map(async (item) => {
+          create: await Promise.all(receivedItems.map(async (item, index) => {
             const receivedItemData: any = {
               inventoryItemId: item.inventoryItemId,
               quantityReceived: item.quantityReceived,
@@ -297,7 +298,7 @@ export const updateGoodsReceiving = async (
                 data: {
                   inventoryItemId: item.inventoryItemId,
                   quantity: item.quantityReceived,
-                  batchNumber: item.batchNumber || `AUTO_BATCH_${Date.now()}`,
+                  batchNumber: item.batchNumber || await generateBatchNumber(tx, index),
                   expiryDate: item.expiryDate,
                   receivedAt: (data as any).receivedAt || new Date(),
                   createdById: userId,

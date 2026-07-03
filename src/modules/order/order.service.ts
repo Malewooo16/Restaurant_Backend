@@ -270,6 +270,9 @@ export const getAllOrders = (params?: GetOrdersParams) => {
       barOrder: true,
       payments: true,
     },
+    orderBy:{
+      createdAt:"desc"
+      }
   });
 };
 

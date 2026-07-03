@@ -15,7 +15,8 @@ const allowedOrigins = [
   "https://restaurant.maison.run.place",
   "http://212.115.110.115:8080", //Swagger server
   "http://tauri.localhost",
-  "https://restaurant.maison.run.place."
+  "https://restaurant.maison.run.place.",
+  "http://localhost:8081",
 ];
 
 app.use(
