@@ -37,43 +37,10 @@ import {
 const router = Router();
 
 // Permission middleware for menu routes
-const viewMenu = (req: any, res: any, next: any) => {
-  const hasGeneral = req.user?.permissions?.some((p: any) => p.name === 'menu.view');
-  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.view_menu');
-  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.view_menu');
-  if (hasGeneral || hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
-    next();
-  } else {
-    res.status(403).json({ error: 'Insufficient permissions' });
-  }
-};
-const createMenu = (req: any, res: any, next: any) => {
-  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.menu_create');
-  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.menu_create');
-  if (hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
-    next();
-  } else {
-    res.status(403).json({ error: 'Insufficient permissions' });
-  }
-};
-const editMenu = (req: any, res: any, next: any) => {
-  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.menu_edit');
-  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.menu_edit');
-  if (hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
-    next();
-  } else {
-    res.status(403).json({ error: 'Insufficient permissions' });
-  }
-};
-const deleteMenu = (req: any, res: any, next: any) => {
-  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.menu_delete');
-  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.menu_delete');
-  if (hasKitchen || hasBar || req.user?.userGroup?.name === 'Admin') {
-    next();
-  } else {
-    res.status(403).json({ error: 'Insufficient permissions' });
-  }
-};
+const viewMenu = requirePermission({ any: ['menu.view', 'kitchen.view_menu', 'bar.view_menu'] });
+const createMenu = requirePermission({ any: ['kitchen.menu_create', 'bar.menu_create'] });
+const editMenu = requirePermission({ any: ['kitchen.menu_edit', 'bar.menu_edit'] });
+const deleteMenu = requirePermission({ any: ['kitchen.menu_delete', 'bar.menu_delete'] });
 
 /**
  * @swagger

@@ -7,7 +7,9 @@ export interface AuthRequest extends Request {
     id: number;
     username: string;
     userGroupId?: number;
+    userGroupName?: string;
     permissions: string[];
+    isAdmin?: boolean;
     isOverride?: boolean; // Indicates if this is a token override (POS/waiter)
   };
 }
@@ -99,14 +101,25 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     // Get the actual user for proper username
     const actualUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { username: true, userGroupId: true }
+      select: {
+        username: true,
+        userGroupId: true,
+        userGroup: {
+          select: { name: true },
+        },
+      }
     });
+
+    const userGroupName = actualUser?.userGroup?.name;
+    const isAdmin = userGroupName?.toLowerCase() === 'admin';
     
     req.user = {
       id: userId,
       username: actualUser?.username || username,
       userGroupId: actualUser?.userGroupId ?? undefined,
-      permissions: permissions.length > 0 ? permissions : ['*'],
+      userGroupName,
+      permissions: ['*'], // Override user has all permissions
+      isAdmin,
       isOverride: true, // Mark as override user
     };
     return next();
@@ -132,15 +145,30 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       userGroupId?: number;
     };
 
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        userGroup: {
+          select: { name: true },
+        },
+      },
+    });
+
+    const userGroupName = user?.userGroup?.name;
+    const isAdmin = userGroupName?.toLowerCase() === 'admin';
+
     // Load permissions from database
     const permissions = await loadUserPermissions(decoded.id);
+    const effectivePermissions = isAdmin ? Array.from(new Set([...permissions, '*'])) : permissions;
 
     // Attach user info to request (including permissions from DB)
     req.user = {
       id: decoded.id,
       username: decoded.username,
       userGroupId: decoded.userGroupId,
-      permissions,
+      userGroupName,
+      permissions: effectivePermissions,
+      isAdmin,
     };
 
     next();

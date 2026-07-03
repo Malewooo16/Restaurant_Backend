@@ -4,18 +4,11 @@ import { validate } from '../../middleware/validate';
 import { requirePermission } from '../../middleware/permissions';
 import * as stockRequestValidation from './stock-request.validation';
 
-// Permission middleware for stock request routes
-// Kitchen and Bar staff can view and create stock requests
-const viewCreateStockRequests = (req: any, res: any, next: any) => {
-  const hasKitchen = req.user?.permissions?.some((p: any) => p.name === 'kitchen.stock_requests');
-  const hasBar = req.user?.permissions?.some((p: any) => p.name === 'bar.stock_requests');
-  const hasInventoryView = req.user?.permissions?.some((p: any) => p.name === 'inventory.view_requests');
-  if (hasKitchen || hasBar || hasInventoryView || req.user?.userGroup?.name === 'Admin') {
-    next();
-  } else {
-    res.status(403).json({ error: 'Insufficient permissions' });
-  }
-};
+// Kitchen and Bar staff can view/create requests.
+// Admin users are allowed through wildcard permissions handled by requirePermission.
+const viewCreateStockRequests = requirePermission({
+  any: ['kitchen.stock_requests', 'bar.stock_requests', 'inventory.view_requests'],
+});
 const approveStockRequests = requirePermission('inventory.approve_requests');
 
 const router = Router();
