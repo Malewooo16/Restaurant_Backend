@@ -150,6 +150,29 @@ export const updateStaff = async (
   });
 };
 
+export const getWaiters = async () => {
+  const staff = await prisma.staff.findMany({
+    where: {
+      role: {
+        name: {
+          equals: 'Waiter',
+          mode: 'insensitive',
+        },
+      },
+      status: {
+        equals: 'ACTIVE',
+        mode: 'insensitive',
+      },
+    },
+    include: {
+      role: true,
+      department: true,
+    },
+  });
+
+  return staff;
+};
+
 export const deleteStaff = async (id: number) => {
   return prisma.staff.delete({
     where: { id },

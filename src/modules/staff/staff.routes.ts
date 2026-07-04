@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   getAllStaff,
+  getWaiters,
   getStaffById,
   createStaff,
   updateStaff,
@@ -35,6 +36,24 @@ const deleteStaffPerm = requirePermission('staff.delete');
  *                 $ref: '#/components/schemas/Staff'
  */
 router.get('/', viewStaff, getAllStaff);
+
+/**
+ * @swagger
+ * /api/staff/waiters:
+ *   get:
+ *     summary: Retrieve all active waiters
+ *     tags: [Staff]
+ *     responses:
+ *       200:
+ *         description: A list of waiters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Staff'
+ */
+router.get('/waiters', viewStaff, getWaiters);
 
 /**
  * @swagger
