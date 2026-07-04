@@ -177,7 +177,6 @@ async function main() {
     'inventory.view_requests', 'inventory.approve_requests', 'inventory.view_expiring', 'inventory.update_expiring',
     'purchases.view_orders', 'purchases.create_orders', 'purchases.approve_orders', 'purchases.receive_goods', 'purchases.view_received',
     'purchases.view_suppliers', 'purchases.add_suppliers', 'purchases.edit_suppliers', 'purchases.delete_suppliers',
-    'goods_receiving.view', 'goods_receiving.create', 'goods_receiving.edit',
     'staff.view', 'staff.create', 'staff.edit',
     'users.view', 'users.create', 'users.edit',
     'reports.view', 'reports.export',
