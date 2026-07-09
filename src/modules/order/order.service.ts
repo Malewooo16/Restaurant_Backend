@@ -213,8 +213,24 @@ export const createOrder = async (
             menuItem: { select: { name: true, id: true } },
           },
         },
-        kitchenOrder: { include: { items: true } },
-        barOrder: { include: { items: true } },
+        kitchenOrder: {
+          include: {
+            items: {
+              include: {
+                menuItem: { select: { name: true, id: true } },
+              },
+            },
+          },
+        },
+        barOrder: {
+          include: {
+            items: {
+              include: {
+                menuItem: { select: { name: true, id: true } },
+              },
+            },
+          },
+        },
       },
     });
   }, {maxWait: 5000, timeout: 15000});
@@ -285,12 +301,39 @@ export const getOrderById = (id: number) => {
           menuItem: {
             select: {
               name: true,
+              id: true,
             },
           },
         },
       },
-      kitchenOrder: true,
-      barOrder: true,
+      kitchenOrder: {
+        include: {
+          items: {
+            include: {
+              menuItem: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      barOrder: {
+        include: {
+          items: {
+            include: {
+              menuItem: {
+                select: {
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
       payments: true,
     },
   });
