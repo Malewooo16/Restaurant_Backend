@@ -4,6 +4,8 @@ import { prisma } from "../../../lib/prisma";
 interface DateRangeParams {
   startDate?: string;
   endDate?: string;
+  waiter?: string;
+  paymentMethod?: string;
 }
 
 // Order Summary Report - Paid orders with order #, date, item count, total, waiter
@@ -11,6 +13,10 @@ export const getOrderSummaryReport = async (params: DateRangeParams) => {
   const where: any = {
     status: 'PAID',
   };
+
+  if (params.waiter) {
+    where.waiter = params.waiter;
+  }
 
   // Add date range filter
   if (params.startDate && params.endDate) {
@@ -50,6 +56,10 @@ export const getOrderDetailedReport = async (params: DateRangeParams) => {
     },
   };
 
+  if (params.waiter) {
+    whereClause.order.waiter = params.waiter;
+  }
+
   // Add date range filter
   if (params.startDate && params.endDate) {
     const start = new Date(params.startDate);
@@ -72,6 +82,7 @@ export const getOrderDetailedReport = async (params: DateRangeParams) => {
         select: {
           orderNumber: true,
           createdAt: true,
+          waiter: true,
         },
       },
     },
@@ -89,6 +100,7 @@ export const getOrderDetailedReport = async (params: DateRangeParams) => {
     item: item.menuItem.name,
     quantity: item.quantity,
     price: item.price,
+    waiter: item.order.waiter || 'N/A',
   }));
 };
 
@@ -100,6 +112,14 @@ export const getPaymentsReport = async (params: DateRangeParams) => {
       status: 'PAID',
     },
   };
+
+  if (params.waiter) {
+    whereClause.order.waiter = params.waiter;
+  }
+
+  if (params.paymentMethod) {
+    whereClause.paymentMethod = params.paymentMethod;
+  }
 
   // Add date range filter
   if (params.startDate && params.endDate) {
@@ -153,12 +173,26 @@ export const getRefundsReport = async (params: DateRangeParams) => {
     };
   }
 
-  const refunds = await prisma.dissatisfaction.findMany({
+  let refunds = await prisma.dissatisfaction.findMany({
     where,
     orderBy: {
       createdAt: 'desc',
     },
   });
+
+  // Filter by waiter if provided (join with Order)
+  if (params.waiter) {
+    const orderIds = await prisma.order.findMany({
+      where: {
+        waiter: params.waiter,
+      },
+      select: {
+        id: true,
+      },
+    });
+    const validOrderIds = orderIds.map(o => o.id);
+    refunds = refunds.filter(r => validOrderIds.includes(r.orderId));
+  }
 
   // Transform data to match expected format
   return refunds.map(refund => ({

@@ -4,13 +4,15 @@ import * as reportsService from './reports.service';
 interface DateRangeQuery {
   startDate?: string;
   endDate?: string;
+  waiter?: string;
+  paymentMethod?: string;
 }
 
 // Get Order Summary Report
 export const getOrderSummaryReport = async (req: Request, res: Response) => {
   try {
-    const { startDate, endDate } = req.query as DateRangeQuery;
-    const data = await reportsService.getOrderSummaryReport({ startDate, endDate });
+    const { startDate, endDate, waiter } = req.query as DateRangeQuery;
+    const data = await reportsService.getOrderSummaryReport({ startDate, endDate, waiter });
     res.json({ orders: data });
   } catch (error) {
     console.error('Error fetching order summary report:', error);
@@ -21,8 +23,8 @@ export const getOrderSummaryReport = async (req: Request, res: Response) => {
 // Get Order Detailed Report
 export const getOrderDetailedReport = async (req: Request, res: Response) => {
   try {
-    const { startDate, endDate } = req.query as DateRangeQuery;
-    const data = await reportsService.getOrderDetailedReport({ startDate, endDate });
+    const { startDate, endDate, waiter } = req.query as DateRangeQuery;
+    const data = await reportsService.getOrderDetailedReport({ startDate, endDate, waiter });
     res.json({ items: data });
   } catch (error) {
     console.error('Error fetching order detailed report:', error);
@@ -33,8 +35,8 @@ export const getOrderDetailedReport = async (req: Request, res: Response) => {
 // Get Payments Report
 export const getPaymentsReport = async (req: Request, res: Response) => {
   try {
-    const { startDate, endDate } = req.query as DateRangeQuery;
-    const data = await reportsService.getPaymentsReport({ startDate, endDate });
+    const { startDate, endDate, waiter, paymentMethod } = req.query as DateRangeQuery;
+    const data = await reportsService.getPaymentsReport({ startDate, endDate, waiter, paymentMethod });
     res.json({ payments: data });
   } catch (error) {
     console.error('Error fetching payments report:', error);
@@ -45,8 +47,8 @@ export const getPaymentsReport = async (req: Request, res: Response) => {
 // Get Refunds Report
 export const getRefundsReport = async (req: Request, res: Response) => {
   try {
-    const { startDate, endDate } = req.query as DateRangeQuery;
-    const data = await reportsService.getRefundsReport({ startDate, endDate });
+    const { startDate, endDate, waiter } = req.query as DateRangeQuery;
+    const data = await reportsService.getRefundsReport({ startDate, endDate, waiter });
     res.json({ refunds: data });
   } catch (error) {
     console.error('Error fetching refunds report:', error);

@@ -20,6 +20,10 @@ const router = Router();
  *         schema:
  *           type: string
  *           format: date-time
+ *       - in: query
+ *         name: waiter
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Order summary report
@@ -43,6 +47,10 @@ router.get('/orders/summary', reportsController.getOrderSummaryReport);
  *         schema:
  *           type: string
  *           format: date-time
+ *       - in: query
+ *         name: waiter
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Order detailed report
@@ -66,6 +74,15 @@ router.get('/orders/detailed', reportsController.getOrderDetailedReport);
  *         schema:
  *           type: string
  *           format: date-time
+ *       - in: query
+ *         name: waiter
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: paymentMethod
+ *         schema:
+ *           type: string
+ *           enum: [CASH, CARD, ONLINE, MPESA, CRDB]
  *     responses:
  *       200:
  *         description: Payments report
@@ -89,6 +106,10 @@ router.get('/orders/payments', reportsController.getPaymentsReport);
  *         schema:
  *           type: string
  *           format: date-time
+ *       - in: query
+ *         name: waiter
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Refunds report
