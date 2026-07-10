@@ -66,6 +66,8 @@ enum PaymentMethod {
   CASH
   CARD
   ONLINE
+  MPESA
+  CRDB
 }
 
 enum PaymentStatus {
