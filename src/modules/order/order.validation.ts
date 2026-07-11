@@ -26,6 +26,7 @@ export const updateOrderSchema = z.object({
     waiter: z.string().optional(),
     guestCount: z.number().optional(),
     status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'SERVED', 'PAID', 'CANCELLED']).optional(),
+    notes: z.string().optional(),
   }).partial(),
 });
 
